@@ -1,0 +1,19 @@
+{
+  "name": "guizzorde",
+  "version": "1.0.0",
+  "description": "Just another discord bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GuiAzzi/Guizzorde.git"
+  },
+  "author": "Guilherme Azzi Annunciato",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GuiAzzi/Guizzorde/issues"
+  },
+  "homepage": "https://github.com/GuiAzzi/Guizzorde#readme"
+}
