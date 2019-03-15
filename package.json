@@ -4,7 +4,8 @@
   "description": "Just another discord bot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/GuiAzzi/Guizzorde/issues"
   },
-  "homepage": "https://github.com/GuiAzzi/Guizzorde#readme"
+  "homepage": "https://github.com/GuiAzzi/Guizzorde#readme",
+  "dependencies": {
+    "discord.js": "^11.4.2"
+  }
 }
