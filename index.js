@@ -5,10 +5,9 @@ const client = new Discord.Client();
 
 const config = require('./config.json');
 const snm = require('./snm.json');
+const lastSnm = snm[snm.length - 1];
 
 const snmEmbed = () => {
-
-    let lastSnm = snm[snm.length - 1]
 
     let description = `Status: **${lastSnm.status}**\n\n - ${lastSnm.movies.join('\n - ')}`
 
@@ -63,32 +62,40 @@ client.on('message', async message => {
     }
 
     if (command === 'snm') {
+        // Sends rich embed with SNM infos
         message.channel.send(snmEmbed());
     }
 
     if (command === 'snmadd') {
-        let lastSnm = snm[snm.length - 1];
         // Adds movie recommendation to the list
         const movieName = args.join(' ');
         lastSnm.movies.push(movieName);
-        fs.writeFile('snm.json', JSON.stringify(snm));
-        message.channel.send(snmEmbed());
+        fs.writeFile('snm.json', JSON.stringify(snm), (err) => {
+            if (err){
+                message.channel.send(err)
+                throw err;
+            }
+            else
+                message.channel.send(snmEmbed());
+        });        
     }
 
     //TODO:
-    if (command === 'clear') {
+    // if (command === 'clear') {
 
-        if (message.channel.type != 'TextChannel')
-            return;
+    //     if (message.channel.type != 'TextChannel')
+    //         return;
 
-        if (message.guild.name === 'Guizzorde Test') {
-            message.channel.fetchMessages()
-                .then((list) => {
-                    message.channel.bulkDelete(list);
-                })
-        }
+    //     if (message.guild.name === 'Guizzorde Test') {
+    //         message.channel.fetchMessages()
+    //             .then((list) => {
+    //                 message.channel.bulkDelete(list);
+    //             });
+    //     }
+    // }
 
-    }
+    // Logs stuff
+    console.log(`${message.author.username} executed '${command}' ${args != "" ? `with "${args}"` : ""}`);
 });
 
 client.login(config.token);
