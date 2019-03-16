@@ -1,7 +1,65 @@
 [
     {
         "week": 1,
-        "movies": ["Tomb Raider", "Jumanji", "Haikyuu!!", "Midnight in Paris", "The Foreigner", "Uma Noite no Museu", "Hard Candy", "Reservoir Dogs"],
-        "status": "ongoing"
+        "status": "ongoing",
+        "movieCount": 8,
+        "users": [
+            {
+                "userId": "84289916023898112",
+                "username": "Guizzo",
+                "movies": [
+                    {
+                        "title": "Tomb Raider",
+                        "titleKey": 1
+                    },
+                    {
+                        "title": "Jumaji",
+                        "titleKey": 2
+                    }
+                ]
+            },
+            {
+                "userId": "84697964148174848",
+                "username": "Victor",
+                "movies": [
+                    {
+                        "title": "Haikyuu!!",
+                        "titleKey": 3
+                    },
+                    {
+                        "title": "Uma Noite no Museu",
+                        "titleKey": 4
+                    }
+                ]
+            },
+            {
+                "userId": "197070007014916096",
+                "username": "Foxyez",
+                "movies": [
+                    {
+                        "title": "Midnight in Paris",
+                        "titleKey": 5
+                    },
+                    {
+                        "title": "The Foreigner",
+                        "titleKey": 6
+                    }
+                ]
+            },
+            {
+                "userId": "84309164448284672",
+                "username": "SirMemesALot",
+                "movies": [
+                    {
+                        "title": "Hard Candy",
+                        "titleKey": 7
+                    },
+                    {
+                        "title": "Reservoir Dogs",
+                        "titleKey": 8
+                    }
+                ]
+            }
+        ]
     }
 ]

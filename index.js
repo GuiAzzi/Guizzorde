@@ -8,9 +8,17 @@ const snm = require('./snm.json');
 const lastSnm = snm[snm.length - 1];
 
 const snmEmbed = () => {
+    let description = 'Status: **' + lastSnm.status + '**\n\n';
+    let printArray = [];
 
-    let description = `Status: **${lastSnm.status}**\n\n - ${lastSnm.movies.join('\n - ')}`
+    // Builds list ordered by titleKey
+    for (userIndex in lastSnm.users ){
+        for (movieIndex in lastSnm.users[userIndex].movies)
+            printArray[lastSnm.users[userIndex].movies[movieIndex].titleKey - 1] = [`${lastSnm.users[userIndex].movies[movieIndex].titleKey}) ${lastSnm.users[userIndex].movies[movieIndex].title}\n`]
+    }
 
+    description += printArray.join("") + `\n\`!snmAdd <movie name>\` to add`
+    
     const embed = new Discord.RichEmbed()
         // Set the title of the field
         .setTitle(`🌟 Sunday Night Movie ${snm[snm.length - 1].week} 🌟`)
@@ -19,7 +27,7 @@ const snmEmbed = () => {
         // Set the main content of the embed
         .setDescription(description);
     // Returns the embed
-    return embed
+    return embed;
 }
 
 client.on('ready', () => {
@@ -43,59 +51,178 @@ client.on('message', async message => {
     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
 
-    // Let's go with a few common example commands! Feel free to delete or change those.
+    // To get the "message" itself we join the `args` back into a string with spaces: 
+    const messageText = args.join(" ");
 
-    if (command === 'ping') {
-        // Calculates ping between sending a message and editing it, giving a nice round-trip latency.
-        const m = await message.channel.send('Ping?');
-        m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
-    }
+    let logMessage = "";
 
-    if (command === 'say') {
-        // Makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-        // To get the "message" itself we join the `args` back into a string with spaces: 
-        const sayMessage = args.join(' ');
-        // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
-        message.delete().catch(O_o => { });
-        // And we get the bot to say the thing: 
-        message.channel.send(sayMessage);
-    }
+    switch (command) {
+        case 'help':
+            let description = 
+                `!ping - Pings the API
 
-    if (command === 'snm') {
-        // Sends rich embed with SNM infos
-        message.channel.send(snmEmbed());
-    }
+                !say <message> - Makes the bot say something
 
-    if (command === 'snmadd') {
-        // Adds movie recommendation to the list
-        const movieName = args.join(' ');
-        lastSnm.movies.push(movieName);
-        fs.writeFile('snm.json', JSON.stringify(snm), (err) => {
-            if (err){
-                message.channel.send(err)
-                throw err;
+                !snm - Lists this week's Sunday Night Movie™
+
+                !snmAdd <movie title> - Adds a movie to this week's pool
+
+                !snmRemove <movie title or number> - Removes a movie from the week's pool
+
+                !clear - 👀 ||don't||`;
+
+            const embed = new Discord.RichEmbed()
+            // Set the title of the field
+            .setTitle(`Guizzorde Commands`)
+            // Set the color of the embed
+            .setColor('#4286f4')
+            // Set the main content of the embed
+            .setDescription(description);
+            message.author.send(embed);
+            break;
+        case 'ping':
+            // Calculates ping between sending a message and editing it, giving a nice round-trip latency.
+            const m = await message.channel.send('Ping?');
+            m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
+            break;
+        case 'say': 
+            // Makes the bot say something and delete the message. As an example, it's open to anyone to use. 
+            // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
+            message.delete().catch(O_o => { });
+            // And we get the bot to say the thing: 
+            message.channel.send(messageText);
+            break;
+        case 'snm':
+            // Sends rich embed with SNM infos
+            message.channel.send(snmEmbed());
+            break;
+        case 'snmadd':
+            let authorId = message.author.id;
+            // Checks if user is already on the list
+            let userObject = lastSnm.users.find((user) => user.userId === authorId);
+
+            if (userObject) {
+                // Check user entries
+                if (userObject.movies.length === 2)
+                    return message.channel.send(`You have no entries left.\nRemove entries with \`!snmRemove <movie title or number>\`.`);
             }
+            // Add user to the list if new
             else
-                message.channel.send(snmEmbed());
-        });        
+                userObject = lastSnm.users[lastSnm.users.push({userId: authorId, username: message.author.username, movies: []}) - 1]
+            
+            // If movie is already on the list, cancel and inform user
+            if (lastSnm.users.find((user) => user.movies.find((movie) => movie.title === messageText)))
+                return message.channel.send("Movie already on the list");
+
+            // Adds movie to the list
+            lastSnm.movieCount++
+            lastSnm.users[lastSnm.users.indexOf(userObject)].movies.push({title: messageText, titleKey: lastSnm.movieCount});
+
+            fs.writeFile('snm.json', JSON.stringify(snm), (err) => {
+                if (err) {
+                    message.channel.send(err)
+                    throw err;
+                }
+                else {
+                    message.channel.send(`Added \`${messageText}\` to the list`);
+                    message.channel.send(snmEmbed())
+                }
+            });
+            logMessage = `${message.author.username} added '${messageText}' to the list`;
+            break;
+        case 'snmremove':
+            // Removes a movie from the list
+            let stringFound;
+            let numberFound;
+            let checkNumber;
+            let deleted;
+
+            // Prioritize strings over numbers, as they are more specific.
+            // Movie can be "007" which would be a string and not position 7.
+            // If message is a number, we will save the titleKey that matches it. In case we don't find a string.
+            if (Number(messageText))
+                checkNumber = true;
+
+            // Checks if there is a movie with the same name as the message string
+            for (userIndex in lastSnm.users){
+                for (movieIndex in lastSnm.users[userIndex].movies){
+                    if (lastSnm.users[userIndex].movies[movieIndex].title === messageText){
+                        stringFound = true;
+                        // Checks if movie found was submitted by message author
+                        if (lastSnm.users[userIndex].userId === message.author.id)
+                            deleted = lastSnm.users[userIndex].movies.splice(movieIndex, 1);
+                        else 
+                            return message.channel.send("This is not your movie 😒");
+                        break;
+                    }
+                    // If checkNumber is true and we didn't find a string yet. Check if titleKey matches user message.
+                    // If it does, save indexes
+                    else if (checkNumber) {
+                        if (Number(messageText) === lastSnm.users[userIndex].movies[movieIndex].titleKey)
+                            numberFound = [userIndex, movieIndex];
+                    }                        
+                }
+            }
+
+            // If we didn't find a string but found a matching titleKey, try to delete
+            if (numberFound && !stringFound) {
+                // Checks if movie found was submitted by message author
+                if (lastSnm.users[numberFound[0]].userId === message.author.id)
+                    deleted = lastSnm.users[numberFound[0]].movies.splice(numberFound[1], 1);
+                else 
+                    return message.channel.send("This is not your movie 😒");
+            }
+
+            // Fixes titleKeys and movieCount
+            if (deleted){
+                deleted = deleted[0]
+                lastSnm.movieCount--;
+                for (userIndex in lastSnm.users){
+                    for (movieIndex in lastSnm.users[userIndex].movies){
+                        if (lastSnm.users[userIndex].movies[movieIndex].titleKey > deleted.titleKey)
+                            lastSnm.users[userIndex].movies[movieIndex].titleKey--
+                    }
+                }
+
+                fs.writeFile('snm.json', JSON.stringify(snm), (err) => {
+                    if (err) {
+                        message.channel.send(err)
+                        throw err;
+                    }
+                    else {
+                        message.channel.send(`Removed \`${deleted.title}\` from the list`);
+                        message.channel.send(snmEmbed())
+                    }
+                });
+                logMessage = `${message.author.username} removed '${deleted.title}' from the list`;
+            }
+            else 
+                message.channel.send(`Movie not found.\n\`\`\`Usage: !snmRemove <movie title or number>\n!snm to see the list\`\`\``);            
+            break;
+        case 'clear':
+            //TODO:
+            message.author.send('You bad, BAD person 😤');
+            // if (command === 'clear') {
+
+            //     if (message.channel.type != 'TextChannel')
+            //         return;
+        
+            //     if (message.guild.name === 'Guizzorde Test') {
+            //         message.channel.fetchMessages()
+            //             .then((list) => {
+            //                 message.channel.bulkDelete(list);
+            //             });
+            //     }
+            // }            
+            break;
+        default:
+            message.author.send('Invalid command. See \`!help\` for the list of commands.');
+            break;
     }
-
-    //TODO:
-    // if (command === 'clear') {
-
-    //     if (message.channel.type != 'TextChannel')
-    //         return;
-
-    //     if (message.guild.name === 'Guizzorde Test') {
-    //         message.channel.fetchMessages()
-    //             .then((list) => {
-    //                 message.channel.bulkDelete(list);
-    //             });
-    //     }
-    // }
 
     // Logs stuff
-    console.log(`${message.author.username} executed '${command}' ${args != "" ? `with "${args}"` : ""}`);
+    console.log(`\n${message.author.username} executed '${command}' ${args != "" ? `with "${messageText}"` : ""}`);
+    console.log(logMessage);
 });
 
 client.login(config.token);
