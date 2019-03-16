@@ -58,13 +58,12 @@ client.on('message', async message => {
 
     switch (command) {
         case 'help':
-            let description = 
-                `!ping - Pings the API
-
+            let description = `!ping - Pings the API
+                
                 !say <message> - Makes the bot say something
-
+                
                 !snm - Lists this week's Sunday Night Movie™
-
+                
                 !snmAdd <movie title> - Adds a movie to this week's pool
 
                 !snmRemove <movie title or number> - Removes a movie from the week's pool
@@ -85,7 +84,7 @@ client.on('message', async message => {
             const m = await message.channel.send('Ping?');
             m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
             break;
-        case 'say': 
+        case 'say':
             // Makes the bot say something and delete the message. As an example, it's open to anyone to use. 
             // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
             message.delete().catch(O_o => { });
@@ -104,15 +103,20 @@ client.on('message', async message => {
             if (userObject) {
                 // Check user entries
                 if (userObject.movies.length === 2)
-                    return message.channel.send(`You have no entries left.\nRemove entries with \`!snmRemove <movie title or number>\`.`);
+                    message.channel.send(`You have no entries left.\nRemove entries with \`!snmRemove <movie title or number>\`.`);
+                    logMessage = "No entries left";
+                    break;
             }
             // Add user to the list if new
             else
                 userObject = lastSnm.users[lastSnm.users.push({userId: authorId, username: message.author.username, movies: []}) - 1]
             
             // If movie is already on the list, cancel and inform user
-            if (lastSnm.users.find((user) => user.movies.find((movie) => movie.title === messageText)))
-                return message.channel.send("Movie already on the list");
+            if (lastSnm.users.find((user) => user.movies.find((movie) => movie.title === messageText))){
+                message.channel.send("Movie already on the list");
+                logMessage = "Movie was already on the list";
+                break;
+            }
 
             // Adds movie to the list
             lastSnm.movieCount++
@@ -120,7 +124,8 @@ client.on('message', async message => {
 
             fs.writeFile('snm.json', JSON.stringify(snm), (err) => {
                 if (err) {
-                    message.channel.send(err)
+                    message.channel.send(err);
+                    logMessage = err;
                     throw err;
                 }
                 else {
@@ -151,8 +156,11 @@ client.on('message', async message => {
                         // Checks if movie found was submitted by message author
                         if (lastSnm.users[userIndex].userId === message.author.id)
                             deleted = lastSnm.users[userIndex].movies.splice(movieIndex, 1);
-                        else 
-                            return message.channel.send("This is not your movie 😒");
+                        else {
+                            message.channel.send("This is not your movie 😒");
+                            logMessage = `${lastSnm.users[userIndex].movies[movieIndex].title} is not authors movie`;
+                            break;
+                        }
                         break;
                     }
                     // If checkNumber is true and we didn't find a string yet. Check if titleKey matches user message.
@@ -169,8 +177,11 @@ client.on('message', async message => {
                 // Checks if movie found was submitted by message author
                 if (lastSnm.users[numberFound[0]].userId === message.author.id)
                     deleted = lastSnm.users[numberFound[0]].movies.splice(numberFound[1], 1);
-                else 
-                    return message.channel.send("This is not your movie 😒");
+                else {
+                    message.channel.send("This is not your movie 😒");
+                    logMessage = `${lastSnm.users[numberFound[0]].movies[numberFound[1]].title} is not authors movie`;
+                    break;
+                }
             }
 
             // Fixes titleKeys and movieCount
@@ -187,6 +198,7 @@ client.on('message', async message => {
                 fs.writeFile('snm.json', JSON.stringify(snm), (err) => {
                     if (err) {
                         message.channel.send(err)
+                        logMessage = err;
                         throw err;
                     }
                     else {
