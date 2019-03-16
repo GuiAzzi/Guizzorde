@@ -7,6 +7,9 @@ const config = require('./config.json');
 const snm = require('./snm.json');
 const lastSnm = snm[snm.length - 1];
 
+// Keep track of this because something is happening to this message
+let activeMessage = null;
+
 const snmEmbed = () => {
     let description = 'Status: **' + lastSnm.status + '**\n\n';
     let printArray = [];
@@ -17,15 +20,15 @@ const snmEmbed = () => {
             printArray[lastSnm.users[userIndex].movies[movieIndex].titleKey - 1] = [`${lastSnm.users[userIndex].movies[movieIndex].titleKey}) ${lastSnm.users[userIndex].movies[movieIndex].title}\n`]
     }
 
-    description += printArray.join("") + `\n\`!snmAdd <movie name>\` to add`
-    
-    const embed = new Discord.RichEmbed()
+    let embed = new Discord.RichEmbed()
         // Set the title of the field
         .setTitle(`🌟 Sunday Night Movie ${snm[snm.length - 1].week} 🌟`)
         // Set the color of the embed
         .setColor(0xFF0000)
         // Set the main content of the embed
-        .setDescription(description);
+        .setDescription(printArray.join(""))
+        // Set the footer text
+        .setFooter(`!snmAdd <movie name> to add`)
     // Returns the embed
     return embed;
 }
@@ -38,6 +41,17 @@ client.on('ready', () => {
     client.user.setActivity(`Beep boop`);
 });
 
+client.on('messageReactionAdd', (reaction, user) => {
+    if (reaction.message === activeMessage){
+        // Reactions from bot, allow
+        if (user.id !== activeMessage.author.id){
+            // TODO: Emoji vote system :O
+            // if (reaction.users.find(userIndex => userIndex.id === user.id )){
+            //     reaction.remove(user);
+            // }
+        }
+    }
+});
 
 client.on('message', async message => {
 
@@ -91,10 +105,62 @@ client.on('message', async message => {
             // And we get the bot to say the thing: 
             message.channel.send(messageText);
             break;
-        case 'snm':
+        case 'snm':            
             // Sends rich embed with SNM infos
             message.channel.send(snmEmbed());
             break;
+        case 'snmstart':
+            // Starts voting system in top server
+
+            // can only be used in Top Server BR and Guizzorde Test
+            if (message.guild.id !== "84290462843670528" && message.guild.id !== "556216789688909834"){
+                message.channel.send("This can't be used in this server. 💋");
+                logMessage = "Wrong guild";
+                break;
+            }
+
+            lastSnm.status = 'voting';
+            message.delete().catch(O_o => { });
+
+            // Check for Crew role
+            let crewRole = message.guild.roles.find((role) => role.name === "Crew");
+            message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}Gather round, voting has started 😱`);
+
+            // Builds rich embed with a random emoji for each movie
+            let printArray = [];
+            let emojiArray = message.guild.emojis;
+            let emojisUsed = [];
+
+            lastSnm.users.forEach(user => {
+                user.movies.forEach(movie => {
+                    if (emojiArray.size !== 0){
+                        let rndEmoji = emojiArray.random();
+                        printArray[movie.titleKey - 1] = `<:${rndEmoji.name}:${rndEmoji.id}> - ${movie.title}\n`;
+                        emojisUsed.push(rndEmoji);
+                        emojiArray.delete(rndEmoji.id);
+                    }
+                    // It will break if there are more movies than custom emojis
+                    else {
+                        // TODO:
+                    }
+                })
+            });
+
+            // Created the embed with titles, emojis and reactions
+            let votingEmbed = new Discord.RichEmbed()
+            .setTitle(`🌟 Sunday Night Movie ${snm[snm.length - 1].week} 🌟`)
+            .setColor(0xFF0000)
+            .setDescription(printArray.join(" "))
+            .setFooter('Click the corresponding reaction to vote!');
+
+            message.channel.send(votingEmbed).then(msg => {
+                activeMessage = msg;
+                emojisUsed.forEach(emoji => {
+                    msg.react(emoji);
+                });
+            });
+            break;
+
         case 'snmadd':
             let authorId = message.author.id;
             // Checks if user is already on the list
@@ -102,10 +168,11 @@ client.on('message', async message => {
 
             if (userObject) {
                 // Check user entries
-                if (userObject.movies.length === 2)
+                if (userObject.movies.length === 2){
                     message.channel.send(`You have no entries left.\nRemove entries with \`!snmRemove <movie title or number>\`.`);
-                    logMessage = "No entries left";
+                    logMessage = `No entries left ${userObject.movies.length}/2`;
                     break;
+                }
             }
             // Add user to the list if new
             else
@@ -209,7 +276,7 @@ client.on('message', async message => {
                 logMessage = `${message.author.username} removed '${deleted.title}' from the list`;
             }
             else 
-                message.channel.send(`Movie not found.\n\`\`\`Usage: !snmRemove <movie title or number>\n!snm to see the list\`\`\``);            
+                message.channel.send(`Movie not found.\n\`\`\`Usage: !snmRemove <movie title or number>\n!snm to see the list\`\`\``);
             break;
         case 'clear':
             //TODO:
@@ -230,7 +297,7 @@ client.on('message', async message => {
         default:
             message.author.send('Invalid command. See \`!help\` for the list of commands.');
             break;
-    }
+    }   
 
     // Logs stuff
     console.log(`\n${message.author.username} executed '${command}' ${args != "" ? `with "${messageText}"` : ""}`);

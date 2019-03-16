@@ -1,8 +1,8 @@
 [
     {
         "week": 1,
-        "status": "ongoing",
-        "movieCount": 8,
+        "status": "voting",
+        "movieCount": 12,
         "users": [
             {
                 "userId": "84289916023898112",
@@ -13,7 +13,7 @@
                         "titleKey": 1
                     },
                     {
-                        "title": "Jumaji",
+                        "title": "Jumanji",
                         "titleKey": 2
                     }
                 ]
@@ -57,6 +57,34 @@
                     {
                         "title": "Reservoir Dogs",
                         "titleKey": 8
+                    }
+                ]
+            },
+            {
+                "userId": "86542846517080064",
+                "username": "Klein",
+                "movies": [
+                    {
+                        "title": "A Futile and Stupid Gesture",
+                        "titleKey": 9
+                    },
+                    {
+                        "title": "Tickled",
+                        "titleKey": 10
+                    }
+                ]
+            },
+            {
+                "userId": "86547232974708736",
+                "username": "Miwucol Wip",
+                "movies": [
+                    {
+                        "title": "Koe No Katachi",
+                        "titleKey": 11
+                    },
+                    {
+                        "title": "Alien (1979)",
+                        "titleKey": 12
                     }
                 ]
             }
