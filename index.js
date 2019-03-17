@@ -146,18 +146,18 @@ client.on('message', async message => {
                 })
             });
 
-            // Created the embed with titles, emojis and reactions
+            // Create the embed with titles, emojis and reactions
             let votingEmbed = new Discord.RichEmbed()
             .setTitle(`🌟 Sunday Night Movie ${snm[snm.length - 1].week} 🌟`)
             .setColor(0xFF0000)
             .setDescription(printArray.join(" "))
             .setFooter('Click the corresponding reaction to vote!');
 
-            message.channel.send(votingEmbed).then(msg => {
+            message.channel.send(votingEmbed).then(async msg => {
                 activeMessage = msg;
-                emojisUsed.forEach(emoji => {
-                    msg.react(emoji);
-                });
+                for (let i = 0; i < emojisUsed.length; i++){
+                    await msg.react(emojisUsed[i])
+                }
             });
             break;
 
@@ -277,6 +277,12 @@ client.on('message', async message => {
             }
             else 
                 message.channel.send(`Movie not found.\n\`\`\`Usage: !snmRemove <movie title or number>\n!snm to see the list\`\`\``);
+            break;
+        case 'snmexport':
+            // Exports snm.json as file
+            const buffer = fs.readFileSync('./snm.json');
+            const attachment = new Discord.Attachment(buffer, 'snm.txt');
+            message.reply(attachment);
             break;
         case 'clear':
             //TODO:
