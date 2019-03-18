@@ -1,12 +1,14 @@
 [
     {
         "week": 1,
-        "status": "voting",
+        "status": "finished",
         "movieCount": 12,
+        "winner": 2,
         "users": [
             {
                 "userId": "84289916023898112",
                 "username": "Guizzo",
+                "rating": "muito legal, esse filme me mostrou que ter um penis é melhor que ter uma vagina 7/:eggplant:",
                 "movies": [
                     {
                         "title": "Tomb Raider",
@@ -21,6 +23,7 @@
             {
                 "userId": "84697964148174848",
                 "username": "Victor",
+                "rating": "eu não quero mais assistir um filme com o hoff na minha vida 7/10",
                 "movies": [
                     {
                         "title": "Haikyuu!!",
@@ -35,6 +38,7 @@
             {
                 "userId": "197070007014916096",
                 "username": "Foxyez",
+                "rating": "Muito bom. Helicóptero foda :sunglasses: / :scales:",
                 "movies": [
                     {
                         "title": "Midnight in Paris",
@@ -49,6 +53,7 @@
             {
                 "userId": "84309164448284672",
                 "username": "SirMemesALot",
+                "rating": "sou fã do negão da mochila :handbag: :boy: :skin-tone-5:/10",
                 "movies": [
                     {
                         "title": "Hard Candy",
@@ -63,6 +68,7 @@
             {
                 "userId": "86542846517080064",
                 "username": "Klein",
+                "rating": "foi muito bom queria morre 1/6",
                 "movies": [
                     {
                         "title": "A Futile and Stupid Gesture",
@@ -77,6 +83,7 @@
             {
                 "userId": "86547232974708736",
                 "username": "Miwucol Wip",
+                "rating": "Jack black has a boner for Nick Jonas :banana: / 10",
                 "movies": [
                     {
                         "title": "Koe No Katachi",
