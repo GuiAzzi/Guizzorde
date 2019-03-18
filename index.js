@@ -32,6 +32,10 @@ const snmEmbed = () => {
     let footer = "";
     let printArray = [];
 
+    // If status is finished, prints winner;
+    if(lastSnm.status === "finished" && lastSnm.winner)    
+        description += `Winner: **${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner)).movies.find(movie => movie.titleKey === lastSnm.winner).title}**\n\n`;
+
     // Builds list ordered by titleKey
     for (userIndex in lastSnm.users) {
         for (movieIndex in lastSnm.users[userIndex].movies)
@@ -237,11 +241,49 @@ client.on('message', async message => {
                 });
             })
             break;
+        case 'snmend':
+            // Can only be ended if status is voting or if requester is owner
+            if (lastSnm.status !== "voting" && message.author.id !== config.ownerId){
+                message.channel.send(`SNM cannot be ended. It is \`${lastSnm.status}\``);
+                logMessage = `SNM is ${lastSnm.status}`;
+                break;
+            }
+            else {
+                // Gets movie by title or titleKey, whoever comes first
+                
+                let movieFound = lastSnm.users.find(user => user.movies.find(movie => movie.title === messageText)) 
+                || lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === Number(messageText)));
+                if (movieFound)
+                    movieFound = movieFound.movies.find(movie => movie.title === messageText) 
+                    || movieFound.movies.find(movie => movie.titleKey === Number(messageText)) 
+                
+                if (!movieFound) {
+                    message.channel.send(`Movie not found`);
+                    logMessage = `${messageText} was not found`;
+                    break;
+                }
+                else {
+                    message.delete().catch(O_o => {});
+                    lastSnm.winner = movieFound.titleKey;
+                    lastSnm.status = "finished";
+                    saveSnmFile(() => {
+                        message.channel.send(`🥁 And the winner is`)
+                        .then(m => m.edit(`And 🥁 the winner is`)
+                        .then(m => m.edit(`And the 🥁 winner is`)
+                        .then(m => m.edit(`And the winner 🥁 is`)
+                        .then(m => m.edit(`And the winner is 🥁`)
+                        .then(m => m.edit((`And the winner is: **${movieFound.title}**`)))))));
+                    });
+                    logMessage = `Winner is ${movieFound.title}`;
+                }
+            }
+
+            break;
         case 'snmadd':
             // If snm status != ongoing, cancel request and warn user.
             if (lastSnm.status != "ongoing") {
                 message.channel.send(`Requesting period for \`Sunday Night Movie ${lastSnm.week}\` has ended`);
-                logMessage = "SNM is finished";
+                logMessage = `SNM is ${lastSnm.status}`;
                 break;
             }
 
