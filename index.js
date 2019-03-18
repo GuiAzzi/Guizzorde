@@ -71,6 +71,7 @@ client.on('ready', () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     client.user.setActivity(`Beep boop`);
+    client.users.get(config.ownerId).send("I got booted!");
 });
 
 client.on('messageReactionAdd', (reaction, user) => {
@@ -114,6 +115,8 @@ client.on('message', async message => {
                 !snmNew - Starts a new week of SNM™
 
                 !snmStart - Initiate voting
+
+                !snmEnd <winner title or position> - Ends voting and declares winner
                 
                 !snmAdd <movie title> - Adds a movie to this week's pool
 
@@ -166,12 +169,16 @@ client.on('message', async message => {
                 winner: ""
             })
 
+            // Updates lastSnm
+            lastSnm = snm[snm.length - 1];
+
             saveSnmFile(() => {
-                lastSnm = snm[snm.length - 1];
-                let crewRole = message.guild.roles.find((role) => role.name === "Crew");
-                message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}Sunday Night Live ${lastSnm.week} requests are now open!\n\`!snmAdd <movie name>\` to request a movie.`);
-                logMessage = `SNM ${lastSnm.week} started`;
+                let crewRole
+                if (message.channel.guild)
+                    message.guild.roles.find((role) => role.name === "Crew");
+                message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}\n\`Sunday Night Live ${lastSnm.week}\` requests are now open!\n\`!snmAdd <movie name>\` to request a movie.`);
             })
+            logMessage = `SNM ${lastSnm.week} started`;
 
             break;
         case 'snmstart':
@@ -200,7 +207,9 @@ client.on('message', async message => {
 
             saveSnmFile(() => {
                 // Check for Crew role
-                let crewRole = message.guild.roles.find((role) => role.name === "Crew");
+                let crewRole;
+                if (message.channel.guild)
+                    message.guild.roles.find((role) => role.name === "Crew");
                 message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}Gather round, voting has started 😱`);
 
                 // Builds rich embed with a random emoji for each movie
