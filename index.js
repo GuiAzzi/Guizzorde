@@ -163,26 +163,16 @@ client.on('message', async message => {
         case 'help':
             let description = 
                 `!ping - Pings the API
-                
-                !say <message> - Makes the bot say something
-                
-                !snm [week number] - Lists this week's SNM™ [optional: show summary for specified week]
-
-                !snmNew - Starts a new week of SNM™
-
-                !snmStart - Initiate voting
-
-                !snmEnd <winner title or position> - Ends voting and declares winner
-                
-                !snmAdd <movie title> - Adds a movie to this week's pool
-
-                !snmRemove <movie title or number> - Removes a movie from the week's pool
-
-                !snmRate <text> - Leaves a rating note for this week's movie
-
-                !snmExport - Creates a text file with all SNM data
-
-                !clear - 👀 ||don't||`;
+                \n!say <message> - Makes the bot say something
+                \n!snm [week number] - Lists this week's SNM™ [optional: show summary for specified week]
+                \n!snmNew - Starts a new week of SNM™
+                \n!snmStart - Initiate voting
+                \n!snmEnd <winner title or position> - Ends voting and declares winner
+                \n!snmAdd <movie title> - Adds a movie to this week's pool
+                \n!snmRemove <movie title or number> - Removes a movie from the week's pool
+                \n!snmRate <text> - Leaves a rating note for this week's movie
+                \n!snmExport - Creates a text file with all SNM data
+                \n!clear - 👀 ||don't||`;
 
             const embed = new Discord.RichEmbed()
                 // Set the title of the field
@@ -255,7 +245,7 @@ client.on('message', async message => {
                                     tempMovies.push(`\`${specifiedSnm.users[userIndex].movies[movieIndex].title}\``);
                                 }
                             }
-                            printArray[userIndex] += `  Movies: ${tempMovies.join(" | ")}\n  Rating: ${specifiedSnm.users[userIndex].rating}\n\n`;
+                            printArray[userIndex] += `${tempMovies.length > 0 ? `Movies: ${tempMovies.join(" | ")}\n` : ""}${specifiedSnm.users[userIndex].rating ? `Rating: ${specifiedSnm.users[userIndex].rating}\n\n` : ""}`;
                             tempMovies = [];
                         }
 
