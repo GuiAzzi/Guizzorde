@@ -1,1 +1,3 @@
 node_modules
+/src/config.json
+/src/snm.json

@@ -1,12 +1,22 @@
 const fs = require('fs');
 const Discord = require('discord.js');
-const config = require('./src/config.json');
-const snm = require('./src/snm.json');
+const mongodb = require('mongodb');
 const randomEmoji = require('./src/random-emoji.js');
 
-const client = new Discord.Client();
+// config.json - for running locally
+const config = fs.existsSync('./src/config.json') ? require('./src/config.json') : null;
+// Bot token
+const token = process.env ? process.env.TOKEN : config.token;
+// OwnerID
+const ownerId = process.env ? process.env.OWNER_ID : config.ownerId;
+// Message prefix
+const prefix = process.env ? process.env.PREFIX : config.prefix;
+// MongoDB URI
+let uri = process.env ? process.env.MONGODB_URI : config.mongodb;
+// the last snm collection
+let lastSnm;
 
-let lastSnm = snm[snm.length - 1];
+const client = new Discord.Client();
 
 // Keep track of this because something is happening to this message
 let activeMessage = null;
@@ -16,14 +26,42 @@ let activeMessage = null;
  * @param {function} callback - A function to be called after saving the file
  */
 function saveSnmFile(callback) {
-    fs.writeFile('./src/snm.json', JSON.stringify(snm), (err) => {
+    mongodb.MongoClient.connect(uri, {useNewUrlParser: true}, (err, mongoClient) => {
         if (err) {
-            message.channel.send(err);
-            logMessage = err;
+            client.users.get(ownerId).send(err);
             throw err;
         }
-        else
-            callback()
+
+        mongoClient.db('heroku_6zd3qncp').collection('snm').replaceOne({week: lastSnm.week}, lastSnm, (err, result) => {
+            if (err) {
+                mongoClient.users.get(ownerId).send(err);
+                throw err;
+            }
+
+            lastSnm = result.ops[0];
+            callback();
+        });
+        mongoClient.close();
+    });
+}
+
+const insertNewSnm = (newSnm, callback) => {
+    mongodb.MongoClient.connect(uri, {useNewUrlParser: true}, (err, mongoClient) => {
+        if (err) {
+            client.users.get(ownerId).send(err);
+            throw err;
+        }
+
+        mongoClient.db('heroku_6zd3qncp').collection('snm').insertOne(newSnm, (err, result) => {
+            if (err) {
+                mongoClient.users.get(ownerId).send(err);
+                throw err;
+            }
+
+            lastSnm = result.ops[0];
+            callback();
+        });
+        mongoClient.close();
     });
 }
 
@@ -54,7 +92,7 @@ const snmEmbed = () => {
 
     let embed = new Discord.RichEmbed()
         // Set the title of the field
-        .setTitle(`🌟 Sunday Night Movie ${snm[snm.length - 1].week} 🌟`)
+        .setTitle(`🌟 Sunday Night Movie ${lastSnm.week} 🌟`)
         // Set the color of the embed
         .setColor(0xFF0000)
         // Set the main content of the embed
@@ -71,7 +109,24 @@ client.on('ready', () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     client.user.setActivity(`Beep boop`);
-    client.users.get(config.ownerId).send("I got booted!");
+    client.users.get(ownerId).send("I got booted!");
+
+    mongodb.MongoClient.connect(uri, {useNewUrlParser: true}, (err, mongoClient) => {
+        if (err) {
+            client.users.get(ownerId).send(err);
+            throw err;
+        }
+
+        mongoClient.db('heroku_6zd3qncp').collection('snm').findOne({}, {sort:{$natural: -1}}, (err, result) => {
+            if (err) {
+                mongoClient.users.get(ownerId).send(err);
+                throw err;
+            } 
+                
+            lastSnm = result;
+        });
+        mongoClient.close();
+    });
 });
 
 client.on('messageReactionAdd', (reaction, user) => {
@@ -92,10 +147,10 @@ client.on('message', async message => {
     if (message.author.bot) return;
 
     // If message does not contain prefix, ignore
-    if (message.content.indexOf(config.prefix) !== 0) return;
+    if (message.content.indexOf(prefix) !== 0) return;
 
     // Separate message from prefix
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+    const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
 
     // To get the "message" itself we join the `args` back into a string with spaces: 
@@ -161,24 +216,22 @@ client.on('message', async message => {
                 break;
             }
 
-            snm.push({
+            let newSnm = {
                 week: lastSnm.week + 1,
                 status: "ongoing",
                 movieCount: 0,
                 users: [],
                 winner: ""
-            })
+            };
 
-            // Updates lastSnm
-            lastSnm = snm[snm.length - 1];
-
-            saveSnmFile(() => {
+            insertNewSnm(newSnm, () => {
                 let crewRole
                 if (message.channel.guild)
-                    message.guild.roles.find((role) => role.name === "Crew");
+                    crewRole = message.guild.roles.find((role) => role.name === "Crew");
                 message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}\n\`Sunday Night Live ${lastSnm.week}\` requests are now open!\n\`!snmAdd <movie name>\` to request a movie.`);
             })
-            logMessage = `SNM ${lastSnm.week} started`;
+
+            logMessage = `SNM ${lastSnm.week + 1} started`;
 
             break;
         case 'snmstart':
@@ -209,7 +262,7 @@ client.on('message', async message => {
                 // Check for Crew role
                 let crewRole;
                 if (message.channel.guild)
-                    message.guild.roles.find((role) => role.name === "Crew");
+                    crewRole = message.guild.roles.find((role) => role.name === "Crew");
                 message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}Gather round, voting has started 😱`);
 
                 // Builds rich embed with a random emoji for each movie
@@ -237,7 +290,7 @@ client.on('message', async message => {
 
                 // Create the embed with titles, emojis and reactions
                 let votingEmbed = new Discord.RichEmbed()
-                    .setTitle(`🌟 Sunday Night Movie ${snm[snm.length - 1].week} 🌟`)
+                    .setTitle(`🌟 Sunday Night Movie ${lastSnm.week} 🌟`)
                     .setColor(0xFF0000)
                     .setDescription(printArray.join(" "))
                     .setFooter('Click the corresponding reaction to vote!');
@@ -252,7 +305,7 @@ client.on('message', async message => {
             break;
         case 'snmend':
             // Can only be ended if status is voting or if requester is owner
-            if (lastSnm.status !== "voting" && message.author.id !== config.ownerId){
+            if (lastSnm.status !== "voting" && message.author.id !== ownerId){
                 message.channel.send(`SNM cannot be ended. It is \`${lastSnm.status}\``);
                 logMessage = `SNM is ${lastSnm.status}`;
                 break;
@@ -456,4 +509,4 @@ client.on('message', async message => {
     logMessage ? console.log(logMessage) : null
 });
 
-client.login(config.token);
+client.login(token);
