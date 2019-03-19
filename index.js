@@ -166,7 +166,7 @@ client.on('message', async message => {
                 
                 !say <message> - Makes the bot say something
                 
-                !snm - Lists this week's SNM™
+                !snm [week number] - Lists this week's SNM™ [optional: show summary for specified week]
 
                 !snmNew - Starts a new week of SNM™
 
@@ -207,7 +207,73 @@ client.on('message', async message => {
             break;
         case 'snm':
             // Sends rich embed with SNM infos
-            message.channel.send(snmEmbed());
+
+            // if no week was specified, show current snm requested movies
+            if (!messageText.trim())
+                message.channel.send(snmEmbed());
+            else {
+                // If snm specified is current one, show normal snm
+                if (Number(messageText.trim()) === lastSnm.week){
+                    message.channel.send(snmEmbed());
+                    break;
+                }
+                // If a week was specified, show that SNM with winner and user ratings
+                else if (!Number(messageText.trim()) || Number(messageText.trim()) > lastSnm.week){
+                    // User entered text or a week bigger than current one
+                    message.channel.send(`Thats not a valid week`);
+                    logMessage = `Invalid week`;
+                    break;
+                }
+
+                mongodb.MongoClient.connect(uri, {useNewUrlParser: true}, (err, mongoClient) => {
+                    if (err) {
+                        client.users.get(ownerId).send(err);
+                        throw err;
+                    }
+            
+                    mongoClient.db('heroku_6zd3qncp').collection('snm').findOne({week: Number(messageText)}, (err, result) => {
+                        if (err) {
+                            mongoClient.users.get(ownerId).send(err);
+                            throw err;
+                        }
+            
+                        let specifiedSnm = result;
+                        let printArray = [];
+                        let tempMovies = [];
+
+                        // runs through week and get movies, winner and ratings
+                        // let description = `Summary of Sunday Night Movie ${specifiedSnm.week}`;
+                        let description = `Status: **${specifiedSnm.status}**\n`;
+                        for (userIndex in specifiedSnm.users){
+                            printArray[userIndex] = `${specifiedSnm.users[userIndex].username} - \n`;
+                            // checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
+                            if (specifiedSnm.users[userIndex].movies){
+                                for (movieIndex in specifiedSnm.users[userIndex].movies){
+                                    // if movie is the winner, add to description text
+                                    if (specifiedSnm.users[userIndex].movies[movieIndex].titleKey === specifiedSnm.winner)
+                                        description += `Winner: **${specifiedSnm.users[userIndex].movies[movieIndex].title}**\n\n`;
+                                    tempMovies.push(`\`${specifiedSnm.users[userIndex].movies[movieIndex].title}\``);
+                                }
+                            }
+                            printArray[userIndex] += `  Movies: ${tempMovies.join(" | ")}\n  Rating: ${specifiedSnm.users[userIndex].rating}\n\n`;
+                            tempMovies = [];
+                        }
+
+                        let embed = new Discord.RichEmbed()
+                        // Set the title of the field
+                        .setTitle(`🧾 Summary of Sunday Night Movie ${specifiedSnm.week} 🧾`)
+                        // Set the color of the embed
+                        .setColor(0xFF0000)
+                        // Set the main content of the embed
+                        .setDescription(description + printArray.join(""));
+                        // Returns the embed
+
+                        message.channel.send(embed);
+                    });
+                    mongoClient.close();
+                });                
+            }
+
             break;
         case 'snmnew':
             // Can only start a new SNM if last one is finished
@@ -398,7 +464,7 @@ client.on('message', async message => {
 
             saveSnmFile(() => {
                 message.channel.send(`Added \`${messageText}\` to the list`);
-                message.channel.send(snmEmbed())
+                // message.channel.send(snmEmbed())
             });
 
             logMessage = `${message.author.username} added '${messageText}' to the list`;
@@ -465,7 +531,7 @@ client.on('message', async message => {
 
                 saveSnmFile(() => {
                     message.channel.send(`Removed \`${deleted.title}\` from the list`);
-                    message.channel.send(snmEmbed())
+                    // message.channel.send(snmEmbed())
                 });
                 logMessage = `${message.author.username} removed '${deleted.title}' from the list`;
             }
@@ -498,9 +564,11 @@ client.on('message', async message => {
             }
             break;
         case 'snmexport':
+            // TODO: export especific week
             // Exports snm.json as file
-            const buffer = fs.readFileSync('./src/snm.json');
-            const attachment = new Discord.Attachment(buffer, 'snm.txt');
+            fs.writeFileSync(`SNM${lastSnm.week}.txt`, JSON.stringify(lastSnm, null, 2));
+            const buffer = fs.readFileSync(`./SNM${lastSnm.week}.txt`)
+            const attachment = new Discord.Attachment(buffer, `SNM${lastSnm.week}.txt`);
             message.reply(attachment);
             break;
         case 'clear':
