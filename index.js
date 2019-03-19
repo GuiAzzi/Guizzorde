@@ -7,13 +7,15 @@ const randomEmoji = require('./src/random-emoji.js');
 const config = fs.existsSync('./src/config.json') ? require('./src/config.json') : null;
 
 // Bot token
-const token = process.env.TOKEN ? process.env.TOKEN : config.token;
+const token = process.env.TOKEN || config.token;
 // OwnerID
-const ownerId = process.env.OWNER_ID ? process.env.OWNER_ID : config.ownerId;
+const ownerId = process.env.OWNER_ID || config.ownerId;
 // Message prefix
-const prefix = process.env.PREFIX ? process.env.PREFIX : config.prefix;
+const prefix = process.env.PREFIX || config.prefix;
 // MongoDB URI
-let uri = process.env.MONGODB_URI ? process.env.MONGODB_URI : config.mongodb;
+const uri = process.env.MONGODB_URI || config.mongodb;
+// Heroku MongoDb name
+const herokuDb = 'heroku_6zd3qncp';
 // the last snm collection
 let lastSnm;
 
@@ -27,13 +29,13 @@ let activeMessage = null;
  * @param {function} callback - A function to be called after saving the file
  */
 function saveSnmFile(callback) {
-    mongodb.MongoClient.connect(uri, {useNewUrlParser: true}, (err, mongoClient) => {
+    mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
         if (err) {
             client.users.get(ownerId).send(err);
             throw err;
         }
 
-        mongoClient.db('heroku_6zd3qncp').collection('snm').replaceOne({week: lastSnm.week}, lastSnm, (err, result) => {
+        mongoClient.db(herokuDb).collection('snm').replaceOne({ week: lastSnm.week }, lastSnm, (err, result) => {
             if (err) {
                 mongoClient.users.get(ownerId).send(err);
                 throw err;
@@ -41,19 +43,19 @@ function saveSnmFile(callback) {
 
             lastSnm = result.ops[0];
             callback();
+            mongoClient.close();
         });
-        mongoClient.close();
     });
 }
 
-const insertNewSnm = (newSnm, callback) => {
-    mongodb.MongoClient.connect(uri, {useNewUrlParser: true}, (err, mongoClient) => {
+function insertNewSnm(newSnm, callback) {
+    mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
         if (err) {
             client.users.get(ownerId).send(err);
             throw err;
         }
 
-        mongoClient.db('heroku_6zd3qncp').collection('snm').insertOne(newSnm, (err, result) => {
+        mongoClient.db(herokuDb).collection('snm').insertOne(newSnm, (err, result) => {
             if (err) {
                 mongoClient.users.get(ownerId).send(err);
                 throw err;
@@ -61,18 +63,18 @@ const insertNewSnm = (newSnm, callback) => {
 
             lastSnm = result.ops[0];
             callback();
+            mongoClient.close();
         });
-        mongoClient.close();
     });
 }
 
-const snmEmbed = () => {
+function snmEmbed() {
     let description = 'Status: **' + lastSnm.status + '**\n\n';
     let footer = "";
     let printArray = [];
 
     // If status is finished, prints winner;
-    if(lastSnm.status === "finished" && lastSnm.winner)    
+    if (lastSnm.status === "finished" && lastSnm.winner)
         description += `Winner: **${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner)).movies.find(movie => movie.titleKey === lastSnm.winner).title}**\n\n`;
 
     // Builds list ordered by titleKey
@@ -112,21 +114,21 @@ client.on('ready', () => {
     client.user.setActivity(`Beep boop`);
     client.users.get(ownerId).send("I got booted!");
 
-    mongodb.MongoClient.connect(uri, {useNewUrlParser: true}, (err, mongoClient) => {
+    mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
         if (err) {
             client.users.get(ownerId).send(err);
             throw err;
         }
 
-        mongoClient.db('heroku_6zd3qncp').collection('snm').findOne({}, {sort:{$natural: -1}}, (err, result) => {
+        mongoClient.db(herokuDb).collection('snm').findOne({}, { sort: { $natural: -1 } }, (err, result) => {
             if (err) {
                 mongoClient.users.get(ownerId).send(err);
                 throw err;
-            } 
-                
+            }
+
             lastSnm = result;
+            mongoClient.close();
         });
-        mongoClient.close();
     });
 });
 
@@ -161,17 +163,17 @@ client.on('message', async message => {
 
     switch (command) {
         case 'help':
-            let description = 
+            let description =
                 `!ping - Pings the API
                 \n!say <message> - Makes the bot say something
-                \n!snm [week number] - Lists this week's SNM™ [optional: show summary for specified week]
+                \n!snm <week number>:optional - Show this week's movies or specified week summary
                 \n!snmNew - Starts a new week of SNM™
                 \n!snmStart - Initiate voting
                 \n!snmEnd <winner title or position> - Ends voting and declares winner
                 \n!snmAdd <movie title> - Adds a movie to this week's pool
                 \n!snmRemove <movie title or number> - Removes a movie from the week's pool
                 \n!snmRate <text> - Leaves a rating note for this week's movie
-                \n!snmExport - Creates a text file with all SNM data
+                \n!snmExport <week number>:optional - Creates a text file with all SNM™ data
                 \n!clear - 👀 ||don't||`;
 
             const embed = new Discord.RichEmbed()
@@ -197,36 +199,32 @@ client.on('message', async message => {
             break;
         case 'snm':
             // Sends rich embed with SNM infos
-
-            // if no week was specified, show current snm requested movies
-            if (!messageText.trim())
+            // If no week was specified or if specified week is current one
+            if (!messageText.trim() || Number(messageText.trim()) === lastSnm.week) {
                 message.channel.send(snmEmbed());
+                break;
+            }
+            else if (!Number(messageText.trim()) || Number(messageText.trim()) > lastSnm.week) {
+                // User entered text or a week bigger than current one
+                message.channel.send(`Thats not a valid week`);
+                logMessage = `Week ${messageText} is invalid`;
+                break;
+            }
             else {
-                // If snm specified is current one, show normal snm
-                if (Number(messageText.trim()) === lastSnm.week){
-                    message.channel.send(snmEmbed());
-                    break;
-                }
-                // If a week was specified, show that SNM with winner and user ratings
-                else if (!Number(messageText.trim()) || Number(messageText.trim()) > lastSnm.week){
-                    // User entered text or a week bigger than current one
-                    message.channel.send(`Thats not a valid week`);
-                    logMessage = `Invalid week`;
-                    break;
-                }
-
-                mongodb.MongoClient.connect(uri, {useNewUrlParser: true}, (err, mongoClient) => {
+                // If a week was specified, show that SNM summary
+                let m = await message.channel.send("Checking...");
+                mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
                     if (err) {
                         client.users.get(ownerId).send(err);
                         throw err;
                     }
-            
-                    mongoClient.db('heroku_6zd3qncp').collection('snm').findOne({week: Number(messageText)}, (err, result) => {
+
+                    mongoClient.db(herokuDb).collection('snm').findOne({ week: Number(messageText) }, (err, result) => {
                         if (err) {
                             mongoClient.users.get(ownerId).send(err);
                             throw err;
                         }
-            
+
                         let specifiedSnm = result;
                         let printArray = [];
                         let tempMovies = [];
@@ -234,11 +232,11 @@ client.on('message', async message => {
                         // runs through week and get movies, winner and ratings
                         // let description = `Summary of Sunday Night Movie ${specifiedSnm.week}`;
                         let description = `Status: **${specifiedSnm.status}**\n`;
-                        for (userIndex in specifiedSnm.users){
+                        for (userIndex in specifiedSnm.users) {
                             printArray[userIndex] = `${specifiedSnm.users[userIndex].username} - \n`;
                             // checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
-                            if (specifiedSnm.users[userIndex].movies){
-                                for (movieIndex in specifiedSnm.users[userIndex].movies){
+                            if (specifiedSnm.users[userIndex].movies) {
+                                for (movieIndex in specifiedSnm.users[userIndex].movies) {
                                     // if movie is the winner, add to description text
                                     if (specifiedSnm.users[userIndex].movies[movieIndex].titleKey === specifiedSnm.winner)
                                         description += `Winner: **${specifiedSnm.users[userIndex].movies[movieIndex].title}**\n\n`;
@@ -250,24 +248,24 @@ client.on('message', async message => {
                         }
 
                         let embed = new Discord.RichEmbed()
-                        // Set the title of the field
-                        .setTitle(`🧾 Summary of Sunday Night Movie ${specifiedSnm.week} 🧾`)
-                        // Set the color of the embed
-                        .setColor(0xFF0000)
-                        // Set the main content of the embed
-                        .setDescription(description + printArray.join(""));
+                            // Set the title of the field
+                            .setTitle(`🧾 Summary of Sunday Night Movie ${specifiedSnm.week} 🧾`)
+                            // Set the color of the embed
+                            .setColor(0xFF0000)
+                            // Set the main content of the embed
+                            .setDescription(description + printArray.join(""));
                         // Returns the embed
 
-                        message.channel.send(embed);
+                        mongoClient.close();
+                        m.edit(embed);
                     });
-                    mongoClient.close();
-                });                
+                });
             }
 
             break;
         case 'snmnew':
             // Can only start a new SNM if last one is finished
-            if (lastSnm.status != "finished"){
+            if (lastSnm.status != "finished") {
                 message.channel.send(`\`Sunday Night Movie ${lastSnm.week}\` is stil \`${lastSnm.status}\``);
                 logMessage = `Last SNM is ${lastSnm.status}`;
                 break;
@@ -295,7 +293,7 @@ client.on('message', async message => {
             // Starts voting system
 
             // can only be done by owner - for now.
-            if (message.author.id != ownerId){
+            if (message.author.id != ownerId) {
                 message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
                 logMessage = "Author is not owner"
                 break;
@@ -306,13 +304,13 @@ client.on('message', async message => {
                 logMessage = "Wrong guild";
                 break;
             }
-            else if (lastSnm.status === "voting"){
+            else if (lastSnm.status === "voting") {
                 message.channel.send(`\`SNM ${lastSnm.week} voting has already started!`);
                 logMessage = "SNM voting already started";
                 break;
             }
             // Cannot start voting if lastSnm is finished
-            else if (lastSnm.status === "finished"){
+            else if (lastSnm.status === "finished") {
                 message.channel.send(`\`SNM ${lastSnm.week}\` is finished.\nYou can start another one with \`!snmNew.\``);
                 logMessage = "SNM is finished";
                 break;
@@ -368,13 +366,13 @@ client.on('message', async message => {
             break;
         case 'snmend':
             // can only be done by owner - for now.
-            if (message.author.id != ownerId){
+            if (message.author.id != ownerId) {
                 message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
                 logMessage = "Author is not owner"
                 break;
             }
             // Can only be ended if status is voting or if requester is owner
-            else if (lastSnm.status !== "voting" && message.author.id !== ownerId){
+            else if (lastSnm.status !== "voting" && message.author.id !== ownerId) {
                 message.channel.send(`SNM cannot be ended. It is \`${lastSnm.status}\``);
                 logMessage = `SNM is ${lastSnm.status}`;
                 break;
@@ -383,34 +381,34 @@ client.on('message', async message => {
                 // Gets movie by title or titleKey, whoever comes first
 
                 // if no movie was passed
-                if (messageText.trim() === ""){
+                if (messageText.trim() === "") {
                     message.channel.send(`Did you forgot to type the movie?\n\`!snmEnd <winner title or position>\``);
                     logMessage = `No winned typed`;
                     break;
                 }
-                
-                let movieFound = lastSnm.users.find(user => user.movies.find(movie => movie.title === messageText)) 
-                || lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === Number(messageText)));
+
+                let movieFound = lastSnm.users.find(user => user.movies.find(movie => movie.title === messageText))
+                    || lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === Number(messageText)));
                 if (movieFound)
-                    movieFound = movieFound.movies.find(movie => movie.title === messageText) 
-                    || movieFound.movies.find(movie => movie.titleKey === Number(messageText)) 
-                
+                    movieFound = movieFound.movies.find(movie => movie.title === messageText)
+                        || movieFound.movies.find(movie => movie.titleKey === Number(messageText))
+
                 if (!movieFound) {
                     message.channel.send(`Movie not found`);
                     logMessage = `${messageText} was not found`;
                     break;
                 }
                 else {
-                    message.delete().catch(O_o => {});
+                    message.delete().catch(O_o => { });
                     lastSnm.winner = movieFound.titleKey;
                     lastSnm.status = "finished";
                     saveSnmFile(() => {
                         message.channel.send(`🥁 And the winner is`)
-                        .then(m => m.edit(`And 🥁 the winner is`)
-                        .then(m => m.edit(`And the 🥁 winner is`)
-                        .then(m => m.edit(`And the winner 🥁 is`)
-                        .then(m => m.edit(`And the winner is 🥁`)
-                        .then(m => m.edit((`And the winner is: **${movieFound.title}**`)))))));
+                            .then(m => m.edit(`And 🥁 the winner is`)
+                                .then(m => m.edit(`And the 🥁 winner is`)
+                                    .then(m => m.edit(`And the winner 🥁 is`)
+                                        .then(m => m.edit(`And the winner is 🥁`)
+                                            .then(m => m.edit((`And the winner is: **${movieFound.title}**`)))))));
                     });
                     logMessage = `Winner is ${movieFound.title}`;
                 }
@@ -528,11 +526,11 @@ client.on('message', async message => {
             else
                 message.channel.send(`Movie not found.\nUsage: \`!snmRemove <movie title or number>\`\n\`!snm\` to see the list`);
             break;
-        case 'snmrate': 
+        case 'snmrate':
             // Leave a rating for the movie watched
 
             // Can only be done if week's SNM is finished
-            if (lastSnm.status !== "finished"){
+            if (lastSnm.status !== "finished") {
                 message.channel.send(`\`Sunday Night Movie ${lastSnm.week}\` is still \`${lastSnm.status}\``);
                 logMessage = `SNM ${lastSnm.week} is ${lastSnm.status}`;
                 break;
@@ -543,7 +541,7 @@ client.on('message', async message => {
                 // If new user
                 if (!userObject)
                     userObject = lastSnm.users[lastSnm.users.push({ userId: message.author.id, username: message.author.username, movies: [] }) - 1]
-    
+
                 userObject.rating = messageText;
 
                 saveSnmFile(() => {
@@ -554,7 +552,42 @@ client.on('message', async message => {
             }
             break;
         case 'snmexport':
-            // TODO: export especific week
+
+            let specifiedWeek = Number(messageText.trim()) || null;
+
+            // User entered text (not number) or a future week
+            if (messageText.trim() && !specifiedWeek || Number(messageText.trim()) > lastSnm.week) {
+                message.channel.send(`\`${messageText.trim()}\` is not a valid week\nType \`!snmExport <week number>:optional\` to export a file`);
+                logMessage = `${messageText} is not a valid week`;
+                break;
+            }
+            // If we got a number as argument, user specified a week
+            else if (specifiedWeek && specifiedWeek <= lastSnm.week) {
+                let m = await message.channel.send(`Exporting...`);
+                mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
+                    if (err) {
+                        client.users.get(ownerId).send(err);
+                        throw err;
+                    }
+
+                    mongoClient.db(herokuDb).collection('snm').findOne({ week: specifiedWeek }, (err, result) => {
+                        if (err) {
+                            mongoClient.users.get(ownerId).send(err);
+                            throw err;
+                        }
+                        mongoClient.close();
+
+                        // Exports specific snm.json as file
+                        fs.writeFileSync(`SNM${specifiedWeek}.txt`, JSON.stringify(result, null, 2));
+                        const buffer = fs.readFileSync(`./SNM${specifiedWeek}.txt`)
+                        const attachment = new Discord.Attachment(buffer, `SNM${specifiedWeek}.txt`);
+                        m.delete(O_o => { });
+                        message.reply(attachment);
+                    });
+                });
+                break;
+            }
+
             // Exports snm.json as file
             fs.writeFileSync(`SNM${lastSnm.week}.txt`, JSON.stringify(lastSnm, null, 2));
             const buffer = fs.readFileSync(`./SNM${lastSnm.week}.txt`)
