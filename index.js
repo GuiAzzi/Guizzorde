@@ -5,14 +5,15 @@ const randomEmoji = require('./src/random-emoji.js');
 
 // config.json - for running locally
 const config = fs.existsSync('./src/config.json') ? require('./src/config.json') : null;
+
 // Bot token
-const token = process.env ? process.env.TOKEN : config.token;
+const token = process.env.TOKEN ? process.env.TOKEN : config.token;
 // OwnerID
-const ownerId = process.env ? process.env.OWNER_ID : config.ownerId;
+const ownerId = process.env.OWNER_ID ? process.env.OWNER_ID : config.ownerId;
 // Message prefix
-const prefix = process.env ? process.env.PREFIX : config.prefix;
+const prefix = process.env.PREFIX ? process.env.PREFIX : config.prefix;
 // MongoDB URI
-let uri = process.env ? process.env.MONGODB_URI : config.mongodb;
+let uri = process.env.MONGODB_URI ? process.env.MONGODB_URI : config.mongodb;
 // the last snm collection
 let lastSnm;
 
@@ -237,8 +238,14 @@ client.on('message', async message => {
         case 'snmstart':
             // Starts voting system
 
+            // can only be done by owner - for now.
+            if (message.author.id != ownerId){
+                message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
+                logMessage = "Author is not owner"
+                break;
+            }
             // can only be used in Top Server BR and Guizzorde Test
-            if (message.guild.id !== "84290462843670528" && message.guild.id !== "556216789688909834") {
+            else if (message.guild.id !== "84290462843670528" && message.guild.id !== "556216789688909834") {
                 message.channel.send("This can't be used in this server. 💋");
                 logMessage = "Wrong guild";
                 break;
@@ -263,7 +270,7 @@ client.on('message', async message => {
                 let crewRole;
                 if (message.channel.guild)
                     crewRole = message.guild.roles.find((role) => role.name === "Crew");
-                message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}Gather round, voting has started 😱`);
+                message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}\nGather round, voting has started 😱`);
 
                 // Builds rich embed with a random emoji for each movie
                 let printArray = [];
@@ -304,14 +311,27 @@ client.on('message', async message => {
             })
             break;
         case 'snmend':
+            // can only be done by owner - for now.
+            if (message.author.id != ownerId){
+                message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
+                logMessage = "Author is not owner"
+                break;
+            }
             // Can only be ended if status is voting or if requester is owner
-            if (lastSnm.status !== "voting" && message.author.id !== ownerId){
+            else if (lastSnm.status !== "voting" && message.author.id !== ownerId){
                 message.channel.send(`SNM cannot be ended. It is \`${lastSnm.status}\``);
                 logMessage = `SNM is ${lastSnm.status}`;
                 break;
             }
             else {
                 // Gets movie by title or titleKey, whoever comes first
+
+                // if no movie was passed
+                if (messageText.trim() === ""){
+                    message.channel.send(`Did you forgot to type the movie?\n\`!snmEnd <winner title or position>\``);
+                    logMessage = `No winned typed`;
+                    break;
+                }
                 
                 let movieFound = lastSnm.users.find(user => user.movies.find(movie => movie.title === messageText)) 
                 || lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === Number(messageText)));
@@ -450,7 +470,7 @@ client.on('message', async message => {
                 logMessage = `${message.author.username} removed '${deleted.title}' from the list`;
             }
             else
-                message.channel.send(`Movie not found.\n\`\`\`Usage: !snmRemove <movie title or number>\n!snm to see the list\`\`\``);
+                message.channel.send(`Movie not found.\nUsage: \`!snmRemove <movie title or number>\`\n\`!snm\` to see the list`);
             break;
         case 'snmrate': 
             // Leave a rating for the movie watched
