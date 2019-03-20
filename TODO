@@ -2,3 +2,7 @@ Todo:
   ☐ Emoji vote system :O @created(19-03-19 18:48)
   ✔ Export especific week @created(19-03-19 18:48) @done(19-03-19 20:35)
   ☐ !clear @created(19-03-19 18:49)
+  ☐ Refactor functions to use Promises and .then() @created(19-03-20 15:07)
+  ☐ Remove Checking... from !snm @created(19-03-20 15:08)
+  ☐ Create test bot (to make changes without killing the production bot) @created(19-03-20 15:11)
+  ☐ Show name of what bot was booted on ready @created(19-03-20 15:11)
