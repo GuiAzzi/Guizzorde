@@ -596,7 +596,10 @@ client.on('message', async message => {
             break;
         case 'clear':
             //TODO:
-            message.author.send('You bad, BAD person 😤');
+
+            let meme = ["https://cdn.discordapp.com/attachments/168624317049995264/557765021359276043/VghsxturtIjzwLuU.mp4"];
+
+            message.author.send(`You bad, BAD person 😤\n${meme[Math.floor(Math.random()*meme.length)]}`);
             // if (command === 'clear') {
 
             //     if (message.channel.type != 'TextChannel')
