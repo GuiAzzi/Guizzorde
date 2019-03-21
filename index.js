@@ -30,13 +30,13 @@ const client = new Discord.Client();
 function saveSnmFile(callback) {
     mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
         if (err) {
-            client.users.get(ownerId).send(err);
+            console.log(err);
             throw err;
         }
 
         mongoClient.db(herokuDb).collection(collection).replaceOne({ week: lastSnm.week }, lastSnm, (err, result) => {
             if (err) {
-                client.users.get(ownerId).send(err);
+                console.log(err);
                 throw err;
             }
 
@@ -50,13 +50,13 @@ function saveSnmFile(callback) {
 function insertNewSnm(newSnm, callback) {
     mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
         if (err) {
-            client.users.get(ownerId).send(err);
+            console.log(err);
             throw err;
         }
 
         mongoClient.db(herokuDb).collection(collection).insertOne(newSnm, (err, result) => {
             if (err) {
-                client.users.get(ownerId).send(err);
+                console.log(err);
                 throw err;
             }
 
@@ -115,13 +115,13 @@ client.on('ready', () => {
 
     mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
         if (err) {
-            client.users.get(ownerId).send(err);
+            console.log(err);
             throw err;
         }
 
         mongoClient.db(herokuDb).collection(collection).findOne({}, { sort: { $natural: -1 } }, (err, result) => {
             if (err) {
-                mongoClient.users.get(ownerId).send(err);
+                console.log(err);
                 throw err;
             }
 
@@ -152,7 +152,6 @@ client.on('ready', () => {
 
 client.on('error', (error) => {
     console.log(error)
-    client.users.get(ownerId).send(error);
 });
 
 client.on('messageReactionAdd', (reaction, user) => {
@@ -263,13 +262,13 @@ client.on('message', async message => {
                 let m = await message.channel.send("Checking...");
                 mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
                     if (err) {
-                        client.users.get(ownerId).send(err);
+                        console.log(err);
                         throw err;
                     }
 
                     mongoClient.db(herokuDb).collection(collection).findOne({ week: Number(messageText) }, (err, result) => {
                         if (err) {
-                            mongoClient.users.get(ownerId).send(err);
+                            console.log(err);
                             throw err;
                         }
 
@@ -435,7 +434,7 @@ client.on('message', async message => {
             else if (messageText.trim() === "clear") {
                 userFound.votes = [];
                 logMessage = `Votes reset`;
-                saveSnmFile(() => { 
+                saveSnmFile(() => {
                     message.channel.send(`Your votes have been reset`);
                 });
             }
@@ -483,7 +482,7 @@ client.on('message', async message => {
                 let allVotes = [];
 
                 message.channel.send(`Automatic vote count is being implemented`);
-                break;                
+                break;
                 // message.channel.send(`Did you forgot to type the movie?\n\`!snmEnd <winner title or position>\``);
                 // logMessage = `No winned typed`;
                 // break;
@@ -654,13 +653,13 @@ client.on('message', async message => {
                 let m = await message.channel.send(`Exporting...`);
                 mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
                     if (err) {
-                        client.users.get(ownerId).send(err);
+                        console.log(err);
                         throw err;
                     }
 
                     mongoClient.db(herokuDb).collection(collection).findOne({ week: specifiedWeek }, (err, result) => {
                         if (err) {
-                            mongoClient.users.get(ownerId).send(err);
+                            console.log(err);
                             throw err;
                         }
                         mongoClient.close();
