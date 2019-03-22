@@ -346,7 +346,7 @@ client.on('message', async message => {
                 break;
             }
             else if (!message.guild) {
-                message.channel.send("You can't start a vote for yourself. Use it in a server. 🤔");
+                message.channel.send("You can't start a vote for yourself. Use it in a server. 🤦‍");
                 logMessage = "Channel is not a guild";
                 break;
             }
@@ -363,7 +363,7 @@ client.on('message', async message => {
             }
             // Cannot start voting if lastSnm is finished
             else if (lastSnm.status === "finished") {
-                message.channel.send(`\`SNM ${lastSnm.week}\` is finished.\nYou can start another one with \`!snmNew.\``);
+                message.channel.send(`\`SNM ${lastSnm.week}\` is finished.\nWait for the next one!`);
                 logMessage = "SNM is finished";
                 break;
             }
@@ -428,12 +428,18 @@ client.on('message', async message => {
             let userFound = lastSnm.users.find(user => user.userId === message.author.id);
 
             if (userFound.votes.length === 0) {
-                message.channel.send(`You have not voted yet`);
-                logMessage = `No votes`;
+                message.author.send(`You have not voted`);
+                logMessage = `User has no votes`;
             }
             else if (messageText.trim() === "clear") {
+                // can't alter votes if snm is finished
+                if (lastSnm.status !== 'voting') {
+                    message.channel.send(`SNM is finished. You can't alter your votes 👀.`);
+                    logMessage = `Last SNM is finished`;
+                    break;
+                }
                 userFound.votes = [];
-                logMessage = `Votes reset`;
+                logMessage = `User votes reset`;
                 saveSnmFile(() => {
                     message.channel.send(`Your votes have been reset`);
                 });
@@ -443,7 +449,7 @@ client.on('message', async message => {
                 userFound.votes.forEach(movieTitleKey => {
                     moviesVoted.push(`\`${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title}\``);
                 });
-                message.channel.send(`Your votes: ${moviesVoted.join(" | ")}`);
+                message.author.send(`Your votes: ${moviesVoted.join(" | ")}`);
             }
 
             break;
