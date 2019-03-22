@@ -6,4 +6,6 @@ Todo:
   ☐ Remove Checking... from !snm @created(19-03-20 15:08)
   ✔ Create test bot (to make changes without killing the production bot) @created(19-03-20 15:11) @done(19-03-21 06:09)
   ✔ Show name of what bot was booted on ready @created(19-03-20 15:11) @done(19-03-21 06:10)
-  ☐ Votes counting system @created(19-03-21 06:10)
+  ✔ Votes counting system @created(19-03-21 06:10) @done(19-03-22 08:01)
+  ☐ fix !snm when last one is finished and there is no new one added yet @created(19-03-22 08:10)
+  ☐ add animation to vote counting 🥁 @created(19-03-22 08:23)

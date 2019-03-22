@@ -73,8 +73,8 @@ function snmEmbed() {
     let printArray = [];
 
     // If status is finished, prints winner;
-    if (lastSnm.status === "finished" && lastSnm.winner)
-        description += `Winner: **${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner)).movies.find(movie => movie.titleKey === lastSnm.winner).title}**\n\n`;
+    if (lastSnm.status === "finished" && lastSnm.winner.titleKey)
+        description += `Winner: **${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner.titleKey)).movies.find(movie => movie.titleKey === lastSnm.winner.titleKey).title}**\n\n`;
 
     // Builds list ordered by titleKey
     for (userIndex in lastSnm.users) {
@@ -216,7 +216,7 @@ client.on('message', async message => {
                 \n!snmNew - Starts a new week of SNM™
                 \n!snmStart - Initiate voting
                 \n!snmVotes [clear]:optional - See your votes or clear them
-                \n!snmEnd <winner title or position> - Ends voting and declares winner
+                \n!snmEnd [winner title or position]:optional - Count votes or manually select a winner
                 \n!snmAdd <movie title> - Adds a movie to this week's pool
                 \n!snmRemove <movie title or number> - Removes a movie from the week's pool
                 \n!snmRate <text> - Leaves a rating note for this week's movie
@@ -247,7 +247,7 @@ client.on('message', async message => {
         case 'snm':
             // Sends rich embed with SNM infos
             // If no week was specified or if specified week is current one
-            if (!messageText.trim() || Number(messageText.trim()) === lastSnm.week) {
+            if (!messageText.trim() || Number(messageText.trim()) === lastSnm.week && lastSnm.status != "finished") {
                 message.channel.send(snmEmbed());
                 break;
             }
@@ -285,8 +285,8 @@ client.on('message', async message => {
                             if (specifiedSnm.users[userIndex].movies) {
                                 for (movieIndex in specifiedSnm.users[userIndex].movies) {
                                     // if movie is the winner, add to description text
-                                    if (specifiedSnm.users[userIndex].movies[movieIndex].titleKey === specifiedSnm.winner)
-                                        description += `Winner: **${specifiedSnm.users[userIndex].movies[movieIndex].title}**\n\n`;
+                                    if (specifiedSnm.users[userIndex].movies[movieIndex].titleKey === specifiedSnm.winner.titleKey)
+                                        description += `Winner: **${specifiedSnm.users[userIndex].movies[movieIndex].title}**${specifiedSnm.winner.voteCount ? ` | ${specifiedSnm.winner.voteCount} votes` : ""}\n\n`;
                                     tempMovies.push(`\`${specifiedSnm.users[userIndex].movies[movieIndex].title}\``);
                                 }
                             }
@@ -449,6 +449,9 @@ client.on('message', async message => {
             break;
         case 'snmend':
             let winnerMovie;
+            let msgToEdit;
+            let embedTitle;
+            let embedDescription;
 
             // can only be done by owner - for now.
             if (message.author.id != ownerId) {
@@ -464,11 +467,18 @@ client.on('message', async message => {
             }
             // If a movie was passed
             else if (messageText.trim() != "") {
+                message.delete().catch(O_o => { });
+                embedTitle = `🙌 We have a winner! 🙌`;
+                embedDescription = ""
+                msgToEdit = await message.channel.send(new Discord.RichEmbed().setTitle(embedTitle).setDescription("Checking...").setColor(0xFF0000));
                 winnerMovie = lastSnm.users.find(user => user.movies.find(movie => movie.title === messageText))
                     || lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === Number(messageText)));
                 if (winnerMovie)
                     winnerMovie = winnerMovie.movies.find(movie => movie.title === messageText)
                         || winnerMovie.movies.find(movie => movie.titleKey === Number(messageText))
+                // sets winner
+                lastSnm.winner = { titleKey: winnerMovie.titleKey };
+
 
                 if (!winnerMovie) {
                     message.channel.send(`Movie not found`);
@@ -478,28 +488,56 @@ client.on('message', async message => {
             }
             // if no movie was passed
             else {
-                // TODO:
+                message.delete().catch(O_o => { });
+                // creates array with titleKey and voteCount (movie:votes)
                 let allVotes = [];
 
-                message.channel.send(`Automatic vote count is being implemented`);
-                break;
-                // message.channel.send(`Did you forgot to type the movie?\n\`!snmEnd <winner title or position>\``);
-                // logMessage = `No winned typed`;
-                // break;
+                for (userIndex in lastSnm.users) {
+                    for (movieIndex in lastSnm.users[userIndex].movies) {
+                        let titleKey = lastSnm.users[userIndex].movies[movieIndex].titleKey
+                        !allVotes[titleKey - 1] ? allVotes[titleKey - 1] = { titleKey: titleKey, voteCount: 0 } : allVotes[titleKey - 1].titleKey = titleKey;
+                    }
+                    for (voteIndex in lastSnm.users[userIndex].votes) {
+                        let voteTitleKey = lastSnm.users[userIndex].votes[voteIndex];
+                        !allVotes[voteTitleKey - 1] ? allVotes[voteTitleKey - 1] = { titleKey: null, voteCount: 1 } : allVotes[voteTitleKey - 1].voteCount++
+                    }
+                }
+
+                // get what voteCount is the highest
+                let maxVotes = allVotes.reduce((prev, current) => {
+                    return (prev.voteCount > current.voteCount) ? prev : current;
+                });
+                // get movies that had more votes (=== maxVotes)
+                let winners = allVotes.filter((obj) => {
+                    return obj.voteCount === maxVotes.voteCount
+                });
+                // if more than 1 winner => tied
+                if (winners.length > 1) {
+                    let tiedWinnersTitle = [];
+                    for (winner in winners) {
+                        tiedWinnersTitle.push(`\`${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === winners[winner].titleKey)).movies.find(movie => movie.titleKey === winners[winner].titleKey).title}\``);
+                    }
+                    embedTitle = `😲 It's a tie! 😲`;
+                    embedDescription = `\n${tiedWinnersTitle.join(" | ")} got ${maxVotes.voteCount} votes each!\nChoosing a movie at random...\n\n`;
+                    msgToEdit = await message.channel.send(new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `Checking...`).setColor(0xFF0000));
+                    let rndWinnerPos = Math.floor(Math.random() * winners.length);
+                    lastSnm.winner = winners[rndWinnerPos];
+                    winnerMovie = { title: tiedWinnersTitle[rndWinnerPos].substr(1, tiedWinnersTitle[rndWinnerPos].length - 2) };
+                }
+                else {
+                    embedTitle = `🙌 We have a winner! 🙌`;
+                    embedDescription = `With ${maxVotes.voteCount} votes:\n\n`
+                    msgToEdit = await message.channel.send(new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `Checking...`).setColor(0xFF0000));
+                    lastSnm.winner = winners[0];
+                    winnerMovie = { title: lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner.titleKey)).movies.find(movie => movie.titleKey === lastSnm.winner.titleKey).title };
+                }
             }
 
-            message.delete().catch(O_o => { });
-            lastSnm.winner = winnerMovie.titleKey;
             lastSnm.status = "finished";
             saveSnmFile(() => {
-                message.channel.send(`🥁 And the winner is`)
-                    .then(m => m.edit(`And 🥁 the winner is`)
-                        .then(m => m.edit(`And the 🥁 winner is`)
-                            .then(m => m.edit(`And the winner 🥁 is`)
-                                .then(m => m.edit(`And the winner is 🥁`)
-                                    .then(m => m.edit((`And the winner is: **${winnerMovie.title}**`)))))));
+                msgToEdit.edit(new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0xFF0000));
             });
-            logMessage = `Winner is ${winnerMovie.title}`;
+            logMessage = `Winner is **${winnerMovie.title}**`;
 
             break;
         case 'snmadd':
