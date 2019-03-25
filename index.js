@@ -290,7 +290,7 @@ client.on('message', async message => {
                                     tempMovies.push(`\`${specifiedSnm.users[userIndex].movies[movieIndex].title}\``);
                                 }
                             }
-                            printArray[userIndex] += `${tempMovies.length > 0 ? `Movies: ${tempMovies.join(" | ")}\n` : ""}${specifiedSnm.users[userIndex].rating ? `Rating: ${specifiedSnm.users[userIndex].rating}\n\n` : ""}`;
+                            printArray[userIndex] += `${tempMovies.length > 0 ? `Movies: ${tempMovies.join(" | ")}\n` : ""}${specifiedSnm.users[userIndex].rating ? `Rating: ${specifiedSnm.users[userIndex].rating}\n\n` : "\n"}`;
                             tempMovies = [];
                         }
 
