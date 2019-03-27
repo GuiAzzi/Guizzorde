@@ -119,7 +119,7 @@ client.on('ready', () => {
             throw err;
         }
 
-        mongoClient.db(herokuDb).collection(collection).findOne({}, { sort: { $natural: -1 } }, (err, result) => {
+        mongoClient.db(herokuDb).collection(collection).findOne({}, { sort: { week: -1 }, limit: 1 }, (err, result) => {
             if (err) {
                 console.log(err);
                 throw err;
