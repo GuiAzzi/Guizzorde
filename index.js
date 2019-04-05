@@ -158,20 +158,30 @@ client.on('messageReactionAdd', (reaction, user) => {
     if (reaction.message.id === lastSnm.voteMessage.messageId) {
         // Reactions from bot, allow
         if (user.id !== client.user.id) {
-            // TODO: Emoji vote system :O
             if (reaction.users.find(userIndex => userIndex.id === user.id)) {
                 reaction.remove(user);
+
+                // User added a new reaction, remove and do nothing
+                if (reaction.count === 1){
+                    return;
+                }
 
                 let userObject = lastSnm.users.find(userIndex => userIndex.userId === user.id)
                 let movieTitleKey = lastSnm.emojisUsed.find(emoji => emoji.emoji === reaction.emoji.identifier || emoji.emoji === reaction.emoji.name).titleKey;
 
                 // user is not on the list yet
                 if (!userObject) {
-                    userObject = lastSnm.users[lastSnm.users.push({ userId: user.id, username: user.username, movies: [], votes: [] }) - 1];
-                    console.log(`Added user ${user.username}`);
+                    let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
+                    userObject = lastSnm.users[lastSnm.users.push({ userId: user.id, username: user.username, movies: [], votes: [movieTitleKey] }) - 1];
+                    saveSnmFile(() => { });
+                    client.users.get(user.id).send(`You voted on \`${movieTitle}\``);
+                    console.log(`Added user ${user.username} with his/her vote`);
                 }
                 // user already voted on that movie
-                else if (userObject.votes.includes(movieTitleKey)) return
+                else if (userObject.votes.includes(movieTitleKey)) {
+                    client.users.get(user.id).send(`You already voted on that movie.`);
+                    console.log(`Duplicate vote`);
+                }
                 // valid vote
                 else if (userObject.votes.length < 2) {
                     let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
@@ -326,6 +336,8 @@ client.on('message', async message => {
                 winner: ""
             };
 
+            message.delete().catch(O_o => { });
+
             insertNewSnm(newSnm, () => {
                 let crewRole
                 if (message.channel.guild)
@@ -427,7 +439,7 @@ client.on('message', async message => {
         case 'snmvotes':
             let userFound = lastSnm.users.find(user => user.userId === message.author.id);
 
-            if (userFound.votes.length === 0) {
+            if (!userFound || userFound.votes.length === 0) {
                 message.author.send(`You have not voted`);
                 logMessage = `User has no votes`;
             }
@@ -441,7 +453,7 @@ client.on('message', async message => {
                 userFound.votes = [];
                 logMessage = `User votes reset`;
                 saveSnmFile(() => {
-                    message.channel.send(`Your votes have been reset`);
+                    message.channel.send(`Your votes have been reset.`);
                 });
             }
             else {
