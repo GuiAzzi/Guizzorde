@@ -7,5 +7,6 @@ Todo:
   ✔ Create test bot (to make changes without killing the production bot) @created(19-03-20 15:11) @done(19-03-21 06:09)
   ✔ Show name of what bot was booted on ready @created(19-03-20 15:11) @done(19-03-21 06:10)
   ✔ Votes counting system @created(19-03-21 06:10) @done(19-03-22 08:01)
-  ☐ fix !snm when last one is finished and there is no new one added yet @created(19-03-22 08:10)
-  ☐ add animation to vote counting 🥁 @created(19-03-22 08:23)
+  ✔ fix !snm when last one is finished and there is no new one added yet @created(19-03-22 08:10) @done(19-04-08 00:49)
+  ✘ add animation to vote counting 🥁 @created(19-03-22 08:23) almost impossible because of discord api call limit @cancelled(19-04-08 00:49)
+  ☐ Don't show user on summary if they have no rating AND movies @created(19-04-08 00:49)

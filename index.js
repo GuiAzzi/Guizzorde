@@ -21,6 +21,11 @@ const herokuDb = 'heroku_6zd3qncp';
 // the last snm collection
 let lastSnm;
 
+// Number of entries allowed by each user
+const NUMBEROFENTRIES = 1;
+// Number of votes allowed by each user
+const NUMBEROFVOTES = 2;
+
 const client = new Discord.Client();
 
 /**
@@ -183,12 +188,12 @@ client.on('messageReactionAdd', (reaction, user) => {
                     console.log(`Duplicate vote`);
                 }
                 // valid vote
-                else if (userObject.votes.length < 2) {
+                else if (userObject.votes.length < NUMBEROFVOTES) {
                     let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
                     userObject.votes.push(movieTitleKey);
                     client.users.get(user.id).send(`You voted on \`${movieTitle}\``);
                     saveSnmFile(() => { });
-                    console.log(`${user.username} voted. ${userObject.votes.length}/2`);
+                    console.log(`${user.username} voted. ${userObject.votes.length}/${NUMBEROFVOTES}`);
                 }
                 // no votes left
                 else {
@@ -572,9 +577,9 @@ client.on('message', async message => {
 
             if (userObject) {
                 // Check user entries
-                if (userObject.movies.length === 2) {
+                if (userObject.movies.length === NUMBEROFENTRIES) {
                     message.channel.send(`You have no entries left.\nRemove entries with \`!snmRemove <movie title or number>\`.`);
-                    logMessage = `No entries left ${userObject.movies.length}/2`;
+                    logMessage = `No entries left ${userObject.movies.length}/${NUMBEROFENTRIES}`;
                     break;
                 }
             }
