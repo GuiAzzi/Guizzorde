@@ -160,7 +160,7 @@ client.on('error', (error) => {
 });
 
 client.on('messageReactionAdd', (reaction, user) => {
-    if (reaction.message.id === lastSnm.voteMessage.messageId) {
+    if (lastSnm.voteMessage && reaction.message.id === lastSnm.voteMessage.messageId) {
         // Reactions from bot, allow
         if (user.id !== client.user.id) {
             if (reaction.users.find(userIndex => userIndex.id === user.id)) {

@@ -10,3 +10,5 @@ Todo:
   ✔ fix !snm when last one is finished and there is no new one added yet @created(19-03-22 08:10) @done(19-04-08 00:49)
   ✘ add animation to vote counting 🥁 @created(19-03-22 08:23) almost impossible because of discord api call limit @cancelled(19-04-08 00:49)
   ☐ Don't show user on summary if they have no rating AND movies @created(19-04-08 00:49)
+  ☐ Get movie torrent with https://www.npmjs.com/package/torrent-search-api @created(19-04-19 02:54)
+  ☐ Download movie and stream it with VLC @created(19-04-19 02:54)
