@@ -212,6 +212,9 @@ client.on('message', async message => {
 
     // If message does not contain prefix, ignore
     if (message.content.indexOf(prefix) !== 0) return;
+    
+    // If message is *all* prefix, ignore (ex "!!!!!!!!!")
+    if (/^!{2,}.*$/.test(message.content)) return;
 
     // Separate message from prefix
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
@@ -219,7 +222,7 @@ client.on('message', async message => {
 
     // To get the "message" itself we join the `args` back into a string with spaces: 
     const messageText = args.join(" ");
-
+    
     let logMessage = "";
 
     switch (command) {
