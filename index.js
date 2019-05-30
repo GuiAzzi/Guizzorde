@@ -2,6 +2,7 @@ const fs = require('fs');
 const Discord = require('discord.js');
 const mongodb = require('mongodb');
 const randomEmoji = require('./src/random-emoji.js');
+const torrentSearch = require('torrent-search-api');
 
 // config.json - for running locally
 const config = fs.existsSync('./src/config.json') ? require('./src/config.json') : null;
@@ -110,13 +111,31 @@ function snmEmbed() {
     return embed;
 }
 
+async function torrentEmbed(winnerTitle) {
+
+    torrentSearch.enableProvider('Rarbg');
+
+    let torrentList = await torrentSearch.search(winnerTitle + " 1080", 'Movies', 2);
+
+    let description = `\n`;
+
+    if (torrentList.length === 0)
+        description += `No torrents found 🤔`;
+    else
+        description += `[${torrentList[0].title}](${torrentList[0].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrentList[0].magnet) : torrentList[0].desc})\n${torrentList[0].size} | ${torrentList[0].seeds} seeders | ${torrentList[0].provider}`;
+
+    torrentSearch.disableAllProviders();
+
+    return new Discord.RichEmbed().setTitle(`Torrent and Subtitle`).setColor(0xFF0000).setDescription(description);
+
+}
+
 client.on('ready', () => {
     // This event will run if the bot starts, and logs in, successfully.
     console.log(`${client.user.username} has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     client.user.setActivity(`Beep boop`);
-    client.users.get(ownerId).send("I got booted!");
 
     mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
         if (err) {
@@ -239,6 +258,7 @@ client.on('message', async message => {
                 \n!snmRemove <movie title or number> - Removes a movie from the week's pool
                 \n!snmRate <text> - Leaves a rating note for this week's movie
                 \n!snmExport [week number]:optional - Creates a text file with all SNM™ data
+                \n!torrent Searchs for torrents on public trackers and returns first result's magnet link
                 \n!clear - 👀 ||don't||`;
 
             const embed = new Discord.RichEmbed()
@@ -558,15 +578,25 @@ client.on('message', async message => {
                     winnerMovie = { title: lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner.titleKey)).movies.find(movie => movie.titleKey === lastSnm.winner.titleKey).title };
                 }
             }
-
+            
             lastSnm.status = "finished";
             saveSnmFile(() => {
-                msgToEdit.edit(new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0xFF0000));
+                msgToEdit.edit(new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0xFF0000)).then(async function() {
+                    let torrentMsg = await message.channel.send(new Discord.RichEmbed().setDescription(`Checking...`).setColor(0xFF0000));
+                    torrentMsg.edit(await torrentEmbed(winnerMovie.title));
+                });
             });
+
             logMessage = `Winner is **${winnerMovie.title}**`;
 
             break;
         case 'snmadd':
+            // if nothing was passed
+            if (!messageText.trim()){
+                message.channel.send(`You forgot to name the movie.\nUsage: \`!snmAdd <movie-name>\``);
+                logMessage = `No movie was passed`;
+                break;
+            }
             // If snm status != ongoing, cancel request and warn user.
             if (lastSnm.status != "ongoing") {
                 message.channel.send(`Requesting period for \`Sunday Night Movie ${lastSnm.week}\` has ended`);
@@ -744,6 +774,34 @@ client.on('message', async message => {
             const buffer = fs.readFileSync(`./SNM${lastSnm.week}.txt`)
             const attachment = new Discord.Attachment(buffer, `SNM${lastSnm.week}.txt`);
             message.reply(attachment);
+            break;
+        case 'torrent':
+
+            if (!messageText.trim()){
+                message.channel.send(`No search parameter was entered.\nUsage: \`!torrent <thing>\``);
+                logMessage = "No search parameter";
+                break;
+            }
+
+            torrentSearch.enableProvider('1337x');
+            torrentSearch.enableProvider('ThePirateBay');
+            torrentSearch.enableProvider('Rarbg');
+
+            let torrentMsg = await message.channel.send(new Discord.RichEmbed().setDescription(`Checking...`).setColor(0xFF0000));
+
+            await torrentSearch.search(messageText.trim(), null, 3).then((result) => {
+                torrentSearch.disableAllProviders();
+                if (result.length === 0)
+                    torrentMsg.edit('No torrents found :(');
+                else {
+                    let torrentList = "";
+                    for (let torrent of result){
+                        torrentList += `\n\n[${torrent.title}](${torrent.magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrent.magnet) : torrent.desc})\n${torrent.size} | ${torrent.seeds} seeders | ${torrent.provider}`;
+                    }
+                    torrentMsg.edit(new Discord.RichEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0xFF0000))
+                }
+            })
+
             break;
         case 'clear':
             //TODO:

@@ -19,6 +19,7 @@
   "homepage": "https://github.com/GuiAzzi/Guizzorde#readme",
   "dependencies": {
     "discord.js": "^11.4.2",
-    "mongodb": "^3.1.13"
+    "mongodb": "^3.1.13",
+    "torrent-search-api": "^2.0.9"
   }
 }
