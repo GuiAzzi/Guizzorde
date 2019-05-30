@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 const mongodb = require('mongodb');
 const randomEmoji = require('./src/random-emoji.js');
 const torrentSearch = require('torrent-search-api');
+torrentSearch.enablePublicProviders();
 
 // config.json - for running locally
 const config = fs.existsSync('./src/config.json') ? require('./src/config.json') : null;
@@ -111,23 +112,25 @@ function snmEmbed() {
     return embed;
 }
 
-async function torrentEmbed(winnerTitle) {
+async function createTorrentEmbed(winnerTitle, author) {
 
-    torrentSearch.enableProvider('Rarbg');
+    // Gets torrent number and creates embed description
+    createDesc = (i) => `[${torrentList[i].title}](${torrentList[i].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrentList[i].magnet) : torrentList[i].desc})\n${torrentList[i].size} | ${torrentList[i].seeds} seeders | ${torrentList[i].provider}`
 
-    let torrentList = await torrentSearch.search(winnerTitle + " 1080", 'Movies', 2);
+    // Searchs torrents
+    let torrentList = await torrentSearch.search(['Rarbg'], winnerTitle + " 1080", 'Movies', 2);
 
     let description = `\n`;
 
     if (torrentList.length === 0)
-        description += `No torrents found 🤔`;
-    else
-        description += `[${torrentList[0].title}](${torrentList[0].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrentList[0].magnet) : torrentList[0].desc})\n${torrentList[0].size} | ${torrentList[0].seeds} seeders | ${torrentList[0].provider}`;
-
-    torrentSearch.disableAllProviders();
+        return null;
+    else {
+        description += createDesc(0);
+        // Sends second torrent option to author
+        author.send(new Discord.RichEmbed().setTitle(`Second option`).setColor(0xFF0000).setDescription(createDesc(1)).setFooter(`click the reaction to swap to this [TO BE IMPLEMENTED]`)).then((msg) => msg.react('🔄'));
+    }
 
     return new Discord.RichEmbed().setTitle(`Torrent and Subtitle`).setColor(0xFF0000).setDescription(description);
-
 }
 
 client.on('ready', () => {
@@ -581,9 +584,15 @@ client.on('message', async message => {
             
             lastSnm.status = "finished";
             saveSnmFile(() => {
-                msgToEdit.edit(new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0xFF0000)).then(async function() {
-                    let torrentMsg = await message.channel.send(new Discord.RichEmbed().setDescription(`Checking...`).setColor(0xFF0000));
-                    torrentMsg.edit(await torrentEmbed(winnerMovie.title));
+                let finalEmbed = new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0xFF0000);
+                msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`)).then(async function(msg) {
+                    let torrentEmbed = await createTorrentEmbed(winnerMovie.title, message.author);
+                    if (!torrentEmbed) 
+                        msg.edit(finalEmbed.setFooter(`No torrents found 🤔`));
+                    else {
+                        msg.edit(finalEmbed.setFooter(" "));
+                        message.channel.send(torrentEmbed);
+                    }
                 });
             });
 
@@ -733,6 +742,7 @@ client.on('message', async message => {
             }
             break;
         case 'snmexport':
+            // Exports SNM week data
 
             let specifiedWeek = Number(messageText.trim()) || null;
 
@@ -776,21 +786,20 @@ client.on('message', async message => {
             message.reply(attachment);
             break;
         case 'torrent':
+            // Search for a torrent on a list of providers
 
+            // Value cannot be empty
             if (!messageText.trim()){
                 message.channel.send(`No search parameter was entered.\nUsage: \`!torrent <thing>\``);
                 logMessage = "No search parameter";
                 break;
             }
 
-            torrentSearch.enableProvider('1337x');
-            torrentSearch.enableProvider('ThePirateBay');
-            torrentSearch.enableProvider('Rarbg');
-
+            // Sends to-be-edited "Checking..." message
             let torrentMsg = await message.channel.send(new Discord.RichEmbed().setDescription(`Checking...`).setColor(0xFF0000));
 
-            await torrentSearch.search(messageText.trim(), null, 3).then((result) => {
-                torrentSearch.disableAllProviders();
+            // Searchs torrents
+            await torrentSearch.search(['1337x', 'ThePirateBay', 'Rarbg'], messageText.trim(), null, 3).then((result) => {
                 if (result.length === 0)
                     torrentMsg.edit('No torrents found :(');
                 else {
