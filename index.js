@@ -799,7 +799,7 @@ client.on('message', async message => {
             let torrentMsg = await message.channel.send(new Discord.RichEmbed().setDescription(`Checking...`).setColor(0xFF0000));
 
             // Searchs torrents
-            await torrentSearch.search(['1337x', 'ThePirateBay', 'Rarbg'], messageText.trim(), null, 3).then((result) => {
+            await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], messageText.trim(), null, 3).then((result) => {
                 if (result.length === 0)
                     torrentMsg.edit('No torrents found :(');
                 else {
