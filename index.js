@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 const mongodb = require('mongodb');
 const randomEmoji = require('./src/random-emoji.js');
 const torrentSearch = require('torrent-search-api');
+const Jimp = require('jimp/dist');
 torrentSearch.enablePublicProviders();
 
 // config.json - for running locally
@@ -830,6 +831,28 @@ client.on('message', async message => {
             //             });
             //     }
             // }            
+            break;
+        case 'ratotexto': 
+            // Uses rato_plaquista as templete for text
+
+            // Value cannot be empty
+            if (!messageText.trim()){
+                message.channel.send(`You must write something after the command.`);
+                logMessage = "No text parameter";
+                break;
+            }
+
+            // message.delete().catch(O_o => { });
+
+            Jimp.read('src/Rato/rato_plaquista.jpg').then(image => {
+                Jimp.loadFont(Jimp.FONT_SANS_64_BLACK).then(font => {
+                    image.print(font, 240, 60, messageText.trim(), 600);
+                    image.writeAsync('src/Rato/rato_plaquistaEditado.jpg').then(result => {
+                        message.channel.send("", {file: "src/Rato/rato_plaquistaEditado.jpg"});
+                    })
+                });
+            });
+            
             break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
