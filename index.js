@@ -239,6 +239,9 @@ client.on('message', async message => {
     // If message is *all* prefix, ignore (ex "!!!!!!!!!")
     if (/^!{2,}.*$/.test(message.content)) return;
 
+    // If message is just the prefix, ignore (ex: "!")
+    if (message.content === "!") return;
+
     // Separate message from prefix
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
