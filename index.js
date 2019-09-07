@@ -832,7 +832,7 @@ client.on('message', async message => {
             //     }
             // }            
             break;
-        case 'ratotexto': 
+        case 'ratotenista':
             // Uses rato_plaquista as templete for text
 
             // Value cannot be empty
@@ -844,9 +844,9 @@ client.on('message', async message => {
 
             // message.delete().catch(O_o => { });
 
-            Jimp.read('src/Rato/rato_plaquista.jpg').then(image => {
-                Jimp.loadFont(Jimp.FONT_SANS_64_BLACK).then(font => {
-                    image.print(font, 240, 60, messageText.trim(), 600);
+            Jimp.read('src/Rato/rato_plaquista4x.png').then(image => {
+                Jimp.loadFont('src/Rato/font/rato_fontista.fnt').then(font => {
+                    image.print(font, 240, 40, messageText.trim(), 600);
                     image.writeAsync('src/Rato/rato_plaquistaEditado.jpg').then(result => {
                         message.channel.send("", {file: "src/Rato/rato_plaquistaEditado.jpg"});
                     })
