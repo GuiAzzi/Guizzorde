@@ -846,7 +846,7 @@ client.on('message', async message => {
 
             Jimp.read('src/Rato/rato_plaquista4x.png').then(image => {
                 Jimp.loadFont('src/Rato/font/rato_fontista.fnt').then(font => {
-                    image.print(font, 240, 40, messageText.trim(), 600);
+                    image.print(font, 240, 40, messageText.trim(), 530);
                     image.writeAsync('src/Rato/rato_plaquistaEditado.jpg').then(result => {
                         message.channel.send("", {file: "src/Rato/rato_plaquistaEditado.jpg"});
                     })
