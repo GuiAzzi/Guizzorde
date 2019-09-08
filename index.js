@@ -266,7 +266,9 @@ client.on('message', async message => {
                 \n!snmRate <text> - Leaves a rating note for this week's movie
                 \n!snmExport [week number]:optional - Creates a text file with all SNM™ data
                 \n!torrent Searchs for torrents on public trackers and returns first result's magnet link
-                \n!clear - 👀 ||don't||`;
+                \n!clear - 👀 ||don't||
+                \n!rato - Gets a random tenista
+                \n!ratoTenista <message> - Make rato tenista say something`;
 
             const embed = new Discord.RichEmbed()
                 // Set the title of the field
@@ -854,8 +856,11 @@ client.on('message', async message => {
                         message.channel.send("", {file: "src/Rato/rato_plaquistaEditado.jpg"});
                     })
                 });
-            });
-            
+            });            
+            break;
+        case 'rato': 
+            // Generates a message with a random 'rato tenista' image
+            message.channel.send(`ei!! por favor pare!\nisto me deixa`, {file: `src/Rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`});
             break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
