@@ -802,7 +802,7 @@ client.on('message', async message => {
             }
 
             // Sends to-be-edited "Checking..." message
-            let torrentMsg = await message.channel.send(new Discord.RichEmbed().setDescription(`Checking...`).setColor(0xFF0000));
+            let torrentMsg = await message.channel.send(`Checking...`);
 
             // Searchs torrents
             await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], messageText.trim(), null, 3).then((result) => {
