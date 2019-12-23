@@ -476,7 +476,11 @@ client.on('message', async message => {
         case 'snmvotes':
             let userFound = lastSnm.users.find(user => user.userId === message.author.id);
 
-            if (!userFound || userFound.votes.length === 0) {
+            if (lastSnm.status !== "voting"){
+                message.author.send(`Voting has not started`);
+                logMessage = `Voting has not started`;
+            }
+            else if (!userFound || userFound.votes.length === 0) {
                 message.author.send(`You have not voted`);
                 logMessage = `User has no votes`;
             }
