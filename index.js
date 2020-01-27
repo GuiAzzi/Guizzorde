@@ -23,6 +23,8 @@ const collection = config ? config.mongoCollection : "snm";
 const herokuDb = 'heroku_6zd3qncp';
 // the last snm collection
 let lastSnm;
+// torrentMessage id - short lived, should not be saved to database - used to swap to second option
+let torrentMessage;
 
 // Number of entries allowed by each user
 const NUMBEROFENTRIES = 1;
@@ -128,7 +130,7 @@ async function createTorrentEmbed(winnerTitle, author) {
     else {
         description += createDesc(0);
         // Sends second torrent option to author
-        author.send(new Discord.RichEmbed().setTitle(`Second option`).setColor(0xFF0000).setDescription(createDesc(1)).setFooter(`click the reaction to swap to this [TO BE IMPLEMENTED]`)).then((msg) => msg.react('🔄'));
+        author.send(new Discord.RichEmbed().setTitle(`SNM ${lastSnm.week} Second Option`).setColor(0xFF0000).setDescription(createDesc(1)).setFooter(`click the reaction to swap to this`)).then((msg) => msg.react('🔄'));
     }
 
     return new Discord.RichEmbed().setTitle(`Torrent and Subtitle`).setColor(0xFF0000).setDescription(description);
@@ -183,48 +185,58 @@ client.on('error', (error) => {
 });
 
 client.on('messageReactionAdd', (reaction, user) => {
-    if (lastSnm.voteMessage && reaction.message.id === lastSnm.voteMessage.messageId) {
-        // Reactions from bot, allow
-        if (user.id !== client.user.id) {
-            if (reaction.users.find(userIndex => userIndex.id === user.id)) {
-                reaction.remove(user);
+    // reactions from self, do nothing
+    if (user.id === client.user.id) return;
+    // reaction on snm voting message
+    else if (lastSnm.voteMessage && reaction.message.id === lastSnm.voteMessage.messageId) {
+        if (reaction.users.find(userIndex => userIndex.id === user.id)) {
+            reaction.remove(user);
 
-                // User added a new reaction, remove and do nothing
-                if (reaction.count === 1){
-                    return;
-                }
+            // User added a new reaction ( = did not click an existing reaction), remove and do nothing
+            if (reaction.count === 1){
+                return;
+            }
 
-                let userObject = lastSnm.users.find(userIndex => userIndex.userId === user.id)
-                let movieTitleKey = lastSnm.emojisUsed.find(emoji => emoji.emoji === reaction.emoji.identifier || emoji.emoji === reaction.emoji.name).titleKey;
+            let userObject = lastSnm.users.find(userIndex => userIndex.userId === user.id)
+            let movieTitleKey = lastSnm.emojisUsed.find(emoji => emoji.emoji === reaction.emoji.identifier || emoji.emoji === reaction.emoji.name).titleKey;
 
-                // user is not on the list yet
-                if (!userObject) {
-                    let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
-                    userObject = lastSnm.users[lastSnm.users.push({ userId: user.id, username: user.username, movies: [], votes: [movieTitleKey] }) - 1];
-                    saveSnmFile(() => { });
-                    client.users.get(user.id).send(`You voted on \`${movieTitle}\``);
-                    console.log(`Added user ${user.username} with his/her vote`);
-                }
-                // user already voted on that movie
-                else if (userObject.votes.includes(movieTitleKey)) {
-                    client.users.get(user.id).send(`You already voted on that movie.`);
-                    console.log(`Duplicate vote`);
-                }
-                // valid vote
-                else if (userObject.votes.length < NUMBEROFVOTES) {
-                    let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
-                    userObject.votes.push(movieTitleKey);
-                    client.users.get(user.id).send(`You voted on \`${movieTitle}\``);
-                    saveSnmFile(() => { });
-                    console.log(`${user.username} voted. ${userObject.votes.length}/${NUMBEROFVOTES}`);
-                }
-                // no votes left
-                else {
-                    client.users.get(user.id).send(`You have no votes left. Type \`!snmVotes clear\` to reset all your votes.`);
-                    console.log(`No votes left`);
-                }
+            // user is not on the list yet
+            if (!userObject) {
+                let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
+                userObject = lastSnm.users[lastSnm.users.push({ userId: user.id, username: user.username, movies: [], votes: [movieTitleKey] }) - 1];
+                saveSnmFile(() => { });
+                client.users.get(user.id).send(`You voted on \`${movieTitle}\``);
+                console.log(`Added user ${user.username} with his/her vote`);
+            }
+            // user already voted on that movie
+            else if (userObject.votes.includes(movieTitleKey)) {
+                client.users.get(user.id).send(`You already voted on that movie.`);
+                console.log(`Duplicate vote`);
+            }
+            // valid vote
+            else if (userObject.votes.length < NUMBEROFVOTES) {
+                let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
+                userObject.votes.push(movieTitleKey);
+                client.users.get(user.id).send(`You voted on \`${movieTitle}\``);
+                saveSnmFile(() => { });
+                console.log(`${user.username} voted. ${userObject.votes.length}/${NUMBEROFVOTES}`);
+            }
+            // no votes left
+            else {
+                client.users.get(user.id).send(`You have no votes left. Type \`!snmVotes clear\` to reset all your votes.`);
+                console.log(`No votes left`);
             }
         }
+    }
+    // reaction on torrent second option
+    else if (lastSnm.voteMessage && reaction.message.embeds[0].title === `SNM ${lastSnm.week} Second Option`) {
+
+        let oldDesc = torrentMessage.embeds[0].description
+
+        torrentMessage.edit(new Discord.RichEmbed().setTitle(`Torrent and Subtitle`).setColor(0xFF0000).setDescription(reaction.message.embeds[0].description))
+        .then((msg) => {
+            reaction.message.edit(new Discord.RichEmbed().setTitle(`SNM ${lastSnm.week} Second Option`).setColor(0xFF0000).setDescription(oldDesc).setFooter(`click the reaction to swap to this`)).then(() => torrentMessage = msg);
+        });
     }
 });
 
@@ -601,7 +613,7 @@ client.on('message', async message => {
                         msg.edit(finalEmbed.setFooter(`No torrents found 🤔`));
                     else {
                         msg.edit(finalEmbed.setFooter(" "));
-                        message.channel.send(torrentEmbed);
+                        message.channel.send(torrentEmbed).then((msg) => torrentMessage = msg);
                     }
                 });
             });
