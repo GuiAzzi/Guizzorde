@@ -1,13 +1,13 @@
-const fs = require('fs');
 const Discord = require('discord.js');
-const mongodb = require('mongodb');
-const randomEmoji = require('./src/random-emoji.js');
-const torrentSearch = require('torrent-search-api');
 const Jimp = require('jimp/dist');
+const mongodb = require('mongodb');
+const torrentSearch = require('torrent-search-api');
+const fs = require('fs');
+const randomEmoji = require('./src/random-emoji.js');
 torrentSearch.enablePublicProviders();
 
 // config.json - for running locally
-const config = fs.existsSync('./src/config.json') ? require('./src/config.json') : null;
+const config = fs.existsSync('./config.json') ? require('./config.json') : null;
 
 // Bot token
 const token = process.env.TOKEN || config.token;
@@ -853,18 +853,18 @@ client.on('message', async message => {
 
             // message.delete().catch(O_o => { });
 
-            Jimp.read('src/Rato/rato_plaquista4x.png').then(image => {
-                Jimp.loadFont('src/Rato/font/rato_fontista.fnt').then(font => {
+            Jimp.read('src/rato/rato_plaquista4x.png').then(image => {
+                Jimp.loadFont('src/rato/font/rato_fontista.fnt').then(font => {
                     image.print(font, 240, 40, messageText.trim(), 530);
-                    image.writeAsync('src/Rato/rato_plaquistaEditado.jpg').then(result => {
-                        message.channel.send("", {file: "src/Rato/rato_plaquistaEditado.jpg"});
+                    image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(result => {
+                        message.channel.send("", {file: "src/rato/rato_plaquistaEditado.jpg"});
                     })
                 });
             });            
             break;
         case 'rato': 
             // Generates a message with a random 'rato tenista' image
-            message.channel.send(`ei!! por favor pare!\nisto me deixa`, {file: `src/Rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`});
+            message.channel.send(`ei!! por favor pare!\nisto me deixa`, {file: `src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`});
             break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
