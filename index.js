@@ -249,7 +249,7 @@ client.on('message', async message => {
     if (message.content.indexOf(prefix) !== 0) return;
     
     // If message is *all* prefix, ignore (ex "!!!!!!!!!")
-    if (/^!{2,}.*$/.test(message.content)) return;
+    if (/^!{2,}.*$/.test(message.content.replace(' ', ''))) return;
 
     // If message is just the prefix, ignore (ex: "!")
     if (message.content === "!") return;
