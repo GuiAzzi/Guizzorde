@@ -14,3 +14,5 @@ Todo:
   ☐ Download movie and stream it with VLC @created(19-04-19 02:54)
   ☐ Schedule SNM commands @created(19-05-30 02:25)
   ☐ Get subtitles @created(19-05-30 02:30)
+  ☐ user doesn't need to make a selection on !snmRemove if they have only 1 entry
+  ☐ Post a fixed message on snm channel showing current snm, live updating

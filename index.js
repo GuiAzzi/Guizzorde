@@ -391,7 +391,7 @@ client.on('message', async message => {
                 let crewRole
                 if (message.channel.guild)
                     crewRole = message.guild.roles.find((role) => role.name === "Crew");
-                message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}\n\`Sunday Night Live ${lastSnm.week}\` requests are now open!\n\`!snmAdd <movie name>\` to request a movie.`);
+                message.channel.send(`\`Sunday Night Movie ${lastSnm.week}\` requests are now open!\n\`!snmAdd <movie name>\` to request a movie.`);
             })
 
             logMessage = `SNM ${lastSnm.week + 1} started`;
@@ -437,7 +437,7 @@ client.on('message', async message => {
             if (message.channel.guild)
                 crewRole = message.guild.roles.find((role) => role.name === "Crew");
 
-            message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}\nGather round, voting has started 😱`);
+            message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}\nVoting has started 😱`);
             let voteMessage = await message.channel.send(new Discord.RichEmbed().setTitle(`🛠 Building... 🛠`));
             // need to save the message id in case bot crashes
             lastSnm.voteMessage = { channelId: voteMessage.channel.id, messageId: voteMessage.id };
