@@ -349,13 +349,13 @@ client.on('message', async message => {
                                     tempMovies.push(`\`${specifiedSnm.users[userIndex].movies[movieIndex].title}\``);
                                 }
                             }
-                            printArray[userIndex] += `${tempMovies.length > 0 ? `Movies: ${tempMovies.join(" | ")}\n` : ""}${specifiedSnm.users[userIndex].rating ? `Rating: ${specifiedSnm.users[userIndex].rating}\n\n` : "\n"}`;
+                            printArray[userIndex] += `${tempMovies.length > 0 ? `Entries: ${tempMovies.join(" | ")}\n` : ""}${specifiedSnm.users[userIndex].rating ? `Rating: ${specifiedSnm.users[userIndex].rating}\n\n` : "\n"}`;
                             tempMovies = [];
                         }
 
                         let embed = new Discord.RichEmbed()
                             // Set the title of the field
-                            .setTitle(`🧾 Summary of Sunday Night Movie ${specifiedSnm.week} 🧾`)
+                            .setTitle(`📖 Summary of Sunday Night Movie ${specifiedSnm.week} 📖`)
                             // Set the color of the embed
                             .setColor(0xFF0000)
                             // Set the main content of the embed
