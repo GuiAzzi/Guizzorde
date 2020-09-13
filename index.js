@@ -281,7 +281,7 @@ client.on('message', async message => {
                 \n!clear - 👀 ||don't||
                 \n!rato - Gets a random tenista
                 \n!ratoTenista <message> - Make rato tenista say something
-                \n!emoji - Converts text into Discord's regional indicator emojis :abc:`;
+                \n!emoji <message> - Converts your message into Discord's regional indicator emojis :abc:`;
 
             const embed = new Discord.RichEmbed()
                 // Set the title of the field
