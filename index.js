@@ -280,7 +280,8 @@ client.on('message', async message => {
                 \n!torrent Searchs for torrents on public trackers and returns first result's magnet link
                 \n!clear - 👀 ||don't||
                 \n!rato - Gets a random tenista
-                \n!ratoTenista <message> - Make rato tenista say something`;
+                \n!ratoTenista <message> - Make rato tenista say something
+                \n!emoji - Converts text into Discord's regional indicator emojis :abc:`;
 
             const embed = new Discord.RichEmbed()
                 // Set the title of the field
@@ -878,6 +879,58 @@ client.on('message', async message => {
             // Generates a message with a random 'rato tenista' image
             message.channel.send(`ei!! por favor pare!\nisto me deixa`, {file: `src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`});
             break;
+        case 'emoji':
+            // Converts the inputed message to discord's regional emojis
+            let sentence = "";
+            for (let letter of messageText.trim()){
+                switch (letter) {
+                    case " ":
+                        sentence += "  ";
+                        break;
+                    case "0":
+                        sentence += ":zero: ";
+                        break;
+                    case "1":
+                        sentence += ":one: ";
+                        break;
+                    case "2":
+                        sentence += ":two: ";
+                        break;
+                    case "3":
+                        sentence += ":three: ";
+                        break;
+                    case "4":
+                        sentence += ":four: ";
+                        break;
+                    case "5":
+                        sentence += ":five: ";
+                        break;
+                    case "6":
+                        sentence += ":six: ";
+                        break;
+                    case "7":
+                        sentence += ":seven: ";
+                        break;
+                    case "8":
+                        sentence += ":eight: ";
+                        break;
+                    case "9":
+                        sentence += ":nine: ";
+                        break;
+                    default:
+                        let char = letter.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+                        let regSymbol = /[$-/:-?{-~!"^_`\[\]]/;
+                        if (regSymbol.test(char)){
+                            sentence += char + " ";
+                        }
+                        else{
+                            sentence += ":regional_indicator_" + char + ": ";
+                        }
+                        break;
+                }
+            }
+            message.channel.send(sentence);
+            break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
             break;
@@ -885,7 +938,7 @@ client.on('message', async message => {
 
     // Logs stuff
     console.log(`\n${message.author.username} executed '${command}' ${args != "" ? `with "${messageText}"` : ""}`);
-    logMessage ? console.log(logMessage) : null
+    logMessage ? console.log(logMessage) : null;
 });
 
 client.login(token);
