@@ -255,16 +255,16 @@ client.on('message', async message => {
     if (message.content === "!") return;
 
     // Separate message from prefix
+    // "clean" means the message does not use discord hashes for channels and mentions. e.g. <!@numbers>
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
+    const cleanArgs = message.cleanContent.slice(prefix.length).trim().split(/ +/g);
+
     const command = args.shift().toLowerCase();
+    const cleanCommand = cleanArgs.shift().toLowerCase();
 
     // To get the "message" itself we join the `args` back into a string with spaces: 
     const messageText = args.join(" ");
-
-    // FIXME: Can be better - also add to !ratotenista
-    let cleanMessageText = message.cleanContent.slice(prefix.length).trim().split(/ +/g);
-    cleanMessageText.shift();
-    cleanMessageText = cleanMessageText.join(" ");
+    const cleanMessageText = cleanArgs.join(" ");
     
     let logMessage = "";
 
@@ -312,11 +312,11 @@ client.on('message', async message => {
         case 'snm':
             // Sends rich embed with SNM infos
             // If no week was specified or if specified week is current one
-            if (!messageText.trim() || Number(messageText.trim()) === lastSnm.week && lastSnm.status != "finished") {
+            if (!messageText || Number(messageText) === lastSnm.week && lastSnm.status != "finished") {
                 message.channel.send(snmEmbed());
                 break;
             }
-            else if (!Number(messageText.trim()) || Number(messageText.trim()) > lastSnm.week) {
+            else if (!Number(messageText) || Number(messageText) > lastSnm.week) {
                 // User entered text or a week bigger than current one
                 message.channel.send(`Thats not a valid week`);
                 logMessage = `Week ${messageText} is invalid`;
@@ -502,7 +502,7 @@ client.on('message', async message => {
                 message.author.send(`You have not voted`);
                 logMessage = `User has no votes`;
             }
-            else if (messageText.trim() === "clear") {
+            else if (messageText === "clear") {
                 // can't alter votes if snm is finished
                 if (lastSnm.status !== 'voting') {
                     message.channel.send(`SNM is finished. You can't alter your votes 👀.`);
@@ -543,7 +543,7 @@ client.on('message', async message => {
                 break;
             }
             // If a movie was passed
-            else if (messageText.trim() != "") {
+            else if (messageText != "") {
                 message.delete().catch(O_o => { });
                 embedTitle = `🙌 We have a winner! 🙌`;
                 embedDescription = ""
@@ -629,7 +629,7 @@ client.on('message', async message => {
             break;
         case 'snmadd':
             // if nothing was passed
-            if (!messageText.trim()){
+            if (!messageText){
                 message.channel.send(`You forgot to name the movie.\nUsage: \`!snmAdd <movie-name>\``);
                 logMessage = `No movie was passed`;
                 break;
@@ -772,11 +772,11 @@ client.on('message', async message => {
         case 'snmexport':
             // Exports SNM week data
 
-            let specifiedWeek = Number(messageText.trim()) || null;
+            let specifiedWeek = Number(messageText) || null;
 
             // User entered text (not number) or a future week
-            if (messageText.trim() && !specifiedWeek || Number(messageText.trim()) > lastSnm.week) {
-                message.channel.send(`\`${messageText.trim()}\` is not a valid week\nType \`!snmExport [week number]:optional\` to export a file`);
+            if (messageText && !specifiedWeek || Number(messageText) > lastSnm.week) {
+                message.channel.send(`\`${messageText}\` is not a valid week\nType \`!snmExport [week number]:optional\` to export a file`);
                 logMessage = `${messageText} is not a valid week`;
                 break;
             }
@@ -817,7 +817,7 @@ client.on('message', async message => {
             // Search for a torrent on a list of providers
 
             // Value cannot be empty
-            if (!messageText.trim()){
+            if (!messageText){
                 message.channel.send(`No search parameter was entered.\nUsage: \`!torrent <thing>\``);
                 logMessage = "No search parameter";
                 break;
@@ -827,7 +827,7 @@ client.on('message', async message => {
             let torrentMsg = await message.channel.send(`Checking...`);
 
             // Searchs torrents
-            await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], messageText.trim(), null, 3).then((result) => {
+            await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], messageText, null, 3).then((result) => {
                 if (result.length === 0)
                     torrentMsg.edit('No torrents found :(');
                 else {
@@ -863,7 +863,7 @@ client.on('message', async message => {
             // Uses rato_plaquista as templete for text
 
             // Value cannot be empty
-            if (!messageText.trim()){
+            if (!cleanMessageText){
                 message.channel.send(`You must write something after the command.`);
                 logMessage = "No text parameter";
                 break;
@@ -873,7 +873,7 @@ client.on('message', async message => {
 
             Jimp.read('src/rato/rato_plaquista4x.png').then(image => {
                 Jimp.loadFont('src/rato/font/rato_fontista.fnt').then(font => {
-                    image.print(font, 240, 40, messageText.trim(), 530);
+                    image.print(font, 240, 40, cleanMessageText, 530);
                     image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(result => {
                         message.channel.send("", {file: "src/rato/rato_plaquistaEditado.jpg"});
                     })
@@ -887,7 +887,7 @@ client.on('message', async message => {
         case 'emoji':
             // Converts the inputed message to discord's regional emojis
             let sentence = "";
-            for (let letter of cleanMessageText.trim()){
+            for (let letter of cleanMessageText){
                 switch (letter) {
                     case " ":
                         sentence += "  ";
@@ -924,8 +924,7 @@ client.on('message', async message => {
                         break;
                     default:
                         let char = letter.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
-                        let regSymbol = /[$-/:-?{-~!@#"^_`\[\]]/;
-                        if (regSymbol.test(char)){
+                        if (/[$-/:-?{-~!@#"^_`\[\]]/.test(char)){
                             sentence += char + " ";
                         }
                         else{
