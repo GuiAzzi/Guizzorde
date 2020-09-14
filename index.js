@@ -260,6 +260,11 @@ client.on('message', async message => {
 
     // To get the "message" itself we join the `args` back into a string with spaces: 
     const messageText = args.join(" ");
+
+    // FIXME: Can be better - also add to !ratotenista
+    let cleanMessageText = message.cleanContent.slice(prefix.length).trim().split(/ +/g);
+    cleanMessageText.shift();
+    cleanMessageText = cleanMessageText.join(" ");
     
     let logMessage = "";
 
@@ -882,7 +887,7 @@ client.on('message', async message => {
         case 'emoji':
             // Converts the inputed message to discord's regional emojis
             let sentence = "";
-            for (let letter of messageText.trim()){
+            for (let letter of cleanMessageText.trim()){
                 switch (letter) {
                     case " ":
                         sentence += "  ";
@@ -919,7 +924,7 @@ client.on('message', async message => {
                         break;
                     default:
                         let char = letter.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
-                        let regSymbol = /[$-/:-?{-~!"^_`\[\]]/;
+                        let regSymbol = /[$-/:-?{-~!@#"^_`\[\]]/;
                         if (regSymbol.test(char)){
                             sentence += char + " ";
                         }
