@@ -193,7 +193,7 @@ client.on('messageReactionAdd', (reaction, user) => {
             reaction.remove(user);
 
             // User added a new reaction ( = did not click an existing reaction), remove and do nothing
-            if (reaction.count === 1){
+            if (reaction.count === 1) {
                 return;
             }
 
@@ -234,9 +234,9 @@ client.on('messageReactionAdd', (reaction, user) => {
         let oldDesc = torrentMessage.embeds[0].description
 
         torrentMessage.edit(new Discord.RichEmbed().setTitle(`Torrent and Subtitle`).setColor(0xFF0000).setDescription(reaction.message.embeds[0].description))
-        .then((msg) => {
-            reaction.message.edit(new Discord.RichEmbed().setTitle(`SNM ${lastSnm.week} Second Option`).setColor(0xFF0000).setDescription(oldDesc).setFooter(`click the reaction to swap to this`)).then(() => torrentMessage = msg);
-        });
+            .then((msg) => {
+                reaction.message.edit(new Discord.RichEmbed().setTitle(`SNM ${lastSnm.week} Second Option`).setColor(0xFF0000).setDescription(oldDesc).setFooter(`click the reaction to swap to this`)).then(() => torrentMessage = msg);
+            });
     }
 });
 
@@ -247,7 +247,7 @@ client.on('message', async message => {
 
     // If message does not contain prefix, ignore
     if (message.content.indexOf(prefix) !== 0) return;
-    
+
     // If message is *all* prefix, ignore (ex "!!!!!!!!!")
     if (/^!{2,}.*$/.test(message.content.replace(' ', ''))) return;
 
@@ -265,7 +265,7 @@ client.on('message', async message => {
     // To get the "message" itself we join the `args` back into a string with spaces: 
     const messageText = args.join(" ");
     const cleanMessageText = cleanArgs.join(" ");
-    
+
     let logMessage = "";
 
     switch (command) {
@@ -273,20 +273,23 @@ client.on('message', async message => {
             let description =
                 `!ping - Pings the API
                 \n!say <message> - Makes the bot say something
-                \n!snm [week number]:optional - Show this week's movies or specified week summary
+                \n!snm [week number] - Show this week's movies or specified week summary
                 \n!snmNew - Starts a new week of SNM™
                 \n!snmStart - Initiate voting
-                \n!snmVotes [clear]:optional - See your votes or clear them
-                \n!snmEnd [winner title or position]:optional - Count votes or manually select a winner
+                \n!snmVotes [clear] - See your votes or clear them
+                \n!snmEnd [winner title or position] - Count votes or manually select a winner
                 \n!snmAdd <movie title> - Adds a movie to this week's pool
                 \n!snmRemove <movie title or number> - Removes a movie from the week's pool
                 \n!snmRate <text> - Leaves a rating note for this week's movie
-                \n!snmExport [week number]:optional - Creates a text file with all SNM™ data
+                \n!snmExport [week number] - Creates a text file with all SNM™ data
                 \n!torrent Searchs for torrents on public trackers and returns first result's magnet link
                 \n!clear - 👀 ||don't||
-                \n!rato - Gets a random tenista
+                \n!rato - Gets a random tenista™
                 \n!ratoTenista <message> - Make rato tenista say something
-                \n!emoji <message> - Converts your message into Discord's regional indicator emojis :abc:`;
+                \n!emoji <message> - Converts your message into Discord's regional indicator emojis :abc:
+                \n!random <option1, option2, option3, [...]> - Randomly picks from one of the options typed
+                
+                **<> means a parameter is mandatory and [] is optional**`;
 
             const embed = new Discord.RichEmbed()
                 // Set the title of the field
@@ -494,7 +497,7 @@ client.on('message', async message => {
         case 'snmvotes':
             let userFound = lastSnm.users.find(user => user.userId === message.author.id);
 
-            if (lastSnm.status !== "voting"){
+            if (lastSnm.status !== "voting") {
                 message.author.send(`Voting has not started`);
                 logMessage = `Voting has not started`;
             }
@@ -609,13 +612,13 @@ client.on('message', async message => {
                     winnerMovie = { title: lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner.titleKey)).movies.find(movie => movie.titleKey === lastSnm.winner.titleKey).title };
                 }
             }
-            
+
             lastSnm.status = "finished";
             saveSnmFile(() => {
                 let finalEmbed = new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0xFF0000);
-                msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`)).then(async function(msg) {
+                msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`)).then(async function (msg) {
                     let torrentEmbed = await createTorrentEmbed(winnerMovie.title, message.author);
-                    if (!torrentEmbed) 
+                    if (!torrentEmbed)
                         msg.edit(finalEmbed.setFooter(`No torrents found 🤔`));
                     else {
                         msg.edit(finalEmbed.setFooter(" "));
@@ -629,7 +632,7 @@ client.on('message', async message => {
             break;
         case 'snmadd':
             // if nothing was passed
-            if (!messageText){
+            if (!messageText) {
                 message.channel.send(`You forgot to name the movie.\nUsage: \`!snmAdd <movie-name>\``);
                 logMessage = `No movie was passed`;
                 break;
@@ -817,7 +820,7 @@ client.on('message', async message => {
             // Search for a torrent on a list of providers
 
             // Value cannot be empty
-            if (!messageText){
+            if (!messageText) {
                 message.channel.send(`No search parameter was entered.\nUsage: \`!torrent <thing>\``);
                 logMessage = "No search parameter";
                 break;
@@ -832,7 +835,7 @@ client.on('message', async message => {
                     torrentMsg.edit('No torrents found :(');
                 else {
                     let torrentList = "";
-                    for (let torrent of result){
+                    for (let torrent of result) {
                         torrentList += `\n\n[${torrent.title}](${torrent.magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrent.magnet) : torrent.desc})\n${torrent.size} | ${torrent.seeds} seeders | ${torrent.provider}`;
                     }
                     torrentMsg.edit(new Discord.RichEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0xFF0000))
@@ -863,7 +866,7 @@ client.on('message', async message => {
             // Uses rato_plaquista as templete for text
 
             // Value cannot be empty
-            if (!cleanMessageText){
+            if (!cleanMessageText) {
                 message.channel.send(`You must write something after the command.`);
                 logMessage = "No text parameter";
                 break;
@@ -875,19 +878,19 @@ client.on('message', async message => {
                 Jimp.loadFont('src/rato/font/rato_fontista.fnt').then(font => {
                     image.print(font, 240, 40, cleanMessageText, 530);
                     image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(result => {
-                        message.channel.send("", {file: "src/rato/rato_plaquistaEditado.jpg"});
+                        message.channel.send("", { file: "src/rato/rato_plaquistaEditado.jpg" });
                     })
                 });
-            });            
+            });
             break;
-        case 'rato': 
+        case 'rato':
             // Generates a message with a random 'rato tenista' image
-            message.channel.send(`ei!! por favor pare!\nisto me deixa`, {file: `src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`});
+            message.channel.send(`ei!! por favor pare!\nisto me deixa`, { file: `src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg` });
             break;
         case 'emoji':
             // Converts the inputed message to discord's regional emojis
             let sentence = "";
-            for (let letter of cleanMessageText){
+            for (let letter of cleanMessageText) {
                 switch (letter) {
                     case " ":
                         sentence += "  ";
@@ -924,16 +927,63 @@ client.on('message', async message => {
                         break;
                     default:
                         let char = letter.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
-                        if (/[$-/:-?{-~!@#"^_`\[\]]/.test(char)){
+                        if (/[$-/:-?{-~!@#"^_`\[\]]/.test(char)) {
                             sentence += char + " ";
                         }
-                        else{
+                        else {
                             sentence += ":regional_indicator_" + char + ": ";
                         }
                         break;
                 }
             }
             message.channel.send(sentence);
+            break;
+        case 'random':
+            // Without animation
+            // TODO: Append 1), 2), 3) at the star of each option?
+
+            if (!messageText)
+                message.channel.send(`Separate each option with a comma ","\nUsage: \`!random Apple, Orange, Pineapple, [...]\``)
+            let commaArgs = messageText.split(/,+/g);
+            let winner = Math.floor(Math.random() * commaArgs.length)
+            let embedColors = [0xFF0000, 0x00FF00, 0x0000FF, 0x808080, 0xFFFF00];
+            let embedEmojis = ['🍀', '🤞', '🎲', '🎰', '🌠']
+            commaArgs[winner] = `\\> ${commaArgs[winner]} <`
+            message.channel.send(
+                new Discord.RichEmbed()
+                    .setTitle(`${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]} Random Picker ${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]}`)
+                    .setColor(embedColors[Math.floor(Math.random() * embedColors.length)])
+                    .setDescription(commaArgs.join(`\n\n`))
+            );
+
+            // With animation - wip, im scared because rate limiter
+            // TODO: Enter channel and play casino sound?
+
+            // if (!messageText)
+            //     return message.channel.send(`Separate each option with a comma ","\nUsage: \`!random Apple, Orange, Pineapple, [...]\``);
+            // let embedColors = [0xFF0000, 0x00FF00, 0x0000FF, 0x808080, 0xFFFF00];
+            // let winner = Math.floor(Math.random() * messageText.split(/,+/g).length);
+            // let randomEmbed = new Discord.RichEmbed()
+            //     .setTitle(`🎲 Random Picker 🎲`)
+            //     .setColor(embedColors[0])
+            //     .setDescription(messageText.split(/,+/g).join(`\n`));
+            // let sentEmbed = await message.channel.send(randomEmbed);
+            // for (let i = 0; i < 5; i++) {
+            //     let commaArgs = messageText.split(/,+/g)
+            //     if (i === 4) {
+            //         commaArgs[winner] = `\\> ${commaArgs[winner]} <`;
+            //         sentEmbed.edit(randomEmbed.setDescription(commaArgs.join(`\n`)))
+            //     }
+            //     else {
+            //         let randPosition = Math.floor(Math.random() * commaArgs.length)
+            //         let randColor = Math.floor(Math.random() * embedColors.length)
+            //         commaArgs[randPosition] = `\\> ${commaArgs[randPosition]} <`
+            //         await sentEmbed.edit(randomEmbed
+            //             .setColor(embedColors[randColor])
+            //             .setDescription(commaArgs.join(`\n`))
+            //         )
+            //     }
+            // }
             break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
