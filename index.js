@@ -594,7 +594,7 @@ client.on('message', async message => {
                 // if more than 1 winner => tied
                 if (winners.length > 1) {
                     let tiedWinnersTitle = [];
-                    for (winner in winners) {
+                    for (let winner in winners) {
                         tiedWinnersTitle.push(`\`${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === winners[winner].titleKey)).movies.find(movie => movie.titleKey === winners[winner].titleKey).title}\``);
                     }
                     embedTitle = `😲 It's a tie! 😲`;
