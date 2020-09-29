@@ -125,7 +125,7 @@ async function createTorrentEmbed(winnerTitle, author) {
 
     let description = `\n`;
 
-    if (torrentList.length === 0 || result[0].title === "No results returned")
+    if (torrentList.length === 0 || torrentList[0].title === "No results returned")
         return null;
     else {
         description += createDesc(0);
@@ -348,7 +348,8 @@ client.on('message', async message => {
                         // let description = `Summary of Sunday Night Movie ${specifiedSnm.week}`;
                         let description = `Status: **${specifiedSnm.status}**\n`;
                         for (let userIndex in specifiedSnm.users) {
-                            if (!specifiedSnm.users[userIndex].movies && !specifiedSnm.users[userIndex].rating) continue;
+                            // If user just voted - no entries or ratings = skip user on summary
+                            if (!specifiedSnm.users[userIndex].movies.length > 0 && !specifiedSnm.users[userIndex].rating) continue;
                             printArray[userIndex] = `${specifiedSnm.users[userIndex].username} - \n`;
                             // checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
                             if (specifiedSnm.users[userIndex].movies) {
