@@ -87,8 +87,8 @@ function snmEmbed() {
         description += `Winner: **${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner.titleKey)).movies.find(movie => movie.titleKey === lastSnm.winner.titleKey).title}**\n\n`;
 
     // Builds list ordered by titleKey
-    for (userIndex in lastSnm.users) {
-        for (movieIndex in lastSnm.users[userIndex].movies)
+    for (let userIndex in lastSnm.users) {
+        for (let movieIndex in lastSnm.users[userIndex].movies)
             printArray[lastSnm.users[userIndex].movies[movieIndex].titleKey - 1] = [`${lastSnm.users[userIndex].movies[movieIndex].titleKey}) ${lastSnm.users[userIndex].movies[movieIndex].title}\n`]
     }
 
@@ -125,7 +125,7 @@ async function createTorrentEmbed(winnerTitle, author) {
 
     let description = `\n`;
 
-    if (torrentList.length === 0)
+    if (torrentList.length === 0 || result[0].title === "No results returned")
         return null;
     else {
         description += createDesc(0);
@@ -347,11 +347,12 @@ client.on('message', async message => {
                         // runs through week and get movies, winner and ratings
                         // let description = `Summary of Sunday Night Movie ${specifiedSnm.week}`;
                         let description = `Status: **${specifiedSnm.status}**\n`;
-                        for (userIndex in specifiedSnm.users) {
+                        for (let userIndex in specifiedSnm.users) {
+                            if (!specifiedSnm.users[userIndex].movies && !specifiedSnm.users[userIndex].rating) continue;
                             printArray[userIndex] = `${specifiedSnm.users[userIndex].username} - \n`;
                             // checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
                             if (specifiedSnm.users[userIndex].movies) {
-                                for (movieIndex in specifiedSnm.users[userIndex].movies) {
+                                for (let movieIndex in specifiedSnm.users[userIndex].movies) {
                                     // if movie is the winner, add to description text
                                     if (specifiedSnm.users[userIndex].movies[movieIndex].titleKey === specifiedSnm.winner.titleKey)
                                         description += `Winner: **${specifiedSnm.users[userIndex].movies[movieIndex].title}**${specifiedSnm.winner.voteCount ? ` | ${specifiedSnm.winner.voteCount} votes` : ""}\n\n`;
@@ -572,12 +573,12 @@ client.on('message', async message => {
                 // creates array with titleKey and voteCount (movie:votes)
                 let allVotes = [];
 
-                for (userIndex in lastSnm.users) {
-                    for (movieIndex in lastSnm.users[userIndex].movies) {
+                for (let userIndex in lastSnm.users) {
+                    for (let movieIndex in lastSnm.users[userIndex].movies) {
                         let titleKey = lastSnm.users[userIndex].movies[movieIndex].titleKey
                         !allVotes[titleKey - 1] ? allVotes[titleKey - 1] = { titleKey: titleKey, voteCount: 0 } : allVotes[titleKey - 1].titleKey = titleKey;
                     }
-                    for (voteIndex in lastSnm.users[userIndex].votes) {
+                    for (let voteIndex in lastSnm.users[userIndex].votes) {
                         let voteTitleKey = lastSnm.users[userIndex].votes[voteIndex];
                         !allVotes[voteTitleKey - 1] ? allVotes[voteTitleKey - 1] = { titleKey: null, voteCount: 1 } : allVotes[voteTitleKey - 1].voteCount++
                     }
@@ -692,8 +693,8 @@ client.on('message', async message => {
                 checkNumber = true;
 
             // Checks if there is a movie with the same name as the message string
-            for (userIndex in lastSnm.users) {
-                for (movieIndex in lastSnm.users[userIndex].movies) {
+            for (let userIndex in lastSnm.users) {
+                for (let movieIndex in lastSnm.users[userIndex].movies) {
                     if (lastSnm.users[userIndex].movies[movieIndex].title === messageText) {
                         stringFound = true;
                         // Checks if movie found was submitted by message author
@@ -731,8 +732,8 @@ client.on('message', async message => {
             if (deleted) {
                 deleted = deleted[0]
                 lastSnm.movieCount--;
-                for (userIndex in lastSnm.users) {
-                    for (movieIndex in lastSnm.users[userIndex].movies) {
+                for (let userIndex in lastSnm.users) {
+                    for (let movieIndex in lastSnm.users[userIndex].movies) {
                         if (lastSnm.users[userIndex].movies[movieIndex].titleKey > deleted.titleKey)
                             lastSnm.users[userIndex].movies[movieIndex].titleKey--
                     }
@@ -831,7 +832,7 @@ client.on('message', async message => {
 
             // Searchs torrents
             await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], messageText, null, 3).then((result) => {
-                if (result.length === 0)
+                if (result.length === 0 || result[0].title === "No results returned")
                     torrentMsg.edit('No torrents found :(');
                 else {
                     let torrentList = "";
