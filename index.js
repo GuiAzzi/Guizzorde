@@ -600,7 +600,7 @@ client.on('message', async message => {
                         tiedWinnersTitle.push(`\`${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === winners[winner].titleKey)).movies.find(movie => movie.titleKey === winners[winner].titleKey).title}\``);
                     }
                     embedTitle = `😲 It's a tie! 😲`;
-                    embedDescription = `\n${tiedWinnersTitle.join(" | ")} got ${maxVotes.voteCount} votes each!\nChoosing a movie at random...\n\n`;
+                    embedDescription = `\n${tiedWinnersTitle.join(" | ")} got ${maxVotes.voteCount} votes each!\nRandomly picking a movie...\n\n`;
                     msgToEdit = await message.channel.send(new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `Checking...`).setColor(0xFF0000));
                     let rndWinnerPos = Math.floor(Math.random() * winners.length);
                     lastSnm.winner = winners[rndWinnerPos];
