@@ -1,7 +1,8 @@
 const Discord = require('discord.js');
+const cron = require('cron');
 const Jimp = require('jimp/dist');
-const mongodb = require('mongodb');
 const torrentSearch = require('torrent-search-api');
+const mongodb = require('mongodb');
 const fs = require('fs');
 const randomEmoji = require('./src/random-emoji.js');
 torrentSearch.enablePublicProviders();
@@ -26,10 +27,38 @@ let lastSnm;
 // torrentMessage id - short lived, should not be saved to database - used to swap to second option
 let torrentMessage;
 
+// SNM CONFIGS
 // Number of entries allowed by each user
 const NUMBEROFENTRIES = 1;
 // Number of votes allowed by each user
 const NUMBEROFVOTES = 2;
+// Sets to local config channel else sets to #Top Server BR's snm channel
+const SNMCHANNEL = config ? config.testSNMChannel : '556546153689120793';
+// !snmNew
+const snmNewJob = new cron.CronJob('0 8 * * 1', () => {
+    client.channels.get(SNMCHANNEL).send('!snmNew')
+}, null, false, 'America/Sao_Paulo');
+// !snmStart
+const snmStartJob = new cron.CronJob('0 20 * * 5', () => {
+    client.channels.get(SNMCHANNEL).send('!snmStart')
+}, null, false, 'America/Sao_Paulo');
+// !snmEnd
+const snmEndJob = new cron.CronJob('0 20 * * 6', () => {
+    client.channels.get(SNMCHANNEL).send('!snmEnd')
+}, null, false, 'America/Sao_Paulo');
+// Starts or stops SNM Scheduled jobs
+const snmToggleJobs = (start) => {
+    if (start) {
+        snmNewJob.start();
+        snmStartJob.start();
+        snmEndJob.start();
+    }
+    else {
+        snmNewJob.stop();
+        snmStartJob.stop();
+        snmEndJob.stop();
+    }
+}
 
 const client = new Discord.Client();
 
@@ -78,7 +107,7 @@ function insertNewSnm(newSnm, callback) {
 }
 
 function snmEmbed() {
-    let description = 'Status: **' + lastSnm.status + '**\n\n';
+    let description = `Status: **${lastSnm.paused ? 'paused' : lastSnm.status}**\n\n`;
     let footer = "";
     let printArray = [];
 
@@ -137,36 +166,44 @@ async function createTorrentEmbed(winnerTitle, author) {
 }
 
 client.on('ready', () => {
-    // This event will run if the bot starts, and logs in, successfully.
     console.log(`${client.user.username} has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
-    // Example of changing the bot's playing game to something useful. `client.user` is what the
-    // docs refer to as the "ClientUser".
     client.user.setActivity(`Beep boop`);
 
-    mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-
-        mongoClient.db(herokuDb).collection(collection).findOne({}, { sort: { week: -1 }, limit: 1 }, (err, result) => {
+    // Gets latest SNM
+    try {
+        mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
             if (err) {
                 console.log(err);
                 throw err;
             }
 
-            lastSnm = result;
+            mongoClient.db(herokuDb).collection(collection).findOne({}, { sort: { week: -1 }, limit: 1 }, (err, result) => {
+                if (err) {
+                    console.log(err);
+                    throw err;
+                }
 
-            // if there is a vote going on, add voting message to cache
-            if (lastSnm.voteMessage) {
-                client.channels.get(lastSnm.voteMessage.channelId).fetchMessage(lastSnm.voteMessage.messageId).then((msg) => {
-                    msg.edit();
-                });
-            }
+                lastSnm = result;
 
-            mongoClient.close();
+                // Schedule SNM Comands
+                if (!lastSnm.paused) {
+                    snmToggleJobs(true);
+                }
+
+                // if there is a vote going on, add voting message to cache
+                if (lastSnm.voteMessage) {
+                    client.channels.get(lastSnm.voteMessage.channelId).fetchMessage(lastSnm.voteMessage.messageId).then((msg) => {
+                        msg.edit();
+                    });
+                }
+
+                mongoClient.close();
+            });
         });
-    });
+    }
+    catch (e) {
+        client.fetchUser(ownerId).then((res) => res.send(e))
+    }
 });
 
 // client.on('raw', event => {
@@ -182,6 +219,7 @@ client.on('ready', () => {
 
 client.on('error', (error) => {
     console.log(error)
+    client.fetchUser(ownerId).then((res) => res.send(error))
 });
 
 client.on('messageReactionAdd', (reaction, user) => {
@@ -243,7 +281,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 client.on('message', async message => {
 
     // If message is from another bot, ignore
-    if (message.author.bot) return;
+    if (message.author.bot && message.author.id !== client.user.id) return;
 
     // If message does not contain prefix, ignore
     if (message.content.indexOf(prefix) !== 0) return;
@@ -278,6 +316,7 @@ client.on('message', async message => {
                 \n!snmStart - Initiate voting
                 \n!snmVotes [clear] - See your votes or clear them
                 \n!snmEnd [winner title or position] - Count votes or manually select a winner
+                \n!snmPause - Pauses/Unpauses this week's SNM - stops command scheduling
                 \n!snmAdd <movie title> - Adds a movie to this week's pool
                 \n!snmRemove <movie title or number> - Removes a movie from the week's pool
                 \n!snmRate <text> - Leaves a rating note for this week's movie
@@ -346,7 +385,7 @@ client.on('message', async message => {
 
                         // runs through week and get movies, winner and ratings
                         // let description = `Summary of Sunday Night Movie ${specifiedSnm.week}`;
-                        let description = `Status: **${specifiedSnm.status}**\n`;
+                        let description = `Status: **${specifiedSnm.paused ? 'paused' : specifiedSnm.status}**\n`;
                         for (let userIndex in specifiedSnm.users) {
                             // If user just voted - no entries or ratings = skip user on summary
                             if (!specifiedSnm.users[userIndex].movies.length > 0 && !specifiedSnm.users[userIndex].rating) continue;
@@ -630,6 +669,24 @@ client.on('message', async message => {
             });
 
             logMessage = `Winner is **${winnerMovie.title}**`;
+
+            break;
+        case 'snmpause':
+            // can only be done by owner - for now.
+            if (message.author.id != ownerId) {
+                message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
+                logMessage = "Author is not owner"
+                break;
+            }
+            // Pauses/Unpauses current SNM
+            lastSnm.paused = !lastSnm.paused;
+            saveSnmFile(() => {
+                // paused = true -> stops jobs
+                // paused = false -> starts jobs
+                snmToggleJobs(!lastSnm.paused);
+                message.channel.send(`SNM ${lastSnm.week} is now \`${lastSnm.paused ? 'paused' : 'unpaused'}\``);
+                logMessage = `${lastSnm.paused ? 'Paused' : 'Unpaused'} SNM ${lastSnm.week}`;
+            });
 
             break;
         case 'snmadd':
