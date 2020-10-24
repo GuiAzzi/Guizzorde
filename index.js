@@ -420,8 +420,14 @@ client.on('message', async message => {
 
             break;
         case 'snmnew':
+            // can only be done by owner and self - for now.
+            if (message.author.id != ownerId && message.author.id != client.user.id) {
+                message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
+                logMessage = "Author is not owner"
+                break;
+            }
             // Can only start a new SNM if last one is finished
-            if (lastSnm.status != "finished") {
+            else if (lastSnm.status != "finished") {
                 message.channel.send(`\`Sunday Night Movie ${lastSnm.week}\` is stil \`${lastSnm.status}\``);
                 logMessage = `Last SNM is ${lastSnm.status}`;
                 break;
@@ -450,8 +456,8 @@ client.on('message', async message => {
         case 'snmstart':
             // Starts voting system
 
-            // can only be done by owner - for now.
-            if (message.author.id != ownerId) {
+            // can only be done by owner and self - for now.
+            if (message.author.id != ownerId && message.author.id != client.user.id) {
                 message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
                 logMessage = "Author is not owner"
                 break;
@@ -574,8 +580,8 @@ client.on('message', async message => {
             let embedTitle;
             let embedDescription;
 
-            // can only be done by owner - for now.
-            if (message.author.id != ownerId) {
+            // can only be done by owner and self - for now.
+            if (message.author.id != ownerId && message.author.id != client.user.id) {
                 message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
                 logMessage = "Author is not owner"
                 break;
