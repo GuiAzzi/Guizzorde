@@ -326,7 +326,7 @@ client.on('message', async message => {
                 \n!rato - Gets a random tenista™
                 \n!ratoTenista <message> - Make rato tenista say something
                 \n!emoji <message> - Converts your message into Discord's regional indicator emojis :abc:
-                \n!random <option1, option2, option3, [...]> - Randomly picks from one of the options typed
+                \n!random <option1, option2, option3, ...> - Randomly picks from one of the options
                 
                 **<> means a parameter is mandatory and [] is optional**`;
 
@@ -345,11 +345,13 @@ client.on('message', async message => {
             m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
             break;
         case 'say':
-            // Makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-            // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
             message.delete().catch(O_o => { });
-            // And we get the bot to say the thing: 
-            message.channel.send(messageText);
+            // Removes any command from the text, so the bot doesn't execute !snmStart or loops !say for example
+            const sendMessage = messageText.replace(/!\w+/gim, '');
+            if (sendMessage)
+                message.channel.send(sendMessage);
+            else
+                message.author.send(`You forgot to tell me what to say.\nUsage: \`!say <something>\``);
             break;
         case 'snm':
             // Sends rich embed with SNM infos
