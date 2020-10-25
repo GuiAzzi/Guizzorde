@@ -64,9 +64,9 @@ const snmToggleJobs = (start) => {
 // OS Config
 const OSCredentials = config ? config.OSCredentials : process.env.OSCREDENTIALS.split(',');
 const OpenSubtitles = new OS({
-    useragent: 'TemporaryUserAgent',
-    username: OSCredentials[0],
-    password: OSCredentials[1],
+    useragent: OSCredentials[0],
+    username: OSCredentials[1],
+    password: OSCredentials[2],
     ssl: true
 });
 
