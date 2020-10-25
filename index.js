@@ -357,7 +357,8 @@ client.on('message', async message => {
                 \n!snmRemove <movie title or number> - Removes a movie from the week's pool
                 \n!snmRate <text> - Leaves a rating note for this week's movie
                 \n!snmExport [week number] - Creates a text file with all SNM™ data
-                \n!torrent Searchs for torrents on public trackers and returns first result's magnet link
+                \n!torrent Searches for torrents on public trackers and returns first result's magnet link
+                \n!subtitle <title> [language] - Searches for a subtitle file
                 \n!clear - 👀 ||don't||
                 \n!rato - Gets a random tenista™
                 \n!ratoTenista <message> - Make rato tenista say something
