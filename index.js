@@ -668,7 +668,7 @@ client.on('message', async message => {
                 msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`)).then(async function (msg) {
                     let torrentEmbed = await createTorrentEmbed(winnerMovie.title, message.author);
                     if (!torrentEmbed)
-                        msg.edit(finalEmbed.setFooter(`No torrents found 🤔`));
+                        msg.edit(finalEmbed.setFooter(`No torrent found 🤔`));
                     else {
                         msg.edit(finalEmbed.setFooter(" "));
                         message.channel.send(torrentEmbed).then((msg) => torrentMessage = msg);
@@ -899,13 +899,16 @@ client.on('message', async message => {
             // Searchs torrents
             await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], messageText, null, 3).then((result) => {
                 if (result.length === 0 || result[0].title === "No results returned")
-                    torrentMsg.edit('No torrents found :(');
+                    torrentMsg.edit('No torrent found :(');
                 else {
                     let torrentList = "";
                     for (let torrent of result) {
                         torrentList += `\n\n[${torrent.title}](${torrent.magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrent.magnet) : torrent.desc})\n${torrent.size} | ${torrent.seeds} seeders | ${torrent.provider}`;
                     }
-                    torrentMsg.edit(new Discord.RichEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0xFF0000))
+                    let torrentEmbed = new Discord.RichEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0xFF0000)
+                    if (message.channel.guild)
+                        torrentEmbed.setFooter(`Tip: You can use this command via DM!`);
+                    torrentMsg.edit(torrentEmbed);
                 }
             })
 
