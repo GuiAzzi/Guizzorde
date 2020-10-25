@@ -962,10 +962,10 @@ client.on('message', async message => {
             // We need this to search the object
             let objLang = 'en';
 
-            if (lang === 'en' || lang === 'eng' || lang === 'en-us' || lang === 'english' || lang === 'ingles' || lang === 'inglês') {
+            if (lang === 'en' || lang === 'eng' || lang === 'en-us' || lang === 'enus' || lang === 'english' || lang === 'ingles' || lang === 'inglês') {
                 sub = await searchSubtitle(cleanArgs.join(' '), lang).catch(e => reportError(e));
             }
-            else if (lang === 'pt' || lang === 'pob' || lang === 'pb' || lang === 'pt-br' || lang === 'portugues' || lang === 'português' || lang === 'portuguese' || lang === 'por') {
+            else if (lang === 'pt' || lang === 'pob' || lang === 'pb' || lang === 'pt-br' || lang === 'ptbr' || lang === 'portugues' || lang === 'português' || lang === 'portuguese' || lang === 'por') {
                 lang = 'pob';
                 objLang = 'pb';
                 sub = await searchSubtitle(cleanArgs.join(' '), lang).catch(e => reportError(e));
