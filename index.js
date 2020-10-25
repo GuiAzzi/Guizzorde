@@ -921,6 +921,7 @@ client.on('message', async message => {
             break;
         case 'torrent':
             // Search for a torrent on a list of providers
+            const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)']
 
             // Value cannot be empty
             if (!messageText) {
@@ -943,7 +944,9 @@ client.on('message', async message => {
                     }
                     let torrentEmbed = new Discord.RichEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0x3498DB);
                     if (message.channel.guild)
-                        torrentEmbed.setFooter(`Tip: You can use this command via DM!`);
+                        torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
+                    else 
+                        torrentEmbed.setFooter(`Tip: ${tips[1]}`);
                     torrentMsg.edit(torrentEmbed);
                 }
             })
