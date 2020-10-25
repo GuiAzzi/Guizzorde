@@ -1000,7 +1000,7 @@ client.on('message', async message => {
             }
             catch (e) {
                 reportError(e);
-                message.channel.send(subEmbed.setDescription(`And error has occured. Tell my master about it.`));
+                message.channel.send(subEmbed.setDescription(`An error has occured. Tell my master about it.`));
             }
             break;
         case 'clear':
