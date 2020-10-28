@@ -483,9 +483,9 @@ client.on('message', async message => {
             message.delete().catch(O_o => { });
 
             insertNewSnm(newSnm, () => {
-                let crewRole
+                let snmRole
                 if (message.channel.guild)
-                    crewRole = message.guild.roles.find((role) => role.name === "Crew");
+                    snmRole = message.guild.roles.find((role) => role.name === "SNM™");
                 message.channel.send(`\`Sunday Night Movie ${lastSnm.week}\` requests are now open!\n\`!snmAdd <movie name>\` to request a movie.`);
             })
 
@@ -527,12 +527,12 @@ client.on('message', async message => {
             lastSnm.status = 'voting';
             message.delete().catch(O_o => { });
 
-            // Check for Crew role
-            let crewRole;
+            // Check for SNM role
+            let snmRole;
             if (message.channel.guild)
-                crewRole = message.guild.roles.find((role) => role.name === "Crew");
+                snmRole = message.guild.roles.find((role) => role.name === "SNM™");
 
-            message.channel.send(`${crewRole ? "<@&" + crewRole.id + "> " : ""}\nVoting has started 😱`);
+            message.channel.send(`${snmRole ? "<@&" + snmRole.id + "> " : ""}\nVoting has started 😱`);
             let voteMessage = await message.channel.send(new Discord.RichEmbed().setTitle(`🛠 Building... 🛠`));
             // need to save the message id in case bot crashes
             lastSnm.voteMessage = { channelId: voteMessage.channel.id, messageId: voteMessage.id };
