@@ -364,6 +364,7 @@ client.on('message', async message => {
                 \n!ratoTenista <message> - Make rato tenista say something
                 \n!emoji <message> - Converts your message into Discord's regional indicator emojis :abc:
                 \n!random <option1, option2, option3, ...> - Randomly picks from one of the options
+                \n!poll <Poll Title>, Apple, Orange, Pineapple, ... - Starts a poll that people can vote on
                 
                 **<> means a parameter is mandatory and [] is optional**`;
 
@@ -946,7 +947,7 @@ client.on('message', async message => {
                     let torrentEmbed = new Discord.RichEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0x3498DB);
                     if (message.channel.guild)
                         torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
-                    else 
+                    else
                         torrentEmbed.setFooter(`Tip: ${tips[1]}`);
                     torrentMsg.edit(torrentEmbed);
                 }
@@ -1102,8 +1103,11 @@ client.on('message', async message => {
             // Without animation
             // TODO: Append 1), 2), 3) at the star of each option?
 
-            if (!messageText)
-                message.channel.send(`Separate each option with a comma ","\nUsage: \`!random Apple, Orange, Pineapple, [...]\``)
+            if (!messageText) {
+                message.channel.send(`Separate each option with a comma ","\nUsage: \`!random Apple, Orange, Pineapple, ...\``)
+                logMessage = 'No options';
+                break;
+            }
             let commaArgs = messageText.split(/,+/g);
             let winner = Math.floor(Math.random() * commaArgs.length)
             let embedColors = [0xFF0000, 0x00FF00, 0x0000FF, 0x808080, 0xFFFF00, 0x3498DB];
@@ -1120,7 +1124,7 @@ client.on('message', async message => {
             // TODO: Enter channel and play casino sound?
 
             // if (!messageText)
-            //     return message.channel.send(`Separate each option with a comma ","\nUsage: \`!random Apple, Orange, Pineapple, [...]\``);
+            //     return message.channel.send(`Separate each option with a comma ","\nUsage: \`!random Apple, Orange, Pineapple, ...\``);
             // let embedColors = [0xFF0000, 0x00FF00, 0x0000FF, 0x808080, 0xFFFF00];
             // let winner = Math.floor(Math.random() * messageText.split(/,+/g).length);
             // let randomEmbed = new Discord.RichEmbed()
@@ -1144,6 +1148,57 @@ client.on('message', async message => {
             //         )
             //     }
             // }
+            break;
+        case 'poll':
+            if (!messageText) {
+                message.channel.send(`Separate each option with a comma ","\nUsage: \`!poll <Poll Title>, Apple, Orange, Pineapple, ...\`\nThe first parameter is always the title`);
+                logMessage = 'No options';
+                break;
+            }
+            // Get options
+            const pollOptions = messageText.split(/,+/g);
+            const pollTitle = pollOptions.splice(0, 1);
+            // If no args beside title
+            if (pollOptions.length === 0) {
+                message.channel.send(`Separate each option with a comma ","\nUsage: \`!poll <Poll Title>, Apple, Orange, Pineapple, ...\`\nThe first parameter is always the title`);
+                logMessage = 'No options';
+                break;
+            };
+            // Get server custom emojis
+            const serverEmojis = message.guild.emojis;
+            // Each arg will be assigned an emoji. Chosen emojis will be stored here.
+            const pickedEmojis = [];
+
+            for (let i = 0; i < pollOptions.length; i++){
+                if (serverEmojis.size !== 0){
+                    let rndEmoji = serverEmojis.random()
+                    pickedEmojis.push(rndEmoji);
+                    serverEmojis.delete(rndEmoji.id);
+                    console.log(serverEmojis.size)
+                    pollOptions[i] = `<:${pickedEmojis[i].name}:${pickedEmojis[i].id}> - ${pollOptions[i]}`;
+                }
+                else {
+                    let rndEmoji = randomEmoji();
+                    while (pickedEmojis.includes(rndEmoji))
+                        rndEmoji = randomEmoji();
+                    pickedEmojis.push(rndEmoji);
+                    pollOptions[i] = `${pickedEmojis[i]} - ${pollOptions[i]}`;
+                }
+            }
+
+            // Sends poll embed
+            const msg = await message.channel.send(
+                new Discord.RichEmbed()
+                    .setTitle(pollTitle)
+                    .setColor(0x3498DB)
+                    .setDescription(pollOptions.join(`\n\n`))
+                    .setFooter('Vote by reacting with the corresponding emoji')
+            );
+
+            // Reacts to embed accordingly
+            for(let i = 0; i < pollOptions.length; i++) {
+                await msg.react(pickedEmojis[i]);
+            };
             break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
