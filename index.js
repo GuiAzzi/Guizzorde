@@ -1154,7 +1154,7 @@ client.on('message', async message => {
                 message.channel.send(`Separate each option with a comma ","\nUsage: \`!poll <Poll Title>, Apple, Orange, Pineapple, ...\`\nThe first parameter is always the title`);
                 logMessage = 'No options';
                 break;
-            }
+            } 
             // Get options
             const pollOptions = messageText.split(/,+/g);
             const pollTitle = pollOptions.splice(0, 1);
@@ -1165,7 +1165,7 @@ client.on('message', async message => {
                 break;
             };
             // Get server custom emojis
-            const serverEmojis = message.guild.emojis;
+            const serverEmojis = message.channel.guild ? message.guild.emojis : {size: 0};
             // Each arg will be assigned an emoji. Chosen emojis will be stored here.
             const pickedEmojis = [];
 
