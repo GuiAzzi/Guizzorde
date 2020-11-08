@@ -268,7 +268,12 @@ client.on('messageReactionAdd', (reaction, user) => {
 
             // User added a new reaction ( = did not click an existing reaction), remove and do nothing
             if (reaction.count === 1) {
+                console.log(`${user.username} - Invalid reaction on SNM`);
                 return;
+            }
+            else if (lastSnm.status !== "voting") {
+                console.log(`${user.username} - Voting has ended`);
+                return client.users.get(user.id).send(`Voting has ended`);
             }
 
             let userObject = lastSnm.users.find(userIndex => userIndex.userId === user.id)
@@ -1174,7 +1179,6 @@ client.on('message', async message => {
                     let rndEmoji = serverEmojis.random()
                     pickedEmojis.push(rndEmoji);
                     serverEmojis.delete(rndEmoji.id);
-                    console.log(serverEmojis.size)
                     pollOptions[i] = `<:${pickedEmojis[i].name}:${pickedEmojis[i].id}> - ${pollOptions[i]}`;
                 }
                 else {
