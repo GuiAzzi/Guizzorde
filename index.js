@@ -258,23 +258,27 @@ client.on('error', (error) => {
     reportError(error);
 });
 
-client.on('messageReactionAdd', (reaction, user) => {
+client.on('messageReactionAdd', async (reaction, user) => {
     // reactions from self, do nothing
     if (user.id === client.user.id) return;
     // reaction on snm voting message
     else if (lastSnm.voteMessage && reaction.message.id === lastSnm.voteMessage.messageId) {
         if (reaction.users.find(userIndex => userIndex.id === user.id)) {
-            reaction.remove(user);
 
             // User added a new reaction ( = did not click an existing reaction), remove and do nothing
             if (reaction.count === 1) {
+                await reaction.remove(user);
                 console.log(`${user.username} - Invalid reaction on SNM`);
                 return;
             }
+            // If SNM not voting, remove and warn user
             else if (lastSnm.status !== "voting") {
+                await reaction.remove(user);
                 console.log(`${user.username} - Voting has ended`);
                 return client.users.get(user.id).send(`Voting has ended`);
             }
+            // Else - remove and save vote
+            await reaction.remove(user);
 
             let userObject = lastSnm.users.find(userIndex => userIndex.userId === user.id)
             let movieTitleKey = lastSnm.emojisUsed.find(emoji => emoji.emoji === reaction.emoji.identifier || emoji.emoji === reaction.emoji.name).titleKey;
