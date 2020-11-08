@@ -157,7 +157,7 @@ function snmEmbed() {
 async function createTorrentEmbed(winnerTitle, author) {
 
     // Gets torrent number and creates embed description
-    createDesc = (i, subUrl) => `[${torrentList[i].title}](${torrentList[i].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrentList[i].magnet) : torrentList[i].desc})\n${torrentList[i].size} | ${torrentList[i].seeds} seeders | ${torrentList[i].provider} ${subUrl ? ` | [Subtitle](${subUrl})` : null}`;
+    createDesc = (i, subUrl) => `[${torrentList[i].title}](${torrentList[i].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrentList[i].magnet) : torrentList[i].desc})\n${torrentList[i].size} | ${torrentList[i].seeds} seeders | ${torrentList[i].provider} ${subUrl['pb'] ? ` | [Subtitle](${subUrl['pb'].url})` : null}`;
 
     // Searchs torrents
     let torrentList = await torrentSearch.search(['Rarbg'], winnerTitle + " 1080", 'Movies', 2).catch((e) => {
