@@ -19,7 +19,7 @@
   "homepage": "https://github.com/GuiAzzi/Guizzorde#readme",
   "dependencies": {
     "cron": "^1.8.2",
-    "discord.js": "^11.4.2",
+    "discord.js": "^12.4.1",
     "jimp": "^0.7.0",
     "mongodb": "^3.1.13",
     "opensubtitles-api": "^5.1.2",

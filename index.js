@@ -37,15 +37,15 @@ const NUMBEROFVOTES = 2;
 const SNMCHANNEL = config ? config.testSNMChannel : '556546153689120793';
 // !snmNew
 const snmNewJob = new cron.CronJob('0 8 * * 1', () => {
-    client.channels.get(SNMCHANNEL).send('!snmNew')
+    client.channels.cache.get(SNMCHANNEL).send('!snmNew');
 }, null, false, 'America/Sao_Paulo');
 // !snmStart
 const snmStartJob = new cron.CronJob('0 20 * * 5', () => {
-    client.channels.get(SNMCHANNEL).send('!snmStart')
+    client.channels.cache.get(SNMCHANNEL).send('!snmStart');
 }, null, false, 'America/Sao_Paulo');
 // !snmEnd
 const snmEndJob = new cron.CronJob('0 20 * * 6', () => {
-    client.channels.get(SNMCHANNEL).send('!snmEnd')
+    client.channels.cache.get(SNMCHANNEL).send('!snmEnd');
 }, null, false, 'America/Sao_Paulo');
 // Starts or stops SNM Scheduled jobs
 const snmToggleJobs = (start) => {
@@ -70,7 +70,7 @@ const OpenSubtitles = new OS({
     ssl: true
 });
 
-const client = new Discord.Client();
+const client = new Discord.Client({ partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'] });
 
 /**
  * Saves the snmFile from snm variable
@@ -141,7 +141,7 @@ function snmEmbed() {
     else if (lastSnm.status === "voting")
         footer = `Votings are open! Go vote 🔥`;
 
-    let embed = new Discord.RichEmbed()
+    let embed = new Discord.MessageEmbed()
         // Set the title of the field
         .setTitle(`🌟 Sunday Night Movie ${lastSnm.week} 🌟`)
         // Set the color of the embed
@@ -177,19 +177,19 @@ async function createTorrentEmbed(winnerTitle, author) {
 
         description += createDesc(0, subUrl);
         // Sends second torrent option to author
-        author.send(new Discord.RichEmbed()
+        author.send(new Discord.MessageEmbed()
             .setTitle(`SNM ${lastSnm.week} Second Option`)
             .setColor(0x3498DB)
             .setDescription(createDesc(1, altUrl))
             .setFooter(`click the reaction to swap to this`)).then((msg) => msg.react('🔄'));
     }
 
-    return new Discord.RichEmbed().setTitle(`Torrent and Subtitle`).setColor(0x3498DB).setDescription(description);
+    return new Discord.MessageEmbed().setTitle(`Torrent and Subtitle`).setColor(0x3498DB).setDescription(description);
 }
 
 const reportError = (error) => {
-    console.log(error)
-    client.fetchUser(ownerId).then((res) => res.send(error))
+    console.log(error);
+    client.users.fetch(ownerId).then((res) => res.send(error));
 }
 
 const searchSubtitle = async (title, lang = 'eng') => {
@@ -203,7 +203,7 @@ const searchSubtitle = async (title, lang = 'eng') => {
 }
 
 client.on('ready', () => {
-    console.log(`${client.user.username} has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
+    console.log(`${client.user.username} has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.user.setActivity(`Beep boop`);
 
     // Gets latest SNM
@@ -229,8 +229,8 @@ client.on('ready', () => {
 
                 // if there is a vote going on, add voting message to cache
                 if (lastSnm.voteMessage) {
-                    client.channels.get(lastSnm.voteMessage.channelId).fetchMessage(lastSnm.voteMessage.messageId).then((msg) => {
-                        msg.edit();
+                    client.channels.fetch(lastSnm.voteMessage.channelId).then(channel => {
+                        channel.messages.fetch(lastSnm.voteMessage.messageId);
                     });
                 }
 
@@ -263,22 +263,19 @@ client.on('messageReactionAdd', async (reaction, user) => {
     if (user.id === client.user.id) return;
     // reaction on snm voting message
     else if (lastSnm.voteMessage && reaction.message.id === lastSnm.voteMessage.messageId) {
-        if (reaction.users.find(userIndex => userIndex.id === user.id)) {
+        if (reaction.users.cache.find(userIndex => userIndex.id === user.id)) {
+            await reaction.users.remove(user);
 
             // User added a new reaction ( = did not click an existing reaction), remove and do nothing
             if (reaction.count === 1) {
-                await reaction.remove(user);
                 console.log(`${user.username} - Invalid reaction on SNM`);
                 return;
             }
             // If SNM not voting, remove and warn user
             else if (lastSnm.status !== "voting") {
-                await reaction.remove(user);
                 console.log(`${user.username} - Voting has ended`);
-                return client.users.get(user.id).send(`Voting has ended`);
+                return client.users.cache.get(user.id).send(`Voting has ended`);
             }
-            // Else - remove and save vote
-            await reaction.remove(user);
 
             let userObject = lastSnm.users.find(userIndex => userIndex.userId === user.id)
             let movieTitleKey = lastSnm.emojisUsed.find(emoji => emoji.emoji === reaction.emoji.identifier || emoji.emoji === reaction.emoji.name).titleKey;
@@ -288,37 +285,38 @@ client.on('messageReactionAdd', async (reaction, user) => {
                 let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
                 userObject = lastSnm.users[lastSnm.users.push({ userId: user.id, username: user.username, movies: [], votes: [movieTitleKey] }) - 1];
                 saveSnmFile(() => { });
-                client.users.get(user.id).send(`You voted on \`${movieTitle}\``);
+                client.users.cache.get(user.id).send(`You voted on \`${movieTitle}\``);
                 console.log(`Added user ${user.username} with his/her vote`);
             }
             // user already voted on that movie
             else if (userObject.votes.includes(movieTitleKey)) {
-                client.users.get(user.id).send(`You already voted on that movie.`);
+                client.users.cache.get(user.id).send(`You already voted on that movie.`);
                 console.log(`Duplicate vote`);
             }
             // valid vote
             else if (userObject.votes.length < NUMBEROFVOTES) {
                 let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
                 userObject.votes.push(movieTitleKey);
-                client.users.get(user.id).send(`You voted on \`${movieTitle}\``);
+                client.users.cache.get(user.id).send(`You voted on \`${movieTitle}\``);
                 saveSnmFile(() => { });
                 console.log(`${user.username} voted. ${userObject.votes.length}/${NUMBEROFVOTES}`);
             }
             // no votes left
             else {
-                client.users.get(user.id).send(`You have no votes left. Type \`!snmVotes clear\` to reset all your votes.`);
+                client.users.cache.get(user.id).send(`You have no votes left.\n\`!snmVotes clear\` to reset all your votes.`);
                 console.log(`No votes left`);
             }
         }
     }
     // reaction on torrent second option
     else if (lastSnm.voteMessage && reaction.message.embeds[0].title === `SNM ${lastSnm.week} Second Option`) {
+        await reaction.users.remove(user);
 
         let oldDesc = torrentMessage.embeds[0].description
 
-        torrentMessage.edit(new Discord.RichEmbed().setTitle(`Torrent and Subtitle`).setColor(0x3498DB).setDescription(reaction.message.embeds[0].description))
+        torrentMessage.edit(new Discord.MessageEmbed().setTitle(`Torrent and Subtitle`).setColor(0x3498DB).setDescription(reaction.message.embeds[0].description))
             .then((msg) => {
-                reaction.message.edit(new Discord.RichEmbed().setTitle(`SNM ${lastSnm.week} Second Option`).setColor(0x3498DB).setDescription(oldDesc).setFooter(`click the reaction to swap to this`)).then(() => torrentMessage = msg);
+                reaction.message.edit(new Discord.MessageEmbed().setTitle(`SNM ${lastSnm.week} Second Option`).setColor(0x3498DB).setDescription(oldDesc).setFooter(`click the reaction to swap to this`)).then(() => torrentMessage = msg);
             });
     }
 });
@@ -377,7 +375,7 @@ client.on('message', async message => {
                 
                 **<> means a parameter is mandatory and [] is optional**`;
 
-            const embed = new Discord.RichEmbed()
+            const embed = new Discord.MessageEmbed()
                 // Set the title of the field
                 .setTitle(`Guizzorde Commands`)
                 // Set the color of the embed
@@ -452,7 +450,7 @@ client.on('message', async message => {
                             tempMovies = [];
                         }
 
-                        let embed = new Discord.RichEmbed()
+                        let embed = new Discord.MessageEmbed()
                             // Set the title of the field
                             .setTitle(`📖 Summary of Sunday Night Movie ${specifiedSnm.week} 📖`)
                             // Set the color of the embed
@@ -495,7 +493,7 @@ client.on('message', async message => {
             insertNewSnm(newSnm, () => {
                 let snmRole
                 if (message.channel.guild)
-                    snmRole = message.guild.roles.find((role) => role.name === "SNM™");
+                    snmRole = message.guild.roles.cache.find((role) => role.name === "SNM™");
                 message.channel.send(`\`Sunday Night Movie ${lastSnm.week}\` requests are now open!\n\`!snmAdd <movie name>\` to request a movie.`);
             })
 
@@ -540,16 +538,16 @@ client.on('message', async message => {
             // Check for SNM role
             let snmRole;
             if (message.channel.guild)
-                snmRole = message.guild.roles.find((role) => role.name === "SNM™");
+                snmRole = message.guild.roles.cache.find((role) => role.name === "SNM™");
 
             message.channel.send(`${snmRole ? "<@&" + snmRole.id + "> " : ""}\nVoting has started 😱`);
-            let voteMessage = await message.channel.send(new Discord.RichEmbed().setTitle(`🛠 Building... 🛠`));
+            let voteMessage = await message.channel.send(new Discord.MessageEmbed().setTitle(`🛠 Building... 🛠`));
             // need to save the message id in case bot crashes
             lastSnm.voteMessage = { channelId: voteMessage.channel.id, messageId: voteMessage.id };
 
             // Builds rich embed with a random emoji for each movie
             let printArray = [];
-            let emojiArray = message.guild.emojis;
+            let emojiArray = message.guild.emojis.cache;
             let emojisUsed = [];
 
             lastSnm.users.forEach(user => {
@@ -576,7 +574,7 @@ client.on('message', async message => {
             saveSnmFile(() => { });
 
             // Create the embed with titles, emojis and reactions
-            let votingEmbed = new Discord.RichEmbed()
+            let votingEmbed = new Discord.MessageEmbed()
                 .setTitle(`🌟 Sunday Night Movie ${lastSnm.week} 🌟`)
                 .setColor(0x3498DB)
                 .setDescription(printArray.join(" "))
@@ -646,7 +644,7 @@ client.on('message', async message => {
                 message.delete().catch(O_o => { });
                 embedTitle = `🙌 We have a winner! 🙌`;
                 embedDescription = ""
-                msgToEdit = await message.channel.send(new Discord.RichEmbed().setTitle(embedTitle).setDescription("Checking...").setColor(0x3498DB));
+                msgToEdit = await message.channel.send(new Discord.MessageEmbed().setTitle(embedTitle).setDescription("Checking...").setColor(0x3498DB));
                 winnerMovie = lastSnm.users.find(user => user.movies.find(movie => movie.title === messageText))
                     || lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === Number(messageText)));
                 if (winnerMovie)
@@ -695,7 +693,7 @@ client.on('message', async message => {
                     }
                     embedTitle = `😲 It's a tie! 😲`;
                     embedDescription = `\n${tiedWinnersTitle.join(" | ")} got ${maxVotes.voteCount} votes each!\nRandomly picking a movie...\n\n`;
-                    msgToEdit = await message.channel.send(new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `Checking...`).setColor(0x3498DB));
+                    msgToEdit = await message.channel.send(new Discord.MessageEmbed().setTitle(embedTitle).setDescription(embedDescription + `Checking...`).setColor(0x3498DB));
                     let rndWinnerPos = Math.floor(Math.random() * winners.length);
                     lastSnm.winner = winners[rndWinnerPos];
                     winnerMovie = { title: tiedWinnersTitle[rndWinnerPos].substr(1, tiedWinnersTitle[rndWinnerPos].length - 2) };
@@ -703,7 +701,7 @@ client.on('message', async message => {
                 else {
                     embedTitle = `🙌 We have a winner! 🙌`;
                     embedDescription = `With ${maxVotes.voteCount} votes:\n\n`
-                    msgToEdit = await message.channel.send(new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `Checking...`).setColor(0x3498DB));
+                    msgToEdit = await message.channel.send(new Discord.MessageEmbed().setTitle(embedTitle).setDescription(embedDescription + `Checking...`).setColor(0x3498DB));
                     lastSnm.winner = winners[0];
                     winnerMovie = { title: lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner.titleKey)).movies.find(movie => movie.titleKey === lastSnm.winner.titleKey).title };
                 }
@@ -711,7 +709,7 @@ client.on('message', async message => {
 
             lastSnm.status = "finished";
             saveSnmFile(() => {
-                let finalEmbed = new Discord.RichEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0x3498DB);
+                let finalEmbed = new Discord.MessageEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0x3498DB);
                 msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`)).then(async function (msg) {
                     let torrentEmbed = await createTorrentEmbed(winnerMovie.title, message.author);
                     if (!torrentEmbed)
@@ -916,8 +914,8 @@ client.on('message', async message => {
                         // Exports specific snm.json as file
                         fs.writeFileSync(`SNM${specifiedWeek}.txt`, JSON.stringify(result, null, 2));
                         const buffer = fs.readFileSync(`./SNM${specifiedWeek}.txt`)
-                        const attachment = new Discord.Attachment(buffer, `SNM${specifiedWeek}.txt`);
-                        m.delete(O_o => { });
+                        const attachment = new Discord.MessageAttachment(buffer, `SNM${specifiedWeek}.txt`);
+                        m.delete().catch(O_o => { });
                         message.reply(attachment);
                     });
                 });
@@ -927,7 +925,7 @@ client.on('message', async message => {
             // Exports snm.json as file
             fs.writeFileSync(`SNM${lastSnm.week}.txt`, JSON.stringify(lastSnm, null, 2));
             const buffer = fs.readFileSync(`./SNM${lastSnm.week}.txt`)
-            const attachment = new Discord.Attachment(buffer, `SNM${lastSnm.week}.txt`);
+            const attachment = new Discord.MessageAttachment(buffer, `SNM${lastSnm.week}.txt`);
             message.reply(attachment);
             break;
         case 'torrent':
@@ -947,18 +945,18 @@ client.on('message', async message => {
             // Searchs torrents
             await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], messageText, null, 3).then((result) => {
                 if (result.length === 0 || result[0].title === "No results returned")
-                    torrentMsg.edit(new Discord.RichEmbed().setTitle(`Torrents Found: `).setDescription(`No torrent found 😔`).setColor(0x3498DB));
+                    torrentMsg.edit('', new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(`No torrent found 😔`).setColor(0x3498DB));
                 else {
                     let torrentList = "";
                     for (let torrent of result) {
                         torrentList += `\n\n[${torrent.title}](${torrent.magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrent.magnet) : torrent.desc})\n${torrent.size} | ${torrent.seeds} seeders | ${torrent.provider}`;
                     }
-                    let torrentEmbed = new Discord.RichEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0x3498DB);
+                    let torrentEmbed = new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0x3498DB);
                     if (message.channel.guild)
                         torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
                     else
                         torrentEmbed.setFooter(`Tip: ${tips[1]}`);
-                    torrentMsg.edit(torrentEmbed);
+                    torrentMsg.edit('', torrentEmbed);
                 }
             })
 
@@ -989,7 +987,7 @@ client.on('message', async message => {
                 sub = await searchSubtitle(cleanMessageText).catch(e => reportError(e));
             }
 
-            const subEmbed = new Discord.RichEmbed()
+            const subEmbed = new Discord.MessageEmbed()
                 .setTitle(`Subtitle`)
                 .setColor(0x3498DB)
                 .setFooter(`Tip: You can paste the file name to try a perfect match!`)
@@ -1048,14 +1046,14 @@ client.on('message', async message => {
                 Jimp.loadFont('src/rato/font/rato_fontista.fnt').then(font => {
                     image.print(font, 240, 40, cleanMessageText, 530);
                     image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(result => {
-                        message.channel.send("", { file: "src/rato/rato_plaquistaEditado.jpg" });
+                        message.channel.send("", { files: ["src/rato/rato_plaquistaEditado.jpg"] });
                     })
                 });
             });
             break;
         case 'rato':
             // Generates a message with a random 'rato tenista' image
-            message.channel.send(`ei!! por favor pare!\nisto me deixa`, { file: `src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg` });
+            message.channel.send(`ei!! por favor pare!\nisto me deixa`, { files: [`src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`] });
             break;
         case 'emoji':
             // Converts the inputed message to discord's regional emojis
@@ -1123,7 +1121,7 @@ client.on('message', async message => {
             let embedEmojis = ['🍀', '🤞', '🎲', '🎰', '🌠']
             commaArgs[winner] = `\\> ${commaArgs[winner]} <`
             message.channel.send(
-                new Discord.RichEmbed()
+                new Discord.MessageEmbed()
                     .setTitle(`${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]} Random Picker ${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]}`)
                     .setColor(embedColors[Math.floor(Math.random() * embedColors.length)])
                     .setDescription(commaArgs.join(`\n\n`))
@@ -1136,7 +1134,7 @@ client.on('message', async message => {
             //     return message.channel.send(`Separate each option with a comma ","\nUsage: \`!random Apple, Orange, Pineapple, ...\``);
             // let embedColors = [0xFF0000, 0x00FF00, 0x0000FF, 0x808080, 0xFFFF00];
             // let winner = Math.floor(Math.random() * messageText.split(/,+/g).length);
-            // let randomEmbed = new Discord.RichEmbed()
+            // let randomEmbed = new Discord.MessageEmbed()
             //     .setTitle(`🎲 Random Picker 🎲`)
             //     .setColor(embedColors[0])
             //     .setDescription(messageText.split(/,+/g).join(`\n`));
@@ -1163,7 +1161,7 @@ client.on('message', async message => {
                 message.channel.send(`Separate each option with a comma ","\nUsage: \`!poll <Poll Title>, Apple, Orange, Pineapple, ...\`\nThe first parameter is always the title`);
                 logMessage = 'No options';
                 break;
-            } 
+            }
             // Get options
             const pollOptions = messageText.split(/,+/g);
             const pollTitle = pollOptions.splice(0, 1);
@@ -1174,12 +1172,12 @@ client.on('message', async message => {
                 break;
             };
             // Get server custom emojis
-            const serverEmojis = message.channel.guild ? message.guild.emojis : {size: 0};
+            const serverEmojis = message.channel.guild ? message.guild.emojis : { size: 0 };
             // Each arg will be assigned an emoji. Chosen emojis will be stored here.
             const pickedEmojis = [];
 
-            for (let i = 0; i < pollOptions.length; i++){
-                if (serverEmojis.size !== 0){
+            for (let i = 0; i < pollOptions.length; i++) {
+                if (serverEmojis.size !== 0) {
                     let rndEmoji = serverEmojis.random()
                     pickedEmojis.push(rndEmoji);
                     serverEmojis.delete(rndEmoji.id);
@@ -1196,7 +1194,7 @@ client.on('message', async message => {
 
             // Sends poll embed
             const msg = await message.channel.send(
-                new Discord.RichEmbed()
+                new Discord.MessageEmbed()
                     .setTitle(pollTitle)
                     .setColor(0x3498DB)
                     .setDescription(pollOptions.join(`\n\n`))
@@ -1204,7 +1202,7 @@ client.on('message', async message => {
             );
 
             // Reacts to embed accordingly
-            for(let i = 0; i < pollOptions.length; i++) {
+            for (let i = 0; i < pollOptions.length; i++) {
                 await msg.react(pickedEmojis[i]);
             };
             break;
