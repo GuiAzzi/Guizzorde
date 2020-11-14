@@ -79,13 +79,13 @@ const client = new Discord.Client({ partials: ['USER', 'CHANNEL', 'GUILD_MEMBER'
 function saveSnmFile(callback) {
     mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
         if (err) {
-            console.log(err);
+            console.error(err);
             throw err;
         }
 
         mongoClient.db(herokuDb).collection(collection).replaceOne({ week: lastSnm.week }, lastSnm, (err, result) => {
             if (err) {
-                console.log(err);
+                console.error(err);
                 throw err;
             }
 
@@ -99,13 +99,13 @@ function saveSnmFile(callback) {
 function insertNewSnm(newSnm, callback) {
     mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
         if (err) {
-            console.log(err);
+            console.error(err);
             throw err;
         }
 
         mongoClient.db(herokuDb).collection(collection).insertOne(newSnm, (err, result) => {
             if (err) {
-                console.log(err);
+                console.error(err);
                 throw err;
             }
 
@@ -188,7 +188,7 @@ async function createTorrentEmbed(winnerTitle, author) {
 }
 
 const reportError = (error) => {
-    console.log(error);
+    console.error(error);
     client.users.fetch(ownerId).then((res) => res.send(error));
 }
 
@@ -210,13 +210,13 @@ client.on('ready', () => {
     try {
         mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
             if (err) {
-                console.log(err);
+                console.error(err);
                 throw err;
             }
 
             mongoClient.db(herokuDb).collection(collection).findOne({}, { sort: { week: -1 }, limit: 1 }, (err, result) => {
                 if (err) {
-                    console.log(err);
+                    console.error(err);
                     throw err;
                 }
 
@@ -416,13 +416,13 @@ client.on('message', async message => {
                 let m = await message.channel.send("Checking...");
                 mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
                     if (err) {
-                        console.log(err);
+                        console.error(err);
                         throw err;
                     }
 
                     mongoClient.db(herokuDb).collection(collection).findOne({ week: Number(messageText) }, (err, result) => {
                         if (err) {
-                            console.log(err);
+                            console.error(err);
                             throw err;
                         }
 
@@ -900,13 +900,13 @@ client.on('message', async message => {
                 let m = await message.channel.send(`Exporting...`);
                 mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
                     if (err) {
-                        console.log(err);
+                        console.error(err);
                         throw err;
                     }
 
                     mongoClient.db(herokuDb).collection(collection).findOne({ week: specifiedWeek }, (err, result) => {
                         if (err) {
-                            console.log(err);
+                            console.error(err);
                             throw err;
                         }
                         mongoClient.close();
