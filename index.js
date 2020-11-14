@@ -175,12 +175,12 @@ async function createTorrentEmbed(winnerTitle, author) {
         // Alt torrent
         const altUrl = await searchSubtitle(torrentList[1].title, 'pob').catch((e) => reportError(e));
 
-        description += createDesc(0, subUrl);
+        description += await createDesc(0, subUrl);
         // Sends second torrent option to author
         author.send(new Discord.MessageEmbed()
             .setTitle(`SNM ${lastSnm.week} Second Option`)
             .setColor(0x3498DB)
-            .setDescription(createDesc(1, altUrl))
+            .setDescription(await createDesc(1, altUrl))
             .setFooter(`click the reaction to swap to this`)).then((msg) => msg.react('🔄'));
     }
 
