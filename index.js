@@ -366,7 +366,7 @@ client.on('message', async message => {
                 \n!snmExport [week number] - Creates a text file with all SNM™ data
                 \n!torrent Searches for torrents on public trackers and returns first result's magnet link
                 \n!subtitle <title> [language] - Searches for a subtitle file
-                \n!clear - 👀 ||don't||
+                \n!meme - 👀 ||don't||
                 \n!rato - Gets a random tenista™
                 \n!ratoTenista <message> - Make rato tenista say something
                 \n!emoji <message> - Converts your message into Discord's regional indicator emojis :abc:
@@ -377,7 +377,7 @@ client.on('message', async message => {
 
             const embed = new Discord.MessageEmbed()
                 // Set the title of the field
-                .setTitle(`Guizzorde Commands`)
+                .setTitle(`My Commands`)
                 // Set the color of the embed
                 .setColor('#4286f4')
                 // Set the main content of the embed
@@ -1011,24 +1011,14 @@ client.on('message', async message => {
                 message.channel.send(subEmbed.setDescription(`An error has occured. Tell my master about it.`));
             }
             break;
-        case 'clear':
-            //TODO:
-
-            let meme = ["https://cdn.discordapp.com/attachments/168624317049995264/557765021359276043/VghsxturtIjzwLuU.mp4"];
-
-            message.author.send(`You bad, BAD person 😤\n${meme[Math.floor(Math.random() * meme.length)]}`);
-            // if (command === 'clear') {
-
-            //     if (message.channel.type != 'TextChannel')
-            //         return;
-
-            //     if (message.guild.name === 'Guizzorde Test') {
-            //         message.channel.fetchMessages()
-            //             .then((list) => {
-            //                 message.channel.bulkDelete(list);
-            //             });
-            //     }
-            // }            
+        case 'meme':
+            let memes = [
+                'https://cdn.discordapp.com/attachments/168624317049995264/557765021359276043/VghsxturtIjzwLuU.mp4',
+                'https://cdn.discordapp.com/attachments/168624317049995264/777058314257039421/they_dance.mp4',
+                'https://cdn.discordapp.com/attachments/168624317049995264/777058321970495488/wSsUAVNbJK1L1vlM.mp4',
+                'https://cdn.discordapp.com/attachments/168624317049995264/777058394158530580/Flamingo.mp4'
+            ];
+            message.author.send(memes[Math.floor(Math.random() * memes.length)]);
             break;
         case 'ratotenista':
             // Uses rato_plaquista as templete for text
