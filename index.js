@@ -1016,7 +1016,13 @@ client.on('message', async message => {
                 'https://cdn.discordapp.com/attachments/168624317049995264/557765021359276043/VghsxturtIjzwLuU.mp4',
                 'https://cdn.discordapp.com/attachments/168624317049995264/777058314257039421/they_dance.mp4',
                 'https://cdn.discordapp.com/attachments/168624317049995264/777058321970495488/wSsUAVNbJK1L1vlM.mp4',
-                'https://cdn.discordapp.com/attachments/168624317049995264/777058394158530580/Flamingo.mp4'
+                'https://cdn.discordapp.com/attachments/168624317049995264/777058394158530580/Flamingo.mp4',
+                `https://cdn.discordapp.com/attachments/168624317049995264/777064438904782848/jar1.png
+                https://cdn.discordapp.com/attachments/168624317049995264/777064448804126720/jar2.mp4
+                https://cdn.discordapp.com/attachments/168624317049995264/777064446652186630/jar3.png`,
+                'https://cdn.discordapp.com/attachments/168624317049995264/777065041685905408/lord_vibin.mp4',
+                'https://cdn.discordapp.com/attachments/168624317049995264/777065138011373609/Clap_seal.mp4',
+                'https://cdn.discordapp.com/attachments/168624317049995264/777065294538604554/good_kitty.mp4'
             ];
             message.author.send(memes[Math.floor(Math.random() * memes.length)]);
             break;
