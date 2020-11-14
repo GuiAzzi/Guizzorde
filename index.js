@@ -387,7 +387,7 @@ client.on('message', async message => {
         case 'ping':
             // Calculates ping between sending a message and editing it, giving a nice round-trip latency.
             const m = await message.channel.send('Ping?');
-            m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
+            m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms`);
             break;
         case 'say':
             message.delete().catch(O_o => { });
@@ -607,7 +607,7 @@ client.on('message', async message => {
                     break;
                 }
                 userFound.votes = [];
-                logMessage = `User votes reset`;
+                logMessage = `${message.author.username} votes reset`;
                 saveSnmFile(() => {
                     message.channel.send(`Your votes have been reset.`);
                 });
