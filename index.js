@@ -164,6 +164,8 @@ async function createTorrentEmbed(winnerTitle, author) {
         reportError(e);
     });
 
+    console.log(torrentList);
+
     let description = `\n`;
 
     if (torrentList.length === 0 || torrentList[0].title === "No results returned")
@@ -1024,7 +1026,7 @@ client.on('message', async message => {
                 'https://cdn.discordapp.com/attachments/168624317049995264/777238203153252392/dash_360.mp4',
                 'https://cdn.discordapp.com/attachments/168624317049995264/777238229161213962/v09044f70000bf3e6i3r587n6scu148g.mp4'
             ];
-            message.author.send(memes[Math.floor(Math.random() * memes.length)]);
+            message.channel.send(memes[Math.floor(Math.random() * memes.length)]);
             break;
         case 'ratotenista':
             // Uses rato_plaquista as templete for text
