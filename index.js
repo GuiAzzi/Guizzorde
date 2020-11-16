@@ -462,7 +462,7 @@ client.on('message', async message => {
                         // Returns the embed
 
                         mongoClient.close();
-                        m.edit(embed);
+                        m.edit('', embed);
                     });
                 });
             }
