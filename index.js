@@ -60,6 +60,22 @@ const snmToggleJobs = (start) => {
         snmEndJob.stop();
     }
 }
+// Base Memes Array
+const memes = [
+    'https://cdn.discordapp.com/attachments/168624317049995264/557765021359276043/VghsxturtIjzwLuU.mp4',
+    'https://cdn.discordapp.com/attachments/168624317049995264/777058314257039421/they_dance.mp4',
+    'https://cdn.discordapp.com/attachments/168624317049995264/777058321970495488/wSsUAVNbJK1L1vlM.mp4',
+    'https://cdn.discordapp.com/attachments/168624317049995264/777058394158530580/Flamingo.mp4',
+    'https://cdn.discordapp.com/attachments/168624317049995264/777064438904782848/jar1.png\nhttps://cdn.discordapp.com/attachments/168624317049995264/777064448804126720/jar2.mp4\nhttps://cdn.discordapp.com/attachments/168624317049995264/777064446652186630/jar3.png',
+    'https://cdn.discordapp.com/attachments/168624317049995264/777065041685905408/lord_vibin.mp4',
+    'https://cdn.discordapp.com/attachments/168624317049995264/777065138011373609/Clap_seal.mp4',
+    'https://cdn.discordapp.com/attachments/168624317049995264/777065294538604554/good_kitty.mp4',
+    'https://cdn.discordapp.com/attachments/168624317049995264/777238203153252392/dash_360.mp4',
+    'https://cdn.discordapp.com/attachments/168624317049995264/777238229161213962/v09044f70000bf3e6i3r587n6scu148g.mp4'
+];
+// Usable Memes Array
+// This exists so we can remove rolled used memes, then recreate the array when all memes have been used
+let usableMemes = [...memes];
 
 // OS Config
 const OSCredentials = config ? config.OSCredentials : process.env.OSCREDENTIALS.split(',');
@@ -1014,19 +1030,10 @@ client.on('message', async message => {
             }
             break;
         case 'meme':
-            const memes = [
-                'https://cdn.discordapp.com/attachments/168624317049995264/557765021359276043/VghsxturtIjzwLuU.mp4',
-                'https://cdn.discordapp.com/attachments/168624317049995264/777058314257039421/they_dance.mp4',
-                'https://cdn.discordapp.com/attachments/168624317049995264/777058321970495488/wSsUAVNbJK1L1vlM.mp4',
-                'https://cdn.discordapp.com/attachments/168624317049995264/777058394158530580/Flamingo.mp4',
-                'https://cdn.discordapp.com/attachments/168624317049995264/777064438904782848/jar1.png\nhttps://cdn.discordapp.com/attachments/168624317049995264/777064448804126720/jar2.mp4\nhttps://cdn.discordapp.com/attachments/168624317049995264/777064446652186630/jar3.png',
-                'https://cdn.discordapp.com/attachments/168624317049995264/777065041685905408/lord_vibin.mp4',
-                'https://cdn.discordapp.com/attachments/168624317049995264/777065138011373609/Clap_seal.mp4',
-                'https://cdn.discordapp.com/attachments/168624317049995264/777065294538604554/good_kitty.mp4',
-                'https://cdn.discordapp.com/attachments/168624317049995264/777238203153252392/dash_360.mp4',
-                'https://cdn.discordapp.com/attachments/168624317049995264/777238229161213962/v09044f70000bf3e6i3r587n6scu148g.mp4'
-            ];
-            message.channel.send(memes[Math.floor(Math.random() * memes.length)]);
+            if (usableMemes.length === 0)
+                usableMemes = [...memes];
+            let randomMemeIndex = Math.floor(Math.random() * usableMemes.length);
+            message.channel.send(usableMemes.splice(randomMemeIndex, 1));
             break;
         case 'ratotenista':
             // Uses rato_plaquista as templete for text
