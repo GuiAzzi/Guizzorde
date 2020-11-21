@@ -282,15 +282,16 @@ client.on('messageReactionAdd', async (reaction, user) => {
     // reaction on snm voting message
     else if (lastSnm.voteMessage && reaction.message.id === lastSnm.voteMessage.messageId) {
         if (reaction.users.cache.find(userIndex => userIndex.id === user.id)) {
-            await reaction.users.remove(user);
 
             // User added a new reaction ( = did not click an existing reaction), remove and do nothing
             if (reaction.count === 1) {
+                await reaction.users.remove(user);
                 console.log(`${user.username} - Invalid reaction on SNM`);
                 return;
             }
             // If SNM not voting, remove and warn user
             else if (lastSnm.status !== "voting") {
+                await reaction.users.remove(user);
                 console.log(`${user.username} - Voting has ended`);
                 return client.users.cache.get(user.id).send(`Voting has ended`);
             }
@@ -324,6 +325,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
                 client.users.cache.get(user.id).send(`You have no votes left.\n\`!snmVotes clear\` to reset all your votes.`);
                 console.log(`No votes left`);
             }
+
+            await reaction.users.remove(user);
         }
     }
     // reaction on torrent second option
