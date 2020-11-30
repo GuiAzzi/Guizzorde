@@ -180,8 +180,6 @@ async function createTorrentEmbed(winnerTitle, author) {
         reportError(e);
     });
 
-    console.log(torrentList);
-
     let description = `\n`;
 
     if (torrentList.length === 0 || torrentList[0].title === "No results returned")
@@ -744,6 +742,23 @@ client.on('message', async message => {
 
             logMessage = `Winner is **${winnerMovie.title}**`;
 
+            break;
+        case 'changesub':
+            // can only be done by owner
+            if (message.author.id != ownerId) {
+                logMessage = "Author is not owner"
+                break;
+            }
+            if (args.length === 0) {
+                message.channel.send(`Usage: \`!changeSub <torrent message id> <new sub download link>\``);
+                logMessage = "Wrong usage"
+                break;
+            }
+            let torrentMsgGet = await client.channels.cache.get(SNMCHANNEL).messages.fetch(args[0]);
+            torrentMsgGet.edit(torrentMsgGet.embeds[0].setDescription(
+                torrentMsgGet.embeds[0].description.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[1]})`)
+            ));
+            logMessage = `Changed sub from ${args[0]} with ${args[1]}`;
             break;
         case 'snmpause':
             // can only be done by owner - for now.
