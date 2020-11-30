@@ -62,16 +62,50 @@ const snmToggleJobs = (start) => {
 }
 // Base Memes Array
 const memes = [
-    'https://cdn.discordapp.com/attachments/168624317049995264/557765021359276043/VghsxturtIjzwLuU.mp4',
-    'https://cdn.discordapp.com/attachments/168624317049995264/777058314257039421/they_dance.mp4',
-    'https://cdn.discordapp.com/attachments/168624317049995264/777058321970495488/wSsUAVNbJK1L1vlM.mp4',
-    'https://cdn.discordapp.com/attachments/168624317049995264/777058394158530580/Flamingo.mp4',
-    'https://cdn.discordapp.com/attachments/168624317049995264/777064438904782848/jar1.png\nhttps://cdn.discordapp.com/attachments/168624317049995264/777064448804126720/jar2.mp4\nhttps://cdn.discordapp.com/attachments/168624317049995264/777064446652186630/jar3.png',
-    'https://cdn.discordapp.com/attachments/168624317049995264/777065041685905408/lord_vibin.mp4',
-    'https://cdn.discordapp.com/attachments/168624317049995264/777065138011373609/Clap_seal.mp4',
-    'https://cdn.discordapp.com/attachments/168624317049995264/777065294538604554/good_kitty.mp4',
-    'https://cdn.discordapp.com/attachments/168624317049995264/777238203153252392/dash_360.mp4',
-    'https://cdn.discordapp.com/attachments/168624317049995264/777238229161213962/v09044f70000bf3e6i3r587n6scu148g.mp4'
+    {
+        name: 'crab',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/557765021359276043/VghsxturtIjzwLuU.mp4'
+    },
+    {
+        name: 'otter',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/777058314257039421/they_dance.mp4'
+    },
+    {
+        name: 'muchacho',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/777058321970495488/wSsUAVNbJK1L1vlM.mp4'
+    },
+    {
+        name: 'flamingo',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/777058394158530580/Flamingo.mp4'
+    },
+    {
+        name: 'wtf',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/777064438904782848/jar1.png\nhttps://cdn.discordapp.com/attachments/168624317049995264/777064448804126720/jar2.mp4\nhttps://cdn.discordapp.com/attachments/168624317049995264/777064446652186630/jar3.png'
+    },
+    {
+        name: 'vibing',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/777065041685905408/lord_vibin.mp4'
+    },
+    {
+        name: 'seal',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/777065138011373609/Clap_seal.mp4'
+    },
+    {
+        name: 'ham',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/777065294538604554/good_kitty.mp4'
+    },
+    {
+        name: 'butt',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/777238203153252392/dash_360.mp4'
+    },
+    {
+        name: 'AAaa',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/777238229161213962/v09044f70000bf3e6i3r587n6scu148g.mp4'
+    },
+    {
+        name: 'shrek',
+        meme: 'https://cdn.discordapp.com/attachments/724976219757609030/781492478141530133/Fuck_it_entire_Shrek_Movie.webm'
+    }
 ];
 // Usable Memes Array
 // This exists so we can remove rolled used memes, then recreate the array when all memes have been used
@@ -385,7 +419,7 @@ client.on('message', async message => {
                 \n!snmExport [week number] - Creates a text file with all SNM™ data
                 \n!torrent Searches for torrents on public trackers and returns first result's magnet link
                 \n!subtitle <title> [language] - Searches for a subtitle file
-                \n!meme - 👀 ||don't||
+                \n!meme [list | meme name] - 👀 ||don't||
                 \n!rato - Gets a random tenista™
                 \n!ratoTenista <message> - Make rato tenista say something
                 \n!emoji <message> - Converts your message into Discord's regional indicator emojis :abc:
@@ -1048,10 +1082,31 @@ client.on('message', async message => {
             }
             break;
         case 'meme':
+            if (messageText) {
+                // If list is requested
+                if (messageText === 'list') {
+                    message.channel.send(
+                        new Discord.MessageEmbed()
+                            .setTitle('Available Memes')
+                            .setDescription(memes.map((meme) => meme.name))
+                            .setColor(0x3498DB)
+                    );
+                    break;
+                };
+
+                // If a specific meme is requested
+                const selectedMeme = memes.find((meme) => {
+                    if (meme.name === messageText) {
+                        return meme;
+                    };
+                });
+                message.channel.send(selectedMeme ? selectedMeme.meme : 'No meme found\nType !meme list to see all available memes')
+                break;
+            }
             if (usableMemes.length === 0)
                 usableMemes = [...memes];
             let randomMemeIndex = Math.floor(Math.random() * usableMemes.length);
-            message.channel.send(usableMemes.splice(randomMemeIndex, 1));
+            message.channel.send(usableMemes.splice(randomMemeIndex, 1)[0].meme);
             break;
         case 'ratotenista':
             // Uses rato_plaquista as templete for text
