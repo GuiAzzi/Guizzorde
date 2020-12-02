@@ -1284,6 +1284,9 @@ client.on('message', async message => {
                 await msg.react(pickedEmojis[i]);
             };
             break;
+        case 'toma':
+            message.channel.send('https://cdn.discordapp.com/emojis/487347201706819584.png');
+            break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
             break;
