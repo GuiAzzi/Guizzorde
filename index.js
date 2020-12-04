@@ -6,6 +6,8 @@ const OS = require('opensubtitles-api');
 const mongodb = require('mongodb');
 const fs = require('fs');
 const randomEmoji = require('./src/random-emoji.js');
+const ytdl = require('ytdl-core');
+
 torrentSearch.enablePublicProviders();
 
 // config.json - for running locally
@@ -1286,6 +1288,31 @@ client.on('message', async message => {
             break;
         case 'toma':
             message.channel.send('https://cdn.discordapp.com/emojis/487347201706819584.png');
+            break;
+        case 'play':
+            if (!message.guild) {
+                message.channel.send('Can only be used in a server');
+                logMessage = 'not in a server';
+                break;
+            }
+            if (message.author.id !== ownerId) {
+                message.channel.send('Função bloqueada pra você. Desbloqueie com 20 dola na mão do pai.');
+                logMessage = "not owner";
+                break;
+            }
+            if (!message.member.voice.channel){
+                message.channel.send('You must be connected to a channel');
+                logMessage = 'not connected to a channel';
+                break;
+            }
+
+            const connection = await message.member.voice.channel.join();
+            const dispatcher = connection.play(ytdl(messageText, {filter: 'audioonly'}), {volume: 0.4});
+
+            dispatcher.on('finish', () => {
+                connection.disconnect();
+                dispatcher.destroy();
+            })
             break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
