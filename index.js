@@ -113,6 +113,10 @@ const memes = [
 // This exists so we can remove rolled used memes, then recreate the array when all memes have been used
 let usableMemes = [...memes];
 
+// Channel connection var
+let connection = null;
+let dispatcher = null;
+
 // OS Config
 const OSCredentials = config ? config.OSCredentials : process.env.OSCREDENTIALS.split(',');
 const OpenSubtitles = new OS({
@@ -1252,7 +1256,7 @@ client.on('message', async message => {
                 break;
             };
             // Get server custom emojis
-            const serverEmojis = message.channel.guild ? message.guild.emojis : { size: 0 };
+            const serverEmojis = message.channel.guild ? message.guild.emojis.cache : { size: 0 };
             // Each arg will be assigned an emoji. Chosen emojis will be stored here.
             const pickedEmojis = [];
 
@@ -1295,7 +1299,7 @@ client.on('message', async message => {
                 logMessage = 'not in a server';
                 break;
             }
-            if (message.author.id !== ownerId) {
+            if (message.author.id !== ownerId && message.author.id !== "132410788722769920") {
                 message.channel.send('Função bloqueada pra você. Desbloqueie com 20 dola na mão do pai.');
                 logMessage = "not owner";
                 break;
@@ -1306,13 +1310,16 @@ client.on('message', async message => {
                 break;
             }
 
-            const connection = await message.member.voice.channel.join();
-            const dispatcher = connection.play(ytdl(messageText, {filter: 'audioonly'}), {volume: 0.4});
+            connection = await message.member.voice.channel.join();
+            dispatcher = connection.play(ytdl(messageText, {filter: 'audioonly'}), {volume: 0.3});
 
             dispatcher.on('finish', () => {
                 connection.disconnect();
                 dispatcher.destroy();
-            })
+            });
+            break;
+        case 'stop':
+            dispatcher.end();
             break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
