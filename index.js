@@ -1294,11 +1294,6 @@ client.on('message', async message => {
             message.channel.send('https://cdn.discordapp.com/emojis/487347201706819584.png');
             break;
         case 'play':
-            if (!message.guild) {
-                message.channel.send('Can only be used in a server');
-                logMessage = 'not in a server';
-                break;
-            }
             if (message.author.id !== ownerId && message.author.id !== "132410788722769920") {
                 message.channel.send('Função bloqueada pra você. Desbloqueie com 20 dola na mão do pai.');
                 logMessage = "not owner";
