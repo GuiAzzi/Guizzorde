@@ -107,6 +107,10 @@ const memes = [
     {
         name: 'shrek',
         meme: 'https://cdn.discordapp.com/attachments/724976219757609030/781492478141530133/Fuck_it_entire_Shrek_Movie.webm'
+    },
+    {
+        name: 'taps',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/786313840769892352/Fastest_taps_in_the_west.mp4'
     }
 ];
 // Usable Memes Array
