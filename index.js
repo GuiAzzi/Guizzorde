@@ -52,14 +52,14 @@ const snmEndJob = new cron.CronJob('0 20 * * 6', () => {
 // Starts or stops SNM Scheduled jobs
 const snmToggleJobs = (start) => {
     if (start) {
-        snmNewJob.start();
-        snmStartJob.start();
-        snmEndJob.start();
+        !snmNewJob.running ? snmNewJob.start() : null;
+        !snmStartJob.running ? snmStartJob.start() : null;
+        !snmEndJob.running ? snmEndJob.start() : null;
     }
     else {
-        snmNewJob.stop();
-        snmStartJob.stop();
-        snmEndJob.stop();
+        snmNewJob.running ? snmNewJob.stop() : null;
+        snmStartJob.running ? snmStartJob.stop() : null;
+        snmEndJob.running ? snmEndJob.stop() : null;
     }
 }
 // Base Memes Array
@@ -111,6 +111,10 @@ const memes = [
     {
         name: 'taps',
         meme: 'https://cdn.discordapp.com/attachments/168624317049995264/786313840769892352/Fastest_taps_in_the_west.mp4'
+    },
+    {
+        name: 'pain',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/788167349014495232/Qlqkyivabf81lmv8-1.webm'
     }
 ];
 // Usable Memes Array
@@ -1303,14 +1307,14 @@ client.on('message', async message => {
                 logMessage = "not owner";
                 break;
             }
-            if (!message.member.voice.channel){
+            if (!message.member.voice.channel) {
                 message.channel.send('You must be connected to a channel');
                 logMessage = 'not connected to a channel';
                 break;
             }
 
             connection = await message.member.voice.channel.join();
-            dispatcher = connection.play(ytdl(messageText, {filter: 'audioonly'}), {volume: 0.3});
+            dispatcher = connection.play(ytdl(messageText, { filter: 'audioonly' }), { volume: 0.3 });
 
             dispatcher.on('finish', () => {
                 connection.disconnect();
