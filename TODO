@@ -1,18 +1,129 @@
 Todo:
   ✔ Emoji vote system :O @created(19-03-19 18:48) @done(19-03-21 06:08)
   ✔ Export especific week @created(19-03-19 18:48) @done(19-03-19 20:35)
-  ☐ !clear @created(19-03-19 18:49)
+  ✘ !clear @created(19-03-19 18:49) @cancelled(20-12-14 21:44) is now !meme
   ☐ Refactor functions to use Promises and .then() @created(19-03-20 15:07)
-  ☐ Remove Checking... from !snm @created(19-03-20 15:08)
+  ✔ Remove Checking... from !snm @created(19-03-20 15:08)
   ✔ Create test bot (to make changes without killing the production bot) @created(19-03-20 15:11) @done(19-03-21 06:09)
   ✔ Show name of what bot was booted on ready @created(19-03-20 15:11) @done(19-03-21 06:10)
   ✔ Votes counting system @created(19-03-21 06:10) @done(19-03-22 08:01)
   ✔ fix !snm when last one is finished and there is no new one added yet @created(19-03-22 08:10) @done(19-04-08 00:49)
   ✘ add animation to vote counting 🥁 @created(19-03-22 08:23) almost impossible because of discord api call limit @cancelled(19-04-08 00:49)
-  ☐ Don't show user on summary if they have no rating AND movies @created(19-04-08 00:49)
+  ✔ Don't show user on summary if they have no rating AND movies @created(19-04-08 00:49)
   ✔ Get movie torrent with https://www.npmjs.com/package/torrent-search-api @created(19-04-19 02:54) @done(19-05-30 02:14)
   ☐ Download movie and stream it with VLC @created(19-04-19 02:54)
-  ☐ Schedule SNM commands @created(19-05-30 02:25)
-  ☐ Get subtitles @created(19-05-30 02:30)
+  ✔ Schedule SNM commands @created(19-05-30 02:25) @done(20-10-23 https://github.com/GuiAzzi/Guizzorde/commit/b5a34db2f840a23a918ce26855c7cec843f1d91a)
+  ✔ Get subtitles @created(19-05-30 02:30) @done(20-10-25 https://github.com/GuiAzzi/Guizzorde/commit/cc6c32a60274bde7d3b1181e80ff09e22dec3dd1)
   ☐ user doesn't need to make a selection on !snmRemove if they have only 1 entry
-  ☐ Post a fixed message on snm channel showing current snm, live updating
+  New Flow:
+    ☐ Change !snmAdd to post a movie embed to #snm response - something like:
+    https://leovoel.github.io/embed-visualizer/ 
+    {
+      "embed": {
+        "title": "Tenet (2020)",
+        "url": "https://www.themoviedb.org/movie/577922-tenet",
+        "color": 12349594,
+        "image": {
+          "url": "https://image.tmdb.org/t/p/w300/k68nPLbIST6NP96JmTxmZijEvCA.jpg"
+        },
+        "author": {
+          "name": "Klein",
+          "icon_url": "https://cdn.discordapp.com/avatars/86542846517080064/0f223b133ed4108771c315dc92fd42fa.png?size=128"
+        },
+        "fields": [
+          {
+            "name": "Overview",
+            "value": "Armed with only one word - Tenet - and fighting for the survival of the entire world, the Protagonist journeys through a twilight world of international espionage on a mission that will unfold in something beyond real time."
+          },
+          {
+            "name": "Genre",
+            "value": "10/29/2020 Action, Thriller, Science Fiction 2h 30m"
+          }
+        ]
+      }
+    }
+    TMDB Genre List
+    {
+      "genres": [
+        {
+          "id": 28,
+          "name": "Action"
+        },
+        {
+          "id": 12,
+          "name": "Adventure"
+        },
+        {
+          "id": 16,
+          "name": "Animation"
+        },
+        {
+          "id": 35,
+          "name": "Comedy"
+        },
+        {
+          "id": 80,
+          "name": "Crime"
+        },
+        {
+          "id": 99,
+          "name": "Documentary"
+        },
+        {
+          "id": 18,
+          "name": "Drama"
+        },
+        {
+          "id": 10751,
+          "name": "Family"
+        },
+        {
+          "id": 14,
+          "name": "Fantasy"
+        },
+        {
+          "id": 36,
+          "name": "History"
+        },
+        {
+          "id": 27,
+          "name": "Horror"
+        },
+        {
+          "id": 10402,
+          "name": "Music"
+        },
+        {
+          "id": 9648,
+          "name": "Mystery"
+        },
+        {
+          "id": 10749,
+          "name": "Romance"
+        },
+        {
+          "id": 878,
+          "name": "Science Fiction"
+        },
+        {
+          "id": 10770,
+          "name": "TV Movie"
+        },
+        {
+          "id": 53,
+          "name": "Thriller"
+        },
+        {
+          "id": 10752,
+          "name": "War"
+        },
+        {
+          "id": 37,
+          "name": "Western"
+        }
+      ]
+    }
+    ☐ Change !snmStart to use #snm movie embeds (posted by !snmAdd) for voting
+v2:
+  ☐ Update to Typescript
+  ☐ Separate commands in folder/actions
