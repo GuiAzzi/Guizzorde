@@ -377,7 +377,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
         }
     }
     // reaction on torrent second option
-    else if (lastSnm.voteMessage && reaction.message.embeds[0].title === `SNM ${lastSnm.week} Second Option`) {
+    else if (lastSnm.voteMessage && reaction.message.embeds.length > 0 && reaction.message.embeds[0].title === `SNM ${lastSnm.week} Second Option`) {
         await reaction.users.remove(user);
 
         let oldDesc = torrentMessage.embeds[0].description
