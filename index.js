@@ -117,6 +117,7 @@ const memes = [
         meme: 'https://cdn.discordapp.com/attachments/168624317049995264/788167349014495232/Qlqkyivabf81lmv8-1.webm'
     }
 ];
+
 // Usable Memes Array
 // This exists so we can remove rolled used memes, then recreate the array when all memes have been used
 let usableMemes = [...memes];
@@ -775,18 +776,17 @@ client.on('message', async message => {
             }
 
             lastSnm.status = "finished";
-            saveSnmFile(() => {
+            saveSnmFile(async () => {
                 let finalEmbed = new Discord.MessageEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0x3498DB);
-                msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`)).then(async function (msg) {
+                await msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`))
                     let torrentEmbed = await createTorrentEmbed(winnerMovie.title, message.author);
                     if (!torrentEmbed)
-                        msg.edit(finalEmbed.setFooter(`No torrent found 🤔`));
+                    msgToEdit.edit(finalEmbed.setFooter(`No torrent found 🤔`));
                     else {
-                        msg.edit(finalEmbed.setFooter(" "));
+                    msgToEdit.edit(finalEmbed.setFooter(" "));
                         message.channel.send(torrentEmbed).then((msg) => torrentMessage = msg);
                     }
                 });
-            });
 
             logMessage = `Winner is **${winnerMovie.title}**`;
 
