@@ -219,7 +219,7 @@ function snmEmbed() {
     return embed;
 }
 
-async function createTorrentEmbed(winnerTitle, author) {
+async function createTorrentEmbed(winnerTitle, guildOwner) {
 
     // Gets torrent number and creates embed description
     createDesc = (i, subUrl) => `[${torrentList[i].title}](${torrentList[i].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrentList[i].magnet) : torrentList[i].desc})\n${torrentList[i].size} | ${torrentList[i].seeds} seeders | ${torrentList[i].provider} ${subUrl['pb'] ? ` | [Subtitle](${subUrl['pb'].url})` : null}`;
@@ -241,8 +241,8 @@ async function createTorrentEmbed(winnerTitle, author) {
         const altUrl = await searchSubtitle(torrentList[1].title, 'pob').catch((e) => reportError(e));
 
         description += await createDesc(0, subUrl);
-        // Sends second torrent option to author
-        author.send(new Discord.MessageEmbed()
+        // Sends second torrent option to guildOwner
+        await guildOwner.send(new Discord.MessageEmbed()
             .setTitle(`SNM ${lastSnm.week} Second Option`)
             .setColor(0x3498DB)
             .setDescription(await createDesc(1, altUrl))
@@ -779,7 +779,7 @@ client.on('message', async message => {
             saveSnmFile(async () => {
                 let finalEmbed = new Discord.MessageEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0x3498DB);
                 await msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`))
-                    let torrentEmbed = await createTorrentEmbed(winnerMovie.title, message.author);
+                let torrentEmbed = await createTorrentEmbed(winnerMovie.title, message.guild.owner);
                     if (!torrentEmbed)
                     msgToEdit.edit(finalEmbed.setFooter(`No torrent found 🤔`));
                     else {
