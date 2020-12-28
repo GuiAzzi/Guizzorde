@@ -8,9 +8,7 @@ const fs = require('fs');
 const randomEmoji = require('./src/random-emoji.js');
 const ytdl = require('ytdl-core');
 const JustWatch = require('justwatch-api');
-const jw = new JustWatch();
-const jwBR = new JustWatch({ locale: 'pt_BR' });
-const { jwGenres, jwProviders } = require('./src/jw/jw');
+const { jwGenresBR, jwGenresEN, jwProvidersBR, jwProvidersEN } = require('./src/jw/jw');
 
 torrentSearch.enablePublicProviders();
 
@@ -1329,36 +1327,58 @@ client.on('message', async message => {
             dispatcher.end();
             break;
         case 'movie':
-            const jwSearch = await jwBR.search({ query: messageText });
+            // Default locale is pt_BR but optionally can be en_US
+            let jwLocale = cleanArgs.pop();
+            let jw = new JustWatch({locale: 'pt_BR'});
+            if (jwLocale === 'en' || jwLocale === 'eng' || jwLocale === 'en-us' || jwLocale === 'us' || jwLocale === 'enus' || jwLocale === 'english' || jwLocale === 'ingles' || jwLocale === 'inglês') {
+                jw = new JustWatch();
+            };
+
+            // Gets movie Just Watch's ID
+            const jwSearch = await jw.search({ query: messageText });
+            // Filter by movies
             jwSearch.items = jwSearch.items.filter(item => item.object_type === 'movie');
+            // If no movie was found
             if (jwSearch.items.length <= 0) {
                 message.channel.send(`Movie not found 😞`);
                 break;
             }
+            // Gets full movie detail
             const jwTitle = await jw.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
-            const jwBRTitle = await jwBR.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
+
+            // Creates provider list so I can ignore duplicate versions (sd, hd, 4k - doesn't matter for this use case)
             const providerIds = [];
-            jwBRTitle.offers = jwBRTitle.offers.filter(offer => {
+            // Removes duplicates
+            jwTitle.offers = jwTitle.offers.filter(offer => {
                 if (offer.monetization_type === 'flatrate' && providerIds.indexOf(offer.provider_id) < 0) {
                     providerIds.push(offer.provider_id)
                     return offer;
                 }
             });
+            // We just need IMDB and TMDB score
             jwTitle.scoring = jwTitle.scoring.filter(score => score.provider_type === 'imdb:score' || score.provider_type === 'tmdb:score')
+
+            // Send Embed
             message.channel.send(new Discord.MessageEmbed()
+                // Original title + (release year) - The Lodge (2020)
                 .setTitle(`${jwTitle.title} (${jwTitle.original_release_year})`)
-                .setURL(`https://justwatch.com${jwBRTitle.full_path}`)
+                // JustWatch URL
+                .setURL(`https://justwatch.com${jwTitle.full_path}`)
                 .setColor(0x3498DB)
+                // Movie poster
                 .setImage(`https://images.justwatch.com${jwTitle.poster.replace('{profile}', 's592')}`)
                 .addFields(
                     {
+                        // Synopse
                         name: 'Plot',
                         value: jwTitle.short_description || 'Not Found'
                     },
                     {
+                        // Genres
                         name: 'Genre',
                         value: jwTitle.genre_ids.map(genreArray => {
-                            return jwGenres.find(genre => genreArray === genre.id).translation
+                            if (jw._options.locale === 'en_US') return jwGenresEN.find(genre => genreArray === genre.id).translation
+                            else return jwGenresBR.find(genre => genreArray === genre.id).translation
                         }).join(' | ') || 'Not Found'
                     },
                     {
@@ -1373,8 +1393,10 @@ client.on('message', async message => {
                     },
                     {
                         name: 'Where to watch',
-                        value: jwBRTitle.offers.map(offer => {
-                            let offerRtn = jwProviders.find(provider => provider.id === offer.provider_id);
+                        value: jwTitle.offers.map(offer => {
+                            let offerRtn;
+                            if (jw._options.locale === 'en_US') offerRtn = jwProvidersEN.find(provider => provider.id === offer.provider_id);
+                            else offerRtn = jwProvidersBR.find(provider => provider.id === offer.provider_id);
                             return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
                         }).join(' | ') || 'Not Found'
                     }
