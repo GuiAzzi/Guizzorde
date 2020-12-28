@@ -1329,7 +1329,8 @@ client.on('message', async message => {
             dispatcher.end();
             break;
         case 'movie':
-            const jwSearch = await jw.search({ query: messageText });
+            const jwSearch = await jwBR.search({ query: messageText });
+            jwSearch.items = jwSearch.items.filter(item => item.object_type === 'movie');
             if (jwSearch.items.length <= 0) {
                 message.channel.send(`Movie not found 😞`);
                 break;
@@ -1352,13 +1353,13 @@ client.on('message', async message => {
                 .addFields(
                     {
                         name: 'Plot',
-                        value: jwTitle.short_description
+                        value: jwTitle.short_description || 'Not Found'
                     },
                     {
                         name: 'Genre',
                         value: jwTitle.genre_ids.map(genreArray => {
                             return jwGenres.find(genre => genreArray === genre.id).translation
-                        }).join(' | ')
+                        }).join(' | ') || 'Not Found'
                     },
                     {
                         name: 'Rating',
@@ -1368,14 +1369,14 @@ client.on('message', async message => {
                             else if (score.provider_type === 'tmdb:score')
                                 return `TMDB: || ${score.value} ||`
                             else null
-                        }).join('\n')
+                        }).join('\n') || 'Not Found'
                     },
                     {
                         name: 'Where to watch',
                         value: jwBRTitle.offers.map(offer => {
                             let offerRtn = jwProviders.find(provider => provider.id === offer.provider_id);
                             return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
-                        }).join(' | ')
+                        }).join(' | ') || 'Not Found'
                     }
                 )
             );
