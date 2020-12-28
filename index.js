@@ -1336,6 +1336,9 @@ client.on('message', async message => {
                 break;
             };
             
+            // Sends to-be-edited "Checking..." message
+            const jwMessage = await message.channel.send(`Checking...`);
+
             let jwLocale = cleanArgs.pop();
             const jwEN = new JustWatch();
             const jwBR = new JustWatch({ locale: 'pt_BR' });
@@ -1367,18 +1370,18 @@ client.on('message', async message => {
             const providerIdsBR = [];
             const providerIdsEN = [];
             // Removes duplicates
-            jwTitleBR.offers = jwTitleBR.offers.filter(offer => {
+            jwTitleBR.offers ? jwTitleBR.offers = jwTitleBR.offers.filter(offer => {
                 if (offer.monetization_type === 'flatrate' && providerIdsBR.indexOf(offer.provider_id) < 0) {
                     providerIdsBR.push(offer.provider_id)
                     return offer;
                 }
-            });
-            jwTitleEN.offers = jwTitleEN.offers.filter(offer => {
+            }) : null;
+            jwTitleEN.offers ? jwTitleEN.offers = jwTitleEN.offers.filter(offer => {
                 if (offer.monetization_type === 'flatrate' && providerIdsEN.indexOf(offer.provider_id) < 0) {
                     providerIdsEN.push(offer.provider_id)
                     return offer;
                 }
-            });
+            }) : null;
             // We just need IMDB and TMDB score
             jwTitleBR.scoring = jwTitleBR.scoring.filter(score => score.provider_type === 'imdb:score' || score.provider_type === 'tmdb:score');
 
@@ -1394,7 +1397,7 @@ client.on('message', async message => {
                 jwTorrent = await torrentSearch.search(['Rarbg'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
             }
 
-            if (jwTorrent.length !== 0 && jwTorrent[0].title !== "No results returned") {
+            if (jwTorrent && jwTorrent.length !== 0 && jwTorrent[0].title !== "No results returned") {
                 if (jwLocale === 'en')
                     jwSubtitle = await searchSubtitle(jwTorrent[0].title, 'eng').catch((e) => reportError(e));
                 else
@@ -1447,7 +1450,7 @@ client.on('message', async message => {
             }
 
             // Send Embed
-            message.channel.send(new Discord.MessageEmbed()
+            jwMessage.edit('', new Discord.MessageEmbed()
                 // Original title + (release year) - The Lodge (2020)
                 .setTitle(embedTitleValue)
                 // JustWatch URL
