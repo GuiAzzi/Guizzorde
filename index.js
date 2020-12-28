@@ -7,6 +7,10 @@ const mongodb = require('mongodb');
 const fs = require('fs');
 const randomEmoji = require('./src/random-emoji.js');
 const ytdl = require('ytdl-core');
+const JustWatch = require('justwatch-api');
+const jw = new JustWatch();
+const jwBR = new JustWatch({ locale: 'pt_BR' });
+const { jwGenres, jwProviders } = require('./src/jw/jw');
 
 torrentSearch.enablePublicProviders();
 
@@ -1323,6 +1327,58 @@ client.on('message', async message => {
             break;
         case 'stop':
             dispatcher.end();
+            break;
+        case 'movie':
+            const jwSearch = await jw.search({ query: messageText });
+            if (jwSearch.items.length <= 0) {
+                message.channel.send(`Movie not found 😞`);
+                break;
+            }
+            const jwTitle = await jw.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
+            const jwBRTitle = await jwBR.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
+            const providerIds = [];
+            jwBRTitle.offers = jwBRTitle.offers.filter(offer => {
+                if (offer.monetization_type === 'flatrate' && providerIds.indexOf(offer.provider_id) < 0) {
+                    providerIds.push(offer.provider_id)
+                    return offer;
+                }
+            });
+            jwTitle.scoring = jwTitle.scoring.filter(score => score.provider_type === 'imdb:score' || score.provider_type === 'tmdb:score')
+            message.channel.send(new Discord.MessageEmbed()
+                .setTitle(`${jwTitle.title} (${jwTitle.original_release_year})`)
+                .setURL(`https://justwatch.com${jwBRTitle.full_path}`)
+                .setColor(0x3498DB)
+                .setImage(`https://images.justwatch.com${jwTitle.poster.replace('{profile}', 's592')}`)
+                .addFields(
+                    {
+                        name: 'Plot',
+                        value: jwTitle.short_description
+                    },
+                    {
+                        name: 'Genre',
+                        value: jwTitle.genre_ids.map(genreArray => {
+                            return jwGenres.find(genre => genreArray === genre.id).translation
+                        }).join(' | ')
+                    },
+                    {
+                        name: 'Rating',
+                        value: jwTitle.scoring.map(score => {
+                            if (score.provider_type === 'imdb:score')
+                                return `IMDB: || ${score.value} ||`
+                            else if (score.provider_type === 'tmdb:score')
+                                return `TMDB: || ${score.value} ||`
+                            else null
+                        }).join('\n')
+                    },
+                    {
+                        name: 'Where to watch',
+                        value: jwBRTitle.offers.map(offer => {
+                            let offerRtn = jwProviders.find(provider => provider.id === offer.provider_id);
+                            return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
+                        }).join(' | ')
+                    }
+                )
+            );
             break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
