@@ -441,7 +441,8 @@ client.on('message', async message => {
                 \n!ratoTenista <message> - Make rato tenista say something
                 \n!emoji <message> - Converts your message into Discord's regional indicator emojis :abc:
                 \n!random <option1, option2, option3, ...> - Randomly picks from one of the options
-                \n!poll <Poll Title>, Apple, Orange, Pineapple, ... - Starts a poll that people can vote on
+                \n!poll <poll title>, Apple, Orange, Pineapple, ... - Starts a poll that people can vote on
+                \n!movie <movie title> [en] - Shows info about a movie - Can force english search with 'en'
                 
                 **<> means a parameter is mandatory and [] is optional**`;
 
@@ -1327,6 +1328,13 @@ client.on('message', async message => {
             dispatcher.end();
             break;
         case 'movie':
+            // If no movie was passed
+            if (!messageText) {
+                message.channel.send(`No movie title.\nUsage: \`!movie <movie title> [en]\``);
+                logMessage = `No movie was passed`;
+                break;
+            };
+            
             // Default locale is pt_BR but optionally can be en_US
             let jwLocale = cleanArgs.pop();
             let jw = new JustWatch({locale: 'pt_BR'});
