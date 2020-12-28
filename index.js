@@ -1429,10 +1429,10 @@ client.on('message', async message => {
                 embedGenreValue = jwTitleEN.genre_ids.map(genreArray => {
                     return jwGenresEN.find(genre => genreArray === genre.id).translation
                 }).join(' | ') || 'Not Found';
-                embedWhereToWatchValue = jwTitleEN.offers.map(offer => {
+                embedWhereToWatchValue = jwTitleEN.offers ? jwTitleEN.offers.map(offer => {
                     let offerRtn = jwProvidersEN.find(provider => provider.id === offer.provider_id);
                     return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
-                }).join(' | ') || 'Not Found';
+                }).join(' | ') || 'Not Found' : 'Not Found';
             }
             else {
                 embedTitleValue = `${jwTitleBR.title} (${jwTitleBR.original_release_year})`;
@@ -1443,10 +1443,10 @@ client.on('message', async message => {
                 embedGenreValue = jwTitleBR.genre_ids.map(genreArray => {
                     return jwGenresBR.find(genre => genreArray === genre.id).translation
                 }).join(' | ') || 'Not Found';
-                embedWhereToWatchValue = jwTitleBR.offers.map(offer => {
+                embedWhereToWatchValue = jwTitleBR.offers ? jwTitleBR.offers.map(offer => {
                     let offerRtn = jwProvidersBR.find(provider => provider.id === offer.provider_id);
                     return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
-                }).join(' | ') || 'Not Found';
+                }).join(' | ') || 'Not Found' : 'Not Found';
             }
 
             // Send Embed
