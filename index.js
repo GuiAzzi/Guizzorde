@@ -1450,7 +1450,7 @@ client.on('message', async message => {
             }
 
             // Send Embed
-            jwMessage.edit('', new Discord.MessageEmbed()
+            await jwMessage.edit('', new Discord.MessageEmbed()
                 // Original title + (release year) - The Lodge (2020)
                 .setTitle(embedTitleValue)
                 // JustWatch URL
