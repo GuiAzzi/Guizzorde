@@ -1394,7 +1394,8 @@ client.on('message', async message => {
             if (jwTorrent.length === 0 || !jwTorrent) {
                 // Little hack to force second execution - without this the code was being skipped - something to do with async stuff
                 await new Promise(resolve => setTimeout(resolve, 0));
-                jwTorrent = await torrentSearch.search(['Rarbg'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
+                // Searches in other trackers
+                jwTorrent = await torrentSearch.search(['Rarbg', 'ThePirateBay', '1337x'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
             }
 
             if (jwTorrent && jwTorrent.length !== 0 && jwTorrent[0].title !== "No results returned") {
@@ -1442,7 +1443,7 @@ client.on('message', async message => {
                 if (jwTitleEN.runtime) {
                     let runtimeHours = Math.floor(jwTitleEN.runtime / 60);
                     let runtimeMinutes = jwTitleEN.runtime % 60;
-                    embedRuntimeValue = `${runtimeHours}:${runtimeMinutes}`;
+                    embedRuntimeValue = `${runtimeHours}:${runtimeMinutes === 0 ? '00' : runtimeMinutes}`;
             }
 
                 // Rating
@@ -1480,7 +1481,7 @@ client.on('message', async message => {
                 if (jwTitleBR.runtime) {
                     let runtimeHours = Math.floor(jwTitleBR.runtime / 60);
                     let runtimeMinutes = jwTitleBR.runtime % 60;
-                    embedRuntimeValue = `${runtimeHours}:${runtimeMinutes}`;
+                    embedRuntimeValue = `${runtimeHours}:${runtimeMinutes === 0 ? '00' : runtimeMinutes}`;
             }
 
                 // Rating
