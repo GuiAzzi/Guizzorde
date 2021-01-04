@@ -1332,7 +1332,7 @@ client.on('message', async message => {
             // If no movie was passed
             if (!messageText) {
                 message.channel.send(`No movie title.\nUsage: \`!movie <movie title> [en]\``);
-                logMessage = `No movie was passed`;
+                logMessage = `No movie was typed`;
                 break;
             };
             
@@ -1411,42 +1411,86 @@ client.on('message', async message => {
 
             let embedPlotValue;
             let embedGenreValue;
-            let embedRatingValue = jwTitleBR.scoring.map(score => {
-                if (score.provider_type === 'imdb:score')
-                    return `IMDB: || ${score.value} ||`
-                else if (score.provider_type === 'tmdb:score')
-                    return `TMDB: || ${score.value} ||`
-                else null
-            }).join('\n') || 'Not Found';
             let embedWhereToWatchValue;
+            let embedDirectorValue;
+            let embedRuntimeValue = 'Not Found';
+            let embedRatingValue = {};
 
             if (jwLocale === 'en') {
                 embedTitleValue = `${jwTitleEN.title} (${jwTitleEN.original_release_year})`;
                 embedURLValue = `https://justwatch.com${jwTitleEN.full_path}`;
                 embedImageValue = `https://images.justwatch.com${jwTitleEN.poster.replace('{profile}', 's592')}`
-
                 embedPlotValue = jwTitleEN.short_description || 'Not Found';
+
+                // Genre
                 embedGenreValue = jwTitleEN.genre_ids.map(genreArray => {
                     return jwGenresEN.find(genre => genreArray === genre.id).translation
                 }).join(' | ') || 'Not Found';
+
+                // Where to watch
                 embedWhereToWatchValue = jwTitleEN.offers ? jwTitleEN.offers.map(offer => {
                     let offerRtn = jwProvidersEN.find(provider => provider.id === offer.provider_id);
                     return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
                 }).join(' | ') || 'Not Found' : 'Not Found';
+
+                // Director
+                embedDirectorValue = jwTitleEN.credits.map(credit => {
+                    if (credit.role === 'DIRECTOR') return credit.name
+                }) || 'Not Found';
+
+                // Runtime
+                if (jwTitleEN.runtime) {
+                    let runtimeHours = Math.floor(jwTitleEN.runtime / 60);
+                    let runtimeMinutes = jwTitleEN.runtime % 60;
+                    embedRuntimeValue = `${runtimeHours}:${runtimeMinutes}`;
+            }
+
+                // Rating
+                jwTitleEN.scoring.map(score => {
+                    if (score.provider_type === 'imdb:score')
+                        embedRatingValue.imdb = `|| ${score.value} ||` || 'Not Found';
+                    else if (score.provider_type === 'tmdb:score')
+                        embedRatingValue.tmdb = `|| ${score.value} ||` || 'Not Found';
+                    else null
+                });
             }
             else {
                 embedTitleValue = `${jwTitleBR.title} (${jwTitleBR.original_release_year})`;
                 embedURLValue = `https://justwatch.com${jwTitleBR.full_path}`;
                 embedImageValue = `https://images.justwatch.com${jwTitleBR.poster.replace('{profile}', 's592')}`;
-
                 embedPlotValue = jwTitleBR.short_description || 'Not Found'
+
+                // Genre
                 embedGenreValue = jwTitleBR.genre_ids.map(genreArray => {
                     return jwGenresBR.find(genre => genreArray === genre.id).translation
                 }).join(' | ') || 'Not Found';
+
+                // Where to watch
                 embedWhereToWatchValue = jwTitleBR.offers ? jwTitleBR.offers.map(offer => {
                     let offerRtn = jwProvidersBR.find(provider => provider.id === offer.provider_id);
                     return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
                 }).join(' | ') || 'Not Found' : 'Not Found';
+
+                // Director
+                embedDirectorValue = jwTitleBR.credits.map(credit => {
+                    if (credit.role === 'DIRECTOR') return credit.name
+                }) || 'Not Found';
+
+                // Runtime
+                if (jwTitleBR.runtime) {
+                    let runtimeHours = Math.floor(jwTitleBR.runtime / 60);
+                    let runtimeMinutes = jwTitleBR.runtime % 60;
+                    embedRuntimeValue = `${runtimeHours}:${runtimeMinutes}`;
+            }
+
+                // Rating
+                jwTitleBR.scoring.map(score => {
+                    if (score.provider_type === 'imdb:score')
+                        embedRatingValue.imdb = `|| ${score.value} ||` || 'Not Found';
+                    else if (score.provider_type === 'tmdb:score')
+                        embedRatingValue.tmdb = `|| ${score.value} ||` || 'Not Found';
+                    else null
+                });
             }
 
             // Send Embed
@@ -1470,17 +1514,33 @@ client.on('message', async message => {
                         value: embedGenreValue
                     },
                     {
-                        name: 'Rating',
-                        value: embedRatingValue
+                        name: 'Directed by',
+                        value: embedDirectorValue,
+                        inline: true
+                    },
+                    {
+                        name: 'Runtime',
+                        value: embedRuntimeValue,
+                        inline: true
                     },
                     {
                         name: 'Where to watch',
                         value: embedWhereToWatchValue
                     },
                     {
+                        name: 'IMDB',
+                        value: embedRatingValue.imdb,
+                        inline: true
+                    },
+                    {
+                        name: 'TMDB',
+                        value: embedRatingValue.tmdb,
+                        inline: true
+                    },
+                    {
                         name: 'Torrent',
                         value: jwTorrentField
-                    }
+                    },
                 )
             );
             break;
