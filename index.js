@@ -1403,7 +1403,7 @@ client.on('message', async message => {
                     jwSubtitle = await searchSubtitle(jwTorrent[0].title, 'eng').catch((e) => reportError(e));
                 else
                     jwSubtitle = await searchSubtitle(jwTorrent[0].title, 'pob').catch((e) => reportError(e));
-                jwTorrentField = `[${jwTorrent[0].title}](${jwTorrent[0].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(jwTorrent[0].magnet) : jwTorrent[0].desc})\n${jwTorrent[0].size} | ${jwTorrent[0].seeds} seeders | ${jwTorrent[0].provider} | [Subtitle](${jwLocale === 'en' ? jwSubtitle['en'].url : jwSubtitle['pb'].url})` || 'No torrent found';
+                jwTorrentField = `[${jwTorrent[0].title}](${jwTorrent[0].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(jwTorrent[0].magnet) : jwTorrent[0].desc})\n${jwTorrent[0].size} | ${jwTorrent[0].seeds} seeders | ${jwTorrent[0].provider} | ${jwSubtitle ? `[Subtitle](${jwLocale === 'en' ? jwSubtitle['en'].url : jwSubtitle['pb'].url})` : `No subtitle found`}` || 'No torrent found';
             }
 
             let embedTitleValue;
@@ -1441,9 +1441,11 @@ client.on('message', async message => {
 
                 // Runtime
                 if (jwTitleEN.runtime) {
-                    let runtimeHours = Math.floor(jwTitleEN.runtime / 60);
-                    let runtimeMinutes = jwTitleEN.runtime % 60;
-                    embedRuntimeValue = `${runtimeHours}:${runtimeMinutes === 0 ? '00' : runtimeMinutes}`;
+                    let hours = (jwTitleEN.runtime / 60);
+                    let rhours = Math.floor(hours);
+                    let minutes = (hours - rhours) * 60;
+                    let rminutes = Math.round(minutes);
+                    embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
             }
 
                 // Rating
@@ -1479,9 +1481,11 @@ client.on('message', async message => {
 
                 // Runtime
                 if (jwTitleBR.runtime) {
-                    let runtimeHours = Math.floor(jwTitleBR.runtime / 60);
-                    let runtimeMinutes = jwTitleBR.runtime % 60;
-                    embedRuntimeValue = `${runtimeHours}:${runtimeMinutes === 0 ? '00' : runtimeMinutes}`;
+                    let hours = (jwTitleBR.runtime / 60);
+                    let rhours = Math.floor(hours);
+                    let minutes = (hours - rhours) * 60;
+                    let rminutes = Math.round(minutes);
+                    embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
             }
 
                 // Rating
