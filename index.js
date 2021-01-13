@@ -9,6 +9,7 @@ const randomEmoji = require('./src/random-emoji.js');
 const ytdl = require('ytdl-core');
 const JustWatch = require('justwatch-api');
 const { jwGenresBR, jwGenresEN, jwProvidersBR, jwProvidersEN } = require('./src/jw/jw');
+const { donato } = require('./src/stock/donato');
 
 torrentSearch.enablePublicProviders();
 
@@ -1548,6 +1549,9 @@ client.on('message', async message => {
                     },
                 )
             );
+            break;
+        case 'donato':
+            message.channel.send(donato[Math.floor(Math.random() * donato.length)]);
             break;
         default:
             message.channel.send('Invalid command. See \`!help\` for the list of commands.');
