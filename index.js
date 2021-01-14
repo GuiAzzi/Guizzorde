@@ -278,39 +278,44 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
 
     switch (interaction.data.name.toLowerCase()) {
         case 'help':
+            const description = `/ping - Pings the API
+/say <message> - Make the bot say something
+/snm [week number] [export number] - Show or export SNM
+/snmAdmin <new|start|end|pause> - Manage current SNM
+/snmTitle add <title> - Add a movie to current SNM
+/snmTitle remove [title] - Remove a movie from current SNM
+/snmRate <text> - Add or change your current SNM rating
+/snmVotes <Show | Clear> - Manage your current SNM votes
+/torrent <query> - Search for torrents on public trackers
+/subtitle <title> [language] - Search for a subtitle file
+/meme [meme name | list] - 👀 ||do it||
+/rato [message] - Send a random tenista™ in chat, or make it say something!
+/emoji <message> - Convert your message into Discord's regional indicator emojis :abc:
+/random <option1, option2, option3, ...> - Randomly pick from one of the options
+/poll <poll title>, <Apple, Orange, Pineapple, ...> - Start a poll that people can vote on
+/movie <movie title> [language] - Display info about a movie
+**<> means a parameter is mandatory and [] is optional**`;
+
+            // const embed = new Discord.MessageEmbed()
+            //     // Set the title of the field
+            //     .setTitle(`My Commands`)
+            //     // Set the color of the embed
+            //     .setColor('#4286f4')
+            //     // Set the main content of the embed
+            //     .setDescription(description);
+            // let user = await client.users.fetch(interaction.member.user.id);
+            // user.send(embed);
+
             client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
-                    type: 2,
+                    type: 3,
+                    data: {
+                        content: description,
+                        embeds: [new Discord.MessageEmbed().setTitle('Test').setDescription('Dae')],
+                        flags: 1 << 6
+                }
                 }
             });
-            const description = `/ping - Pings the API
-            \n/say <message> - Make the bot say something
-            \n/snm [week number] [export number] - Show or export SNM
-            \n/snmAdmin <new|start|end|pause> - Manage current SNM
-            \n/snmTitle add <title> - Add a movie to current SNM
-            \n/snmTitle remove [title] - Remove a movie from current SNM
-            \n/snmRate <text> - Add or change your current SNM rating
-            \n/snmVotes <Show | Clear> - Manage your current SNM votes
-            \n/torrent <query> - Search for torrents on public trackers
-            \n/subtitle <title> [language] - Search for a subtitle file
-            \n/meme [meme name | list] - 👀 ||do it||
-            \n/rato [message] - Send a random tenista™ in chat, or make it say something!
-            \n/emoji <message> - Convert your message into Discord's regional indicator emojis :abc:
-            \n/random <option1, option2, option3, ...> - Randomly pick from one of the options
-            \n/poll <poll title>, <Apple, Orange, Pineapple, ...> - Start a poll that people can vote on
-            \n/movie <movie title> [language] - Display info about a movie
-            
-            **<> means a parameter is mandatory and [] is optional**`;
-
-            const embed = new Discord.MessageEmbed()
-                // Set the title of the field
-                .setTitle(`My Commands`)
-                // Set the color of the embed
-                .setColor('#4286f4')
-                // Set the main content of the embed
-                .setDescription(description);
-            let user = await client.users.fetch(interaction.member.user.id);
-            user.send(embed);
             break;
         case 'ping':
             client.api.interactions(interaction.id, interaction.token).callback.post({
@@ -984,6 +989,9 @@ client.on('ready', () => {
         }
     });
 
+        // Only register these when not on local bot
+        // Exclusive Top Server BR commands
+        if (!config) {
     // snm [week]
     client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
         data:
@@ -1121,6 +1129,7 @@ client.on('ready', () => {
             ]
         }
     });
+        }
 
     // torrent <query>
     client.api.applications(client.user.id).commands.post({
