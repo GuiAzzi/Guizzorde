@@ -255,9 +255,10 @@ async function createTorrentEmbed(winnerTitle, guildOwner) {
     return new Discord.MessageEmbed().setTitle(`Torrent and Subtitle`).setColor(0x3498DB).setDescription(description);
 }
 
-const reportError = (error) => {
+const reportError = async (error) => {
     console.error(error);
-    client.users.fetch(ownerId).then((res) => res.send(error));
+    let owner = await client.users.fetch(ownerId);
+    owner.send(error);
 }
 
 const searchSubtitle = async (title, lang = 'eng') => {
@@ -949,6 +950,7 @@ client.on('ready', () => {
     client.user.setActivity(`Beep boop`);
 
     // Register slash commands
+    try {
     // help
     client.api.applications(client.user.id).commands.post({
         data:
@@ -1312,6 +1314,10 @@ client.on('ready', () => {
             description: `Send a Donato in the chat!`
         }
     });
+    }
+    catch (e) {
+        reportError(e)
+    }
 
     // Gets latest SNM
     try {
