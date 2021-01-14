@@ -270,9 +270,1048 @@ const searchSubtitle = async (title, lang = 'eng') => {
     else return false;
 }
 
+// Receive Slash Interaction
+client.ws.on('INTERACTION_CREATE', async interaction => {
+    const args = interaction.data.options;
+    console.log(interaction);
+    console.log(args);
+
+    const logMessage = "";
+
+    switch (interaction.data.name.toLowerCase()) {
+        case 'help':
+            client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: {
+                    type: 2,
+                }
+            });
+            const description = `/ping - Pings the API
+            \n/say <message> - Make the bot say something
+            \n/snm [week number] [export number] - Show or export SNM
+            \n/snmAdmin <new|start|end|pause> - Manage current SNM
+            \n/snmTitle add <title> - Add a movie to current SNM
+            \n/snmTitle remove [title] - Remove a movie from current SNM
+            \n/snmRate <text> - Add or change your current SNM rating
+            \n/snmVotes <Show | Clear> - Manage your current SNM votes
+            \n/torrent <query> - Search for torrents on public trackers
+            \n/subtitle <title> [language] - Search for a subtitle file
+            \n/meme [meme name | list] - 👀 ||do it||
+            \n/rato [message] - Send a random tenista™ in chat, or make it say something!
+            \n/emoji <message> - Convert your message into Discord's regional indicator emojis :abc:
+            \n/random <option1, option2, option3, ...> - Randomly pick from one of the options
+            \n/poll <poll title>, <Apple, Orange, Pineapple, ...> - Start a poll that people can vote on
+            \n/movie <movie title> [language] - Display info about a movie
+            
+            **<> means a parameter is mandatory and [] is optional**`;
+
+            const embed = new Discord.MessageEmbed()
+                // Set the title of the field
+                .setTitle(`My Commands`)
+                // Set the color of the embed
+                .setColor('#4286f4')
+                // Set the main content of the embed
+                .setDescription(description);
+            let user = await client.users.fetch(interaction.member.user.id);
+            user.send(embed);
+            break;
+        case 'ping':
+            client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: {
+                    type: 4,
+                    data: {
+                        content: `Pong! API Latency is ${Math.round(client.ws.ping)}ms`
+                    }
+                }
+            });
+            break;
+        case 'say':
+            client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: {
+                    type: 3,
+                    data: {
+                        content: args[0].value
+                    }
+                }
+            });
+            break;
+        case 'snm':
+            // Sends rich embed with SNM infos
+            // If no week was specified or if specified week is current one
+            if (!args || args[0].value === lastSnm.week && lastSnm.status != "finished") {
+                client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 4,
+                        data: {
+                            content: '',
+                            embeds: [snmEmbed()]
+                        }
+                    }
+                });
+                break;
+            }
+            else if (args[0].value > lastSnm.week || args[0].value <= 0) {
+                // User entered a week bigger than current one or <= 0
+                client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 4,
+                        data: {
+                            content: `Thats not a valid week`
+                        }
+                    }
+                });
+                logMessage = `Week ${args[0].value} is invalid`;
+                break;
+            }
+            else {
+                // FIXME: Integrate followup message
+                // If a week was specified, show that SNM summary
+                let m = await client.channels.cache.get(interaction.channel_id).send("Checking...");
+                mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
+                    if (err) {
+                        console.error(err);
+                        throw err;
+                    }
+
+                    mongoClient.db(herokuDb).collection(collection).findOne({ week: args[0].value }, (err, result) => {
+                        if (err) {
+                            console.error(err);
+                            throw err;
+                        }
+
+                        let specifiedSnm = result;
+                        let printArray = [];
+                        let tempMovies = [];
+
+                        // runs through week and get movies, winner and ratings
+                        // let description = `Summary of Sunday Night Movie ${specifiedSnm.week}`;
+                        let description = `Status: **${specifiedSnm.paused ? 'paused' : specifiedSnm.status}**\n`;
+                        for (let userIndex in specifiedSnm.users) {
+                            // If user just voted - no entries or ratings = skip user on summary
+                            if (!specifiedSnm.users[userIndex].movies.length > 0 && !specifiedSnm.users[userIndex].rating) continue;
+                            printArray[userIndex] = `${specifiedSnm.users[userIndex].username} - \n`;
+                            // checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
+                            if (specifiedSnm.users[userIndex].movies) {
+                                for (let movieIndex in specifiedSnm.users[userIndex].movies) {
+                                    // if movie is the winner, add to description text
+                                    if (specifiedSnm.users[userIndex].movies[movieIndex].titleKey === specifiedSnm.winner.titleKey)
+                                        description += `Winner: **${specifiedSnm.users[userIndex].movies[movieIndex].title}**${specifiedSnm.winner.voteCount ? ` | ${specifiedSnm.winner.voteCount} votes` : ""}\n\n`;
+                                    tempMovies.push(`\`${specifiedSnm.users[userIndex].movies[movieIndex].title}\``);
+                                }
+                            }
+                            printArray[userIndex] += `${tempMovies.length > 0 ? `Entries: ${tempMovies.join(" | ")}\n` : ""}${specifiedSnm.users[userIndex].rating ? `Rating: ${specifiedSnm.users[userIndex].rating}\n\n` : "\n"}`;
+                            tempMovies = [];
+                        }
+
+                        let embed = new Discord.MessageEmbed()
+                            // Set the title of the field
+                            .setTitle(`📖 Summary of Sunday Night Movie ${specifiedSnm.week} 📖`)
+                            // Set the color of the embed
+                            .setColor(0x3498DB)
+                            // Set the main content of the embed
+                            .setDescription(description + printArray.join(""));
+                        // Returns the embed
+
+                        mongoClient.close();
+                        m.edit('', embed);
+                    });
+                });
+            }
+            break;
+        case 'torrent':
+            // Search for a torrent on a list of providers
+            // const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)']
+
+            // TODO: Interaction/Follow-up message system
+            // Sends to-be-edited "Checking..." message
+            let torrentMsg = await client.channels.cache.get(interaction.channel_id).send(`Checking...`);
+
+            // Searchs torrents
+            await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], args[0].value, null, 3).then((result) => {
+                if (result.length === 0 || result[0].title === "No results returned")
+                    torrentMsg.edit('', new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(`No torrent found 😔`).setColor(0x3498DB));
+                else {
+                    let torrentList = "";
+                    for (let torrent of result) {
+                        torrentList += `\n\n[${torrent.title}](${torrent.magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrent.magnet) : torrent.desc})\n${torrent.size} | ${torrent.seeds} seeders | ${torrent.provider}`;
+                    }
+                    let torrentEmbed = new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0x3498DB);
+                    // if (interaction. message.channel.guild)
+                    //     torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
+                    // else
+                    //     torrentEmbed.setFooter(`Tip: ${tips[1]}`);
+                    torrentMsg.edit('', torrentEmbed);
+                }
+            });
+            break;
+        case 'subtitle':
+            let sub;
+            let lang = args[1] ? args[1].value : 'eng';
+            // Open Subtitle returns pt-br in an 'pb' object even with the pt-br code being pob.
+            // We need this to search the object
+            let objLang = 'en';
+
+            if (lang === 'eng') {
+                sub = await searchSubtitle(args[0].value, lang).catch(e => reportError(e));
+            }
+            else if (lang === 'pob') {
+                objLang = 'pb';
+                sub = await searchSubtitle(args[0].value, lang).catch(e => reportError(e));
+            }
+
+            const subEmbed = new Discord.MessageEmbed()
+                .setTitle(`Subtitle`)
+                .setColor(0x3498DB)
+                .setFooter(`Tip: You can paste the file name to try a perfect match!`)
+
+            // TODO: Interaction responses
+            try {
+                if (sub) {
+                    logMessage = `Found ${sub[objLang].filename}`;
+                    client.channels.cache.get(interaction.channel_id).send(subEmbed
+                        .setDescription(`[${sub[objLang].filename}](${sub[objLang].url})\n${sub[objLang].lang} | ${sub[objLang].downloads} downloads | .${sub[objLang].format}`)
+                    );
+                }
+                else {
+                    logMessage = `No sub found`;
+                    client.channels.cache.get(interaction.channel_id).send(subEmbed
+                        .setDescription(`No subtitle found 😔`)
+                    );
+                }
+            }
+            catch (e) {
+                reportError(e);
+                client.channels.cache.get(interaction.channel_id).send(subEmbed.setDescription(`An error has occured. Tell my master about it.`));
+            }
+            break;
+        case 'meme':
+
+            const memeName = args ? args.find(arg => arg.name === 'name') : null;
+            const list = args ? args.find(arg => arg.name === 'list') : null;
+
+            // If no args = send random meme
+            if (!args || memeName === '') {
+                if (usableMemes.length === 0)
+                    usableMemes = [...memes];
+                let randomMemeIndex = Math.floor(Math.random() * usableMemes.length);
+                client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 3,
+                        data: {
+                            content: usableMemes.splice(randomMemeIndex, 1)[0].meme
+                        }
+                    }
+                });
+            }
+
+            // If list is requested
+            if (list && list.value === true) {
+                let user = await client.users.fetch(interaction.member.user.id);
+                await user.send(
+                    new Discord.MessageEmbed()
+                        .setTitle('Available Memes')
+                        .setDescription(memes.map((meme) => meme.name))
+                        .setColor(0x3498DB)
+                );
+            }
+
+            if (memeName && memeName.value) {
+                // If a specific meme is requested
+                const selectedMeme = memes.find((meme) => {
+                    if (meme.name === memeName.value) {
+                        return meme;
+                    };
+                });
+                client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 4,
+                        data: {
+                            content: selectedMeme ? selectedMeme.meme : 'No meme found\nCheck out the /meme list:true command'
+                        }
+                    }
+                });
+            }
+            break;
+        case 'rato':
+            // If theres a message
+            if (args && args[0].value) {
+                // Uses rato_plaquista as templete for text
+                Jimp.read('src/rato/rato_plaquista4x.png').then(image => {
+                    Jimp.loadFont('src/rato/font/rato_fontista.fnt').then(font => {
+                        image.print(font, 240, 40, args[0].value, 530);
+                        image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(result => {
+                            client.api.interactions(interaction.id, interaction.token).callback.post({
+                                data: {
+                                    type: 4,
+                                    data: {
+                                        content: '🐀🎾:'
+                                    }
+                                }
+                            });
+                            client.channels.cache.get(interaction.channel_id).send({ files: ["src/rato/rato_plaquistaEditado.jpg"] });
+                        });
+                    });
+                });
+            }
+            else {
+                // Generates a message with a random 'rato tenista' image
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 4,
+                        data: {
+                            content: `ei!! por favor pare!\nisto me deixa`
+                        }
+                    }
+                });
+                client.channels.cache.get(interaction.channel_id).send({ files: [`src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`] });
+            }
+
+            break;
+        case 'emoji':
+            // Converts the inputed message to discord's regional emojis
+            let sentence = "";
+            for (let letter of args[0].value) {
+                switch (letter) {
+                    case " ":
+                        sentence += "  ";
+                        break;
+                    case "0":
+                        sentence += ":zero: ";
+                        break;
+                    case "1":
+                        sentence += ":one: ";
+                        break;
+                    case "2":
+                        sentence += ":two: ";
+                        break;
+                    case "3":
+                        sentence += ":three: ";
+                        break;
+                    case "4":
+                        sentence += ":four: ";
+                        break;
+                    case "5":
+                        sentence += ":five: ";
+                        break;
+                    case "6":
+                        sentence += ":six: ";
+                        break;
+                    case "7":
+                        sentence += ":seven: ";
+                        break;
+                    case "8":
+                        sentence += ":eight: ";
+                        break;
+                    case "9":
+                        sentence += ":nine: ";
+                        break;
+                    default:
+                        let char = letter.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+                        if (/[$-/:-?{-~!@#"^_`\[\]]/.test(char)) {
+                            sentence += char + " ";
+                        }
+                        else {
+                            sentence += ":regional_indicator_" + char + ": ";
+                        }
+                        break;
+                }
+            }
+            client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: {
+                    type: 4,
+                    data: {
+                        content: sentence
+                    }
+                }
+            });
+            break;
+        case 'random':
+            // TODO: Append 1), 2), 3) at the star of each option?
+
+            let commaArgs = args[0].value.split(/,+/g);
+            let winner = Math.floor(Math.random() * commaArgs.length);
+            let embedColors = [0xFF0000, 0x00FF00, 0x0000FF, 0x808080, 0xFFFF00, 0x3498DB];
+            let embedEmojis = ['🍀', '🤞', '🎲', '🎰', '🌠'];
+            commaArgs[winner] = `\\> ${commaArgs[winner]} <`;
+            client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: {
+                    type: 4,
+                    data: {
+                        embeds: [new Discord.MessageEmbed()
+                            .setTitle(`${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]} Random Picker ${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]}`)
+                            .setColor(embedColors[Math.floor(Math.random() * embedColors.length)])
+                            .setDescription(commaArgs.join(`\n\n`))]
+                    }
+                }
+            });
+            break;
+        case 'poll':
+            // Get options
+            const pollTitle = args[0].value;
+            const pollOptions = args[1].value.split(/,+/g);
+            // Get server custom emojis
+            const serverEmojis = client.guilds.cache.get(interaction.guild_id).emojis.cache;
+            // Each arg will be assigned an emoji. Chosen emojis will be stored here.
+            const pickedEmojis = [];
+
+            for (let i = 0; i < pollOptions.length; i++) {
+                if (serverEmojis.size !== 0) {
+                    let rndEmoji = serverEmojis.random()
+                    pickedEmojis.push(rndEmoji);
+                    serverEmojis.delete(rndEmoji.id);
+                    pollOptions[i] = `<:${pickedEmojis[i].name}:${pickedEmojis[i].id}> - ${pollOptions[i]}`;
+                }
+                else {
+                    let rndEmoji = randomEmoji();
+                    while (pickedEmojis.includes(rndEmoji))
+                        rndEmoji = randomEmoji();
+                    pickedEmojis.push(rndEmoji);
+                    pollOptions[i] = `${pickedEmojis[i]} - ${pollOptions[i]}`;
+                }
+            }
+
+            // Sends poll embed
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: {
+                    type: 4,
+                    data: {
+                        content: `Poll starting!`
+                    }
+                }
+            });
+            const msg = await client.channels.cache.get(interaction.channel_id).send(
+                new Discord.MessageEmbed()
+                    .setTitle(pollTitle)
+                    .setColor(0x3498DB)
+                    .setDescription(pollOptions.join(`\n\n`))
+                    .setFooter('Vote by reacting with the corresponding emoji')
+            );
+
+            // Reacts to embed accordingly
+            for (let i = 0; i < pollOptions.length; i++) {
+                await msg.react(pickedEmojis[i]);
+            };
+            break;
+        case 'toma':
+            client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: {
+                    type: 4,
+                    data: {
+                        content: 'https://cdn.discordapp.com/emojis/487347201706819584.png'
+                    }
+                }
+            });
+            break;
+        case 'movie':
+            // FIXME: Messy AF - Maybe let default be EN
+
+            let title = args ? args.find(arg => arg.name === 'title').value : null;
+            let jwLocale = args[1] ? args.find(arg => arg.name === 'language').value : null;
+
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: {
+                    type: 4,
+                    data: {
+                        content: 'Checking...'
+                    }
+                }
+            });
+
+            // Sends to-be-edited "Checking..." message
+            const jwMessage = await client.channels.cache.get(interaction.channel_id).send(`🔎`);
+
+            const jwEN = new JustWatch();
+            const jwBR = new JustWatch({ locale: 'pt_BR' });
+            // Gets movie Just Watch's ID
+            // Primary locale for search is pt_BR but optionally can be en_US
+            let jwSearch;
+            if (jwLocale === 'en') {
+                jwSearch = await jwEN.search({ query: args[0].value });
+            }
+            else {
+                jwLocale = 'pt';
+                jwSearch = await jwBR.search({ query: args[0].value });
+            };
+
+            // Filter by movies
+            jwSearch.items = jwSearch.items.filter(item => item.object_type === 'movie');
+            // If no movie was found
+            if (jwSearch.items.length <= 0) {
+                jwMessage.edit(`Movie not found 😞`);
+                break;
+            }
+            // Gets full movie detail
+            const jwTitleBR = await jwBR.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
+            // Searchs movie in english - need to get the english title for torrent finding
+            const jwTitleEN = await jwEN.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
+
+            // Creates provider list so I can ignore duplicate versions (sd, hd, 4k - doesn't matter for this use case)
+            const providerIdsBR = [];
+            const providerIdsEN = [];
+            // Removes duplicates
+            jwTitleBR.offers ? jwTitleBR.offers = jwTitleBR.offers.filter(offer => {
+                if (offer.monetization_type === 'flatrate' && providerIdsBR.indexOf(offer.provider_id) < 0) {
+                    providerIdsBR.push(offer.provider_id)
+                    return offer;
+                }
+            }) : null;
+            jwTitleEN.offers ? jwTitleEN.offers = jwTitleEN.offers.filter(offer => {
+                if (offer.monetization_type === 'flatrate' && providerIdsEN.indexOf(offer.provider_id) < 0) {
+                    providerIdsEN.push(offer.provider_id)
+                    return offer;
+                }
+            }) : null;
+            // We just need IMDB and TMDB score
+            jwTitleBR.scoring = jwTitleBR.scoring.filter(score => score.provider_type === 'imdb:score' || score.provider_type === 'tmdb:score');
+
+            // Searchs torrent and subtitle
+            let jwTorrentField = 'No torrent found';
+            let jwSubtitle;
+            let jwTorrent = await torrentSearch.search(['Rarbg'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
+
+            // If Rarbg breaks, try again
+            if (jwTorrent.length === 0 || !jwTorrent) {
+                // Little hack to force second execution - without this the code was being skipped - something to do with async stuff
+                await new Promise(resolve => setTimeout(resolve, 0));
+                // Searches in other trackers
+                jwTorrent = await torrentSearch.search(['Rarbg', 'ThePirateBay', '1337x'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
+            }
+
+            if (jwTorrent && jwTorrent.length !== 0 && jwTorrent[0].title !== "No results returned") {
+                if (jwLocale === 'en')
+                    jwSubtitle = await searchSubtitle(jwTorrent[0].title, 'eng').catch((e) => reportError(e));
+                else
+                    jwSubtitle = await searchSubtitle(jwTorrent[0].title, 'pob').catch((e) => reportError(e));
+                jwTorrentField = `[${jwTorrent[0].title}](${jwTorrent[0].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(jwTorrent[0].magnet) : jwTorrent[0].desc})\n${jwTorrent[0].size} | ${jwTorrent[0].seeds} seeders | ${jwTorrent[0].provider} | ${jwSubtitle ? `[Subtitle](${jwLocale === 'en' ? jwSubtitle['en'].url : jwSubtitle['pb'].url})` : `No subtitle found`}` || 'No torrent found';
+            }
+
+            let embedTitleValue;
+            let embedURLValue;
+            let embedImageValue;
+
+            let embedPlotValue;
+            let embedGenreValue;
+            let embedWhereToWatchValue;
+            let embedDirectorValue;
+            let embedRuntimeValue = 'Not Found';
+            let embedRatingValue = {};
+
+            if (jwLocale === 'en') {
+                embedTitleValue = `${jwTitleEN.title} (${jwTitleEN.original_release_year})`;
+                embedURLValue = `https://justwatch.com${jwTitleEN.full_path}`;
+                embedImageValue = `https://images.justwatch.com${jwTitleEN.poster.replace('{profile}', 's592')}`
+                embedPlotValue = jwTitleEN.short_description || 'Not Found';
+
+                // Genre
+                embedGenreValue = jwTitleEN.genre_ids.map(genreArray => {
+                    return jwGenresEN.find(genre => genreArray === genre.id).translation
+                }).join(' | ') || 'Not Found';
+
+                // Where to watch
+                embedWhereToWatchValue = jwTitleEN.offers ? jwTitleEN.offers.map(offer => {
+                    let offerRtn = jwProvidersEN.find(provider => provider.id === offer.provider_id);
+                    return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
+                }).join(' | ') || 'Not Found' : 'Not Found';
+
+                // Director
+                embedDirectorValue = jwTitleEN.credits.map(credit => {
+                    if (credit.role === 'DIRECTOR') return credit.name
+                }) || 'Not Found';
+
+                // Runtime
+                if (jwTitleEN.runtime) {
+                    let hours = (jwTitleEN.runtime / 60);
+                    let rhours = Math.floor(hours);
+                    let minutes = (hours - rhours) * 60;
+                    let rminutes = Math.round(minutes);
+                    embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
+                }
+
+                // Rating
+                jwTitleEN.scoring.map(score => {
+                    if (score.provider_type === 'imdb:score')
+                        embedRatingValue.imdb = `|| ${score.value} ||` || 'Not Found';
+                    else if (score.provider_type === 'tmdb:score')
+                        embedRatingValue.tmdb = `|| ${score.value} ||` || 'Not Found';
+                    else null
+                });
+            }
+            else {
+                embedTitleValue = `${jwTitleBR.title} (${jwTitleBR.original_release_year})`;
+                embedURLValue = `https://justwatch.com${jwTitleBR.full_path}`;
+                embedImageValue = `https://images.justwatch.com${jwTitleBR.poster.replace('{profile}', 's592')}`;
+                embedPlotValue = jwTitleBR.short_description || 'Not Found'
+
+                // Genre
+                embedGenreValue = jwTitleBR.genre_ids.map(genreArray => {
+                    return jwGenresBR.find(genre => genreArray === genre.id).translation
+                }).join(' | ') || 'Not Found';
+
+                // Where to watch
+                embedWhereToWatchValue = jwTitleBR.offers ? jwTitleBR.offers.map(offer => {
+                    let offerRtn = jwProvidersBR.find(provider => provider.id === offer.provider_id);
+                    return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
+                }).join(' | ') || 'Not Found' : 'Not Found';
+
+                // Director
+                embedDirectorValue = jwTitleBR.credits.map(credit => {
+                    if (credit.role === 'DIRECTOR') return credit.name
+                }) || 'Not Found';
+
+                // Runtime
+                if (jwTitleBR.runtime) {
+                    let hours = (jwTitleBR.runtime / 60);
+                    let rhours = Math.floor(hours);
+                    let minutes = (hours - rhours) * 60;
+                    let rminutes = Math.round(minutes);
+                    embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
+                }
+
+                // Rating
+                jwTitleBR.scoring.map(score => {
+                    if (score.provider_type === 'imdb:score')
+                        embedRatingValue.imdb = `|| ${score.value} ||` || 'Not Found';
+                    else if (score.provider_type === 'tmdb:score')
+                        embedRatingValue.tmdb = `|| ${score.value} ||` || 'Not Found';
+                    else null
+                });
+            }
+
+            // Send Embed
+            await jwMessage.edit('', new Discord.MessageEmbed()
+                // Original title + (release year) - The Lodge (2020)
+                .setTitle(embedTitleValue)
+                // JustWatch URL
+                .setURL(embedURLValue)
+                .setColor(0x3498DB)
+                // Movie poster
+                .setImage(embedImageValue)
+                .addFields(
+                    {
+                        // Synopse
+                        name: 'Plot',
+                        value: embedPlotValue
+                    },
+                    {
+                        // Genres
+                        name: 'Genre',
+                        value: embedGenreValue
+                    },
+                    {
+                        name: 'Directed by',
+                        value: embedDirectorValue,
+                        inline: true
+                    },
+                    {
+                        name: 'Runtime',
+                        value: embedRuntimeValue,
+                        inline: true
+                    },
+                    {
+                        name: 'Where to watch',
+                        value: embedWhereToWatchValue
+                    },
+                    {
+                        name: 'IMDB',
+                        value: embedRatingValue.imdb,
+                        inline: true
+                    },
+                    {
+                        name: 'TMDB',
+                        value: embedRatingValue.tmdb,
+                        inline: true
+                    },
+                    {
+                        name: 'Torrent',
+                        value: jwTorrentField
+                    },
+                )
+            );
+            break;
+        case 'donato':
+            client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: {
+                    type: 4,
+                    data: {
+                        content: donato[Math.floor(Math.random() * donato.length)]
+                    }
+                }
+            });
+            break;
+    }
+
+    // Logs stuff
+    console.log(`\n${interaction.member.user.username} executed '${interaction.data.name}' ${args ? `with "${JSON.stringify(args)}"` : ""}`);
+    logMessage ? console.log(logMessage) : null;
+})
+
 client.on('ready', () => {
     console.log(`${client.user.username} has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.user.setActivity(`Beep boop`);
+
+    // Register slash commands
+    // help
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'help',
+            description: `Show the list of commands`,
+        }
+    });
+
+    // ping
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'ping',
+            description: `Show the bot's ping`,
+        }
+    });
+
+    // say <message>
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'say',
+            description: 'Makes the bot say something',
+            options: [{
+                type: 3,
+                name: 'message',
+                description: 'The message you want the bot to say',
+                required: true
+            }]
+        }
+    });
+
+    // snm [week]
+    client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
+        data:
+        {
+            name: 'snm',
+            description: `Shows this week movies or specified week summary`,
+            options: [
+                {
+                    type: 4,
+                    name: 'week',
+                    description: 'A SNM week number',
+                },
+                {
+                    type: 4,
+                    name: 'export',
+                    description: 'Exports a SNM .json data',
+                }
+            ]
+        }
+    });
+
+    // snmTitle add <title>
+    // snmTitle remove [title]
+    client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
+        data:
+        {
+            name: 'snmTitle',
+            description: `Add or remove SNM entries`,
+            options: [
+                {
+                    type: 1,
+                    name: 'add',
+                    description: 'Add a movie to current SNM',
+                    options: [
+                        {
+                            type: 3,
+                            name: 'title',
+                            required: true,
+                            description: 'The movie title'
+                        }
+                    ]
+                },
+                {
+                    type: 1,
+                    name: 'remove',
+                    description: 'Remove a movie from current SNM',
+                    options: [
+                        {
+                            type: 3,
+                            name: 'title',
+                            description: 'The movie title or SNM number'
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    // snmRate <text>
+    client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
+        data:
+        {
+            name: 'snmRate',
+            description: `Add or change your current SNM rating`,
+            options: [
+                {
+                    type: 3,
+                    name: 'rating',
+                    description: 'Your rating',
+                    required: true
+                }
+            ]
+        }
+    });
+
+    // snmVotes <Show | Clear>
+    client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
+        data:
+        {
+            name: 'snmVotes',
+            description: `Manage your current SNM votes`,
+            options: [
+                {
+                    type: 3,
+                    name: 'command',
+                    description: 'Show or clear your votes',
+                    required: true,
+                    choices: [
+                        {
+                            name: 'Show',
+                            value: 'show'
+                        },
+                        {
+                            name: 'Clear',
+                            value: 'clear'
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    // snmAdmin <new|start|end|pause>
+    client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
+        data:
+        {
+            name: 'snmAdmin',
+            description: `Manage current SNM`,
+            // default: true,
+            options: [
+                {
+                    type: 3,
+                    name: 'command',
+                    required: true,
+                    description: 'The admin command',
+                    choices: [
+                        {
+                            name: 'Create a new SNM',
+                            value: 'new'
+                        },
+                        {
+                            name: 'Start current SNM voting',
+                            value: 'start'
+                        },
+                        {
+                            name: 'End current SNM voting',
+                            value: 'end'
+                        },
+                        {
+                            name: 'Toggle automatic SNM functions',
+                            value: 'pause'
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    // torrent <query>
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'torrent',
+            description: `Searches for torrents on public trackers`,
+            options: [
+                {
+                    type: 3,
+                    name: 'query',
+                    required: true,
+                    description: 'Your search text - Specifying a year usually helps - Movie Name (2019)',
+                }
+            ]
+        }
+    });
+
+    // subtitle <title> [language]
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'subtitle',
+            description: `Searches for a subtitle file`,
+            options: [
+                {
+                    type: 3,
+                    name: 'title',
+                    required: true,
+                    description: 'Your search text (Filename is usually better)'
+                },
+                {
+                    type: 3,
+                    name: 'language',
+                    description: 'The language to search for. Default is English',
+                    choices: [
+                        {
+                            name: 'English',
+                            value: 'eng'
+                        },
+                        {
+                            name: 'Portuguese',
+                            value: 'pob'
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    // meme [name] | [list]
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'meme',
+            description: `Send a random meme in chat!`,
+            options: [
+                {
+                    type: 3,
+                    name: 'name',
+                    description: 'Choose a specific meme to send',
+                },
+                {
+                    type: 5,
+                    name: 'list',
+                    description: 'Lists all available memes'
+                }
+            ]
+        }
+    });
+
+    // rato [message]
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'rato',
+            description: `Send a random tenista™ in chat!`,
+            options: [
+                {
+                    type: 3,
+                    name: 'message',
+                    description: 'Make rato tenista say something'
+                }
+            ]
+        }
+    });
+
+    // emoji <message>
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'emoji',
+            description: `Converts your message into Discord's regional indicator emojis :abc:`,
+            options: [
+                {
+                    type: 3,
+                    name: 'message',
+                    required: true,
+                    description: 'Text to be converted'
+                }
+            ]
+        }
+    });
+
+    // random <option1, option2, option3, ...>
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'random',
+            description: `Randomly picks from one of the options`,
+            options: [
+                {
+                    type: 3,
+                    name: 'options',
+                    required: true,
+                    description: 'Comma separated options. "option1, options2, option3, ..."'
+                }
+            ]
+        }
+    });
+
+    // poll <poll title> <Apple, Orange, Pineapple, ...>
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'poll',
+            description: `Starts a poll that people can vote on`,
+            options: [
+                {
+                    type: 3,
+                    name: 'title',
+                    required: true,
+                    description: `What's the poll about?`
+                },
+                {
+                    type: 3,
+                    name: 'options',
+                    required: true,
+                    description: 'Comma separated options. "Apple, Orange, Pineapple, ..."'
+                }
+            ]
+        }
+    });
+
+    // toma
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'toma',
+            description: `...toma...`
+        }
+    });
+
+    // movie <movie title> [language]
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'movie',
+            description: `Shows info about a movie`,
+            options: [
+                {
+                    type: 3,
+                    name: 'title',
+                    required: true,
+                    description: `What's the name of the movie?`
+                },
+                {
+                    type: 3,
+                    name: 'language',
+                    description: 'Specify the database search language',
+                    choices: [
+                        {
+                            name: 'English',
+                            value: 'en'
+                        },
+                        {
+                            name: 'Portuguese',
+                            value: 'pt'
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    // donato
+    client.api.applications(client.user.id).commands.post({
+        data:
+        {
+            name: 'donato',
+            description: `Send a Donato in the chat!`
+        }
+    });
 
     // Gets latest SNM
     try {
@@ -422,28 +1461,27 @@ client.on('message', async message => {
 
     switch (command) {
         case 'help':
-            let description =
-                `!ping - Pings the API
-                \n!say <message> - Makes the bot say something
-                \n!snm [week number] - Show this week's movies or specified week summary
-                \n!snmNew - Starts a new week of SNM™
+            let description = `!ping - Pings the API
+            \n!say <message> - Make the bot say something
+            \n!snm [week number] - Show this week movies or specified week summary
+            \n!snmNew - Start a new week of SNM™
                 \n!snmStart - Initiate voting
                 \n!snmVotes [clear] - See your votes or clear them
                 \n!snmEnd [winner title or position] - Count votes or manually select a winner
-                \n!snmPause - Pauses/Unpauses this week's SNM - stops command scheduling
-                \n!snmAdd <movie title> - Adds a movie to this week's pool
-                \n!snmRemove <movie title or number> - Removes a movie from the week's pool
-                \n!snmRate <text> - Leaves a rating note for this week's movie
-                \n!snmExport [week number] - Creates a text file with all SNM™ data
-                \n!torrent Searches for torrents on public trackers and returns first result's magnet link
-                \n!subtitle <title> [language] - Searches for a subtitle file
-                \n!meme [list | meme name] - 👀 ||don't||
+            \n!snmPause - Pauses/Unpauses this week SNM - stop command scheduling
+            \n!snmAdd <movie title> - Add a movie to this week pool
+            \n!snmRemove <movie title or number> - Remove a movie from the week pool
+            \n!snmRate <text> - Leave a rating note for this week's movie
+            \n!snmExport [week number] - Create a text file with all SNM™ data
+            \n!torrent <query> - Search for torrents on public trackers
+            \n!subtitle <title> [language] - Search for a subtitle file
+            \n!meme [meme name | list] - 👀 ||do it||
                 \n!rato - Gets a random tenista™
                 \n!ratoTenista <message> - Make rato tenista say something
-                \n!emoji <message> - Converts your message into Discord's regional indicator emojis :abc:
-                \n!random <option1, option2, option3, ...> - Randomly picks from one of the options
-                \n!poll <poll title>, Apple, Orange, Pineapple, ... - Starts a poll that people can vote on
-                \n!movie <movie title> [en] - Shows info about a movie - Can force english search with 'en'
+            \n!emoji <message> - Convert your message into Discord's regional indicator emojis :abc:
+            \n!random <option1, option2, option3, ...> - Randomly pick from one of the options
+            \n!poll <poll title>, <Apple, Orange, Pineapple, ...> - Start a poll that people can vote on
+            \n!movie <movie title> [language] - Display info about a movie - Can force english search with 'en'
                 
                 **<> means a parameter is mandatory and [] is optional**`;
 
@@ -1046,8 +2084,7 @@ client.on('message', async message => {
                         torrentEmbed.setFooter(`Tip: ${tips[1]}`);
                     torrentMsg.edit('', torrentEmbed);
                 }
-            })
-
+            });
             break;
         case 'subtitle':
             // If empty message
@@ -1359,7 +2396,7 @@ client.on('message', async message => {
             jwSearch.items = jwSearch.items.filter(item => item.object_type === 'movie');
             // If no movie was found
             if (jwSearch.items.length <= 0) {
-                message.channel.send(`Movie not found 😞`);
+                jwMessage.edit(`Movie not found 😞`);
                 break;
             }
             // Gets full movie detail
