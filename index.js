@@ -604,6 +604,9 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                     case "9":
                         sentence += ":nine: ";
                         break;
+                    case "!":
+                        sentence += ":exclamation:";
+                        break;
                     default:
                         let char = letter.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
                         if (/[$-/:-?{-~!@#"^_`\[\]]/.test(char)) {
@@ -2225,6 +2228,9 @@ client.on('message', async message => {
                         break;
                     case "9":
                         sentence += ":nine: ";
+                        break;
+                    case "!":
+                        sentence += ":exclamation:";
                         break;
                     default:
                         let char = letter.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
