@@ -954,10 +954,14 @@ client.on('ready', () => {
     console.log(`${client.user.username} has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.user.setActivity(`Beep boop`);
 
+    // Guizzorde's BOT ID and APP id are different - we need the APP ID to register slash commands
+    // If local bot id is the app id - If on production set manually
+    const appID = config ? client.user.id : '168354315612717056';
+
     // Register slash commands
     try {
     // help
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'help',
@@ -966,7 +970,7 @@ client.on('ready', () => {
     });
 
     // ping
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'ping',
@@ -975,7 +979,7 @@ client.on('ready', () => {
     });
 
     // say <message>
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'say',
@@ -993,7 +997,7 @@ client.on('ready', () => {
         // Exclusive Top Server BR commands
         if (!config) {
     // snm [week]
-    client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
+            client.api.applications(appID).guilds('84290462843670528').commands.post({
         data:
         {
             name: 'snm',
@@ -1015,7 +1019,7 @@ client.on('ready', () => {
 
     // snmTitle add <title>
     // snmTitle remove [title]
-    client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
+            client.api.applications(appID).guilds('84290462843670528').commands.post({
         data:
         {
             name: 'snmTitle',
@@ -1051,7 +1055,7 @@ client.on('ready', () => {
     });
 
     // snmRate <text>
-    client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
+            client.api.applications(appID).guilds('84290462843670528').commands.post({
         data:
         {
             name: 'snmRate',
@@ -1068,7 +1072,7 @@ client.on('ready', () => {
     });
 
     // snmVotes <Show | Clear>
-    client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
+            client.api.applications(appID).guilds('84290462843670528').commands.post({
         data:
         {
             name: 'snmVotes',
@@ -1095,7 +1099,7 @@ client.on('ready', () => {
     });
 
     // snmAdmin <new|start|end|pause>
-    client.api.applications(client.user.id).guilds('84290462843670528').commands.post({
+            client.api.applications(appID).guilds('84290462843670528').commands.post({
         data:
         {
             name: 'snmAdmin',
@@ -1132,7 +1136,7 @@ client.on('ready', () => {
         }
 
     // torrent <query>
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'torrent',
@@ -1149,7 +1153,7 @@ client.on('ready', () => {
     });
 
     // subtitle <title> [language]
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'subtitle',
@@ -1181,7 +1185,7 @@ client.on('ready', () => {
     });
 
     // meme [name] | [list]
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'meme',
@@ -1202,7 +1206,7 @@ client.on('ready', () => {
     });
 
     // rato [message]
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'rato',
@@ -1218,7 +1222,7 @@ client.on('ready', () => {
     });
 
     // emoji <message>
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'emoji',
@@ -1235,7 +1239,7 @@ client.on('ready', () => {
     });
 
     // random <option1, option2, option3, ...>
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'random',
@@ -1252,7 +1256,7 @@ client.on('ready', () => {
     });
 
     // poll <poll title> <Apple, Orange, Pineapple, ...>
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'poll',
@@ -1275,7 +1279,7 @@ client.on('ready', () => {
     });
 
     // toma
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'toma',
@@ -1284,7 +1288,7 @@ client.on('ready', () => {
     });
 
     // movie <movie title> [language]
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'movie',
@@ -1316,7 +1320,7 @@ client.on('ready', () => {
     });
 
     // donato
-    client.api.applications(client.user.id).commands.post({
+        client.api.applications(appID).commands.post({
         data:
         {
             name: 'donato',
