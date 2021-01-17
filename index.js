@@ -1864,9 +1864,19 @@ client.on('message', async message => {
                 break;
             }
             let torrentMsgGet = await client.channels.cache.get(SNMCHANNEL).messages.fetch(args[0]);
+            // If message is the old torrent format (only torrent and sub)
+            if (torrentMsgGet.embeds[0].description) {
             torrentMsgGet.edit(torrentMsgGet.embeds[0].setDescription(
                 torrentMsgGet.embeds[0].description.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[1]})`)
             ));
+            }
+            // Else, if new format (full /movie details)
+            else {
+                const torrentFieldIndex = torrentMsgGet.embeds[0].fields.findIndex(field => field.name === 'Torrent');
+                torrentMsgGet.embeds[0].fields[torrentFieldIndex].value = torrentMsgGet.embeds[0].fields[torrentFieldIndex].value.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[1]})`);
+                torrentMsgGet.edit(torrentMsgGet.embeds[0]);
+            }
+            
             logMessage = `Changed sub from ${args[0]} with ${args[1]}`;
             break;
         case 'snmpause':
