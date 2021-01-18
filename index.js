@@ -502,7 +502,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 let randomMemeIndex = Math.floor(Math.random() * usableMemes.length);
                 client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
-                        type: 3,
+                        type: 4,
                         data: {
                             content: usableMemes.splice(randomMemeIndex, 1)[0].meme
                         }
