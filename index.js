@@ -118,6 +118,10 @@ const memes = [
     {
         name: 'pain',
         meme: 'https://cdn.discordapp.com/attachments/168624317049995264/788167349014495232/Qlqkyivabf81lmv8-1.webm'
+    },
+    {
+        name: 'motor',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/800566815666470922/Pelican_Motor_Mouth.mp4'
     }
 ];
 
@@ -959,378 +963,378 @@ client.on('ready', () => {
     const appID = config ? client.user.id : '168354315612717056';
 
     // Register slash commands
-    try {
-    // help
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'help',
-            description: `Show the list of commands`,
-        }
-    });
+    // try {
+    //     // help
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'help',
+    //             description: `Show the list of commands`,
+    //         }
+    //     });
 
-    // ping
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'ping',
-            description: `Show the bot's ping`,
-        }
-    });
+    //     // ping
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'ping',
+    //             description: `Show the bot's ping`,
+    //         }
+    //     });
 
-    // say <message>
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'say',
-            description: 'Makes the bot say something',
-            options: [{
-                type: 3,
-                name: 'message',
-                description: 'The message you want the bot to say',
-                required: true
-            }]
-        }
-    });
+    //     // say <message>
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'say',
+    //             description: 'Makes the bot say something',
+    //             options: [{
+    //                 type: 3,
+    //                 name: 'message',
+    //                 description: 'The message you want the bot to say',
+    //                 required: true
+    //             }]
+    //         }
+    //     });
 
-        // Only register these when not on local bot
-        // Exclusive Top Server BR commands
-        if (!config) {
-    // snm [week]
-            client.api.applications(appID).guilds('84290462843670528').commands.post({
-        data:
-        {
-            name: 'snm',
-            description: `Shows this week movies or specified week summary`,
-            options: [
-                {
-                    type: 4,
-                    name: 'week',
-                    description: 'A SNM week number',
-                },
-                {
-                    type: 4,
-                    name: 'export',
-                    description: 'Exports a SNM .json data',
-                }
-            ]
-        }
-    });
+    //     // Only register these when not on local bot
+    //     // Exclusive Top Server BR commands
+    //     if (!config) {
+    //         // snm [week]
+    //         client.api.applications(appID).guilds('84290462843670528').commands.post({
+    //             data:
+    //             {
+    //                 name: 'snm',
+    //                 description: `Shows this week movies or specified week summary`,
+    //                 options: [
+    //                     {
+    //                         type: 4,
+    //                         name: 'week',
+    //                         description: 'A SNM week number',
+    //                     },
+    //                     {
+    //                         type: 4,
+    //                         name: 'export',
+    //                         description: 'Exports a SNM .json data',
+    //                     }
+    //                 ]
+    //             }
+    //         });
 
-    // snmTitle add <title>
-    // snmTitle remove [title]
-            client.api.applications(appID).guilds('84290462843670528').commands.post({
-        data:
-        {
-            name: 'snmTitle',
-            description: `Add or remove SNM entries`,
-            options: [
-                {
-                    type: 1,
-                    name: 'add',
-                    description: 'Add a movie to current SNM',
-                    options: [
-                        {
-                            type: 3,
-                            name: 'title',
-                            required: true,
-                            description: 'The movie title'
-                        }
-                    ]
-                },
-                {
-                    type: 1,
-                    name: 'remove',
-                    description: 'Remove a movie from current SNM',
-                    options: [
-                        {
-                            type: 3,
-                            name: 'title',
-                            description: 'The movie title or SNM number'
-                        }
-                    ]
-                }
-            ]
-        }
-    });
+    //         // snmTitle add <title>
+    //         // snmTitle remove [title]
+    //         client.api.applications(appID).guilds('84290462843670528').commands.post({
+    //             data:
+    //             {
+    //                 name: 'snmTitle',
+    //                 description: `Add or remove SNM entries`,
+    //                 options: [
+    //                     {
+    //                         type: 1,
+    //                         name: 'add',
+    //                         description: 'Add a movie to current SNM',
+    //                         options: [
+    //                             {
+    //                                 type: 3,
+    //                                 name: 'title',
+    //                                 required: true,
+    //                                 description: 'The movie title'
+    //                             }
+    //                         ]
+    //                     },
+    //                     {
+    //                         type: 1,
+    //                         name: 'remove',
+    //                         description: 'Remove a movie from current SNM',
+    //                         options: [
+    //                             {
+    //                                 type: 3,
+    //                                 name: 'title',
+    //                                 description: 'The movie title or SNM number'
+    //                             }
+    //                         ]
+    //                     }
+    //                 ]
+    //             }
+    //         });
 
-    // snmRate <text>
-            client.api.applications(appID).guilds('84290462843670528').commands.post({
-        data:
-        {
-            name: 'snmRate',
-            description: `Add or change your current SNM rating`,
-            options: [
-                {
-                    type: 3,
-                    name: 'rating',
-                    description: 'Your rating',
-                    required: true
-                }
-            ]
-        }
-    });
+    //         // snmRate <text>
+    //         client.api.applications(appID).guilds('84290462843670528').commands.post({
+    //             data:
+    //             {
+    //                 name: 'snmRate',
+    //                 description: `Add or change your current SNM rating`,
+    //                 options: [
+    //                     {
+    //                         type: 3,
+    //                         name: 'rating',
+    //                         description: 'Your rating',
+    //                         required: true
+    //                     }
+    //                 ]
+    //             }
+    //         });
 
-    // snmVotes <Show | Clear>
-            client.api.applications(appID).guilds('84290462843670528').commands.post({
-        data:
-        {
-            name: 'snmVotes',
-            description: `Manage your current SNM votes`,
-            options: [
-                {
-                    type: 3,
-                    name: 'command',
-                    description: 'Show or clear your votes',
-                    required: true,
-                    choices: [
-                        {
-                            name: 'Show',
-                            value: 'show'
-                        },
-                        {
-                            name: 'Clear',
-                            value: 'clear'
-                        }
-                    ]
-                }
-            ]
-        }
-    });
+    //         // snmVotes <Show | Clear>
+    //         client.api.applications(appID).guilds('84290462843670528').commands.post({
+    //             data:
+    //             {
+    //                 name: 'snmVotes',
+    //                 description: `Manage your current SNM votes`,
+    //                 options: [
+    //                     {
+    //                         type: 3,
+    //                         name: 'command',
+    //                         description: 'Show or clear your votes',
+    //                         required: true,
+    //                         choices: [
+    //                             {
+    //                                 name: 'Show',
+    //                                 value: 'show'
+    //                             },
+    //                             {
+    //                                 name: 'Clear',
+    //                                 value: 'clear'
+    //                             }
+    //                         ]
+    //                     }
+    //                 ]
+    //             }
+    //         });
 
-    // snmAdmin <new|start|end|pause>
-            client.api.applications(appID).guilds('84290462843670528').commands.post({
-        data:
-        {
-            name: 'snmAdmin',
-            description: `Manage current SNM`,
-            // default: true,
-            options: [
-                {
-                    type: 3,
-                    name: 'command',
-                    required: true,
-                    description: 'The admin command',
-                    choices: [
-                        {
-                            name: 'Create a new SNM',
-                            value: 'new'
-                        },
-                        {
-                            name: 'Start current SNM voting',
-                            value: 'start'
-                        },
-                        {
-                            name: 'End current SNM voting',
-                            value: 'end'
-                        },
-                        {
-                            name: 'Toggle automatic SNM functions',
-                            value: 'pause'
-                        }
-                    ]
-                }
-            ]
-        }
-    });
-        }
+    //         // snmAdmin <new|start|end|pause>
+    //         client.api.applications(appID).guilds('84290462843670528').commands.post({
+    //             data:
+    //             {
+    //                 name: 'snmAdmin',
+    //                 description: `Manage current SNM`,
+    //                 // default: true,
+    //                 options: [
+    //                     {
+    //                         type: 3,
+    //                         name: 'command',
+    //                         required: true,
+    //                         description: 'The admin command',
+    //                         choices: [
+    //                             {
+    //                                 name: 'Create a new SNM',
+    //                                 value: 'new'
+    //                             },
+    //                             {
+    //                                 name: 'Start current SNM voting',
+    //                                 value: 'start'
+    //                             },
+    //                             {
+    //                                 name: 'End current SNM voting',
+    //                                 value: 'end'
+    //                             },
+    //                             {
+    //                                 name: 'Toggle automatic SNM functions',
+    //                                 value: 'pause'
+    //                             }
+    //                         ]
+    //                     }
+    //                 ]
+    //             }
+    //         });
+    //     }
 
-    // torrent <query>
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'torrent',
-            description: `Searches for torrents on public trackers`,
-            options: [
-                {
-                    type: 3,
-                    name: 'query',
-                    required: true,
-                    description: 'Your search text - Specifying a year usually helps - Movie Name (2019)',
-                }
-            ]
-        }
-    });
+    //     // torrent <query>
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'torrent',
+    //             description: `Searches for torrents on public trackers`,
+    //             options: [
+    //                 {
+    //                     type: 3,
+    //                     name: 'query',
+    //                     required: true,
+    //                     description: 'Your search text - Specifying a year usually helps - Movie Name (2019)',
+    //                 }
+    //             ]
+    //         }
+    //     });
 
-    // subtitle <title> [language]
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'subtitle',
-            description: `Searches for a subtitle file`,
-            options: [
-                {
-                    type: 3,
-                    name: 'title',
-                    required: true,
-                    description: 'Your search text (Filename is usually better)'
-                },
-                {
-                    type: 3,
-                    name: 'language',
-                    description: 'The language to search for. Default is English',
-                    choices: [
-                        {
-                            name: 'English',
-                            value: 'eng'
-                        },
-                        {
-                            name: 'Portuguese',
-                            value: 'pob'
-                        }
-                    ]
-                }
-            ]
-        }
-    });
+    //     // subtitle <title> [language]
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'subtitle',
+    //             description: `Searches for a subtitle file`,
+    //             options: [
+    //                 {
+    //                     type: 3,
+    //                     name: 'title',
+    //                     required: true,
+    //                     description: 'Your search text (Filename is usually better)'
+    //                 },
+    //                 {
+    //                     type: 3,
+    //                     name: 'language',
+    //                     description: 'The language to search for. Default is English',
+    //                     choices: [
+    //                         {
+    //                             name: 'English',
+    //                             value: 'eng'
+    //                         },
+    //                         {
+    //                             name: 'Portuguese',
+    //                             value: 'pob'
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         }
+    //     });
 
-    // meme [name] | [list]
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'meme',
-            description: `Send a random meme in chat!`,
-            options: [
-                {
-                    type: 3,
-                    name: 'name',
-                    description: 'Choose a specific meme to send',
-                },
-                {
-                    type: 5,
-                    name: 'list',
-                    description: 'Lists all available memes'
-                }
-            ]
-        }
-    });
+    //     // meme [name] | [list]
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'meme',
+    //             description: `Send a random meme in chat!`,
+    //             options: [
+    //                 {
+    //                     type: 3,
+    //                     name: 'name',
+    //                     description: 'Choose a specific meme to send',
+    //                 },
+    //                 {
+    //                     type: 5,
+    //                     name: 'list',
+    //                     description: 'Lists all available memes'
+    //                 }
+    //             ]
+    //         }
+    //     });
 
-    // rato [message]
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'rato',
-            description: `Send a random tenista™ in chat!`,
-            options: [
-                {
-                    type: 3,
-                    name: 'message',
-                    description: 'Make rato tenista say something'
-                }
-            ]
-        }
-    });
+    //     // rato [message]
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'rato',
+    //             description: `Send a random tenista™ in chat!`,
+    //             options: [
+    //                 {
+    //                     type: 3,
+    //                     name: 'message',
+    //                     description: 'Make rato tenista say something'
+    //                 }
+    //             ]
+    //         }
+    //     });
 
-    // emoji <message>
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'emoji',
-            description: `Converts your message into Discord's regional indicator emojis :abc:`,
-            options: [
-                {
-                    type: 3,
-                    name: 'message',
-                    required: true,
-                    description: 'Text to be converted'
-                }
-            ]
-        }
-    });
+    //     // emoji <message>
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'emoji',
+    //             description: `Converts your message into Discord's regional indicator emojis :abc:`,
+    //             options: [
+    //                 {
+    //                     type: 3,
+    //                     name: 'message',
+    //                     required: true,
+    //                     description: 'Text to be converted'
+    //                 }
+    //             ]
+    //         }
+    //     });
 
-    // random <option1, option2, option3, ...>
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'random',
-            description: `Randomly picks from one of the options`,
-            options: [
-                {
-                    type: 3,
-                    name: 'options',
-                    required: true,
-                    description: 'Comma separated options. "option1, options2, option3, ..."'
-                }
-            ]
-        }
-    });
+    //     // random <option1, option2, option3, ...>
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'random',
+    //             description: `Randomly picks from one of the options`,
+    //             options: [
+    //                 {
+    //                     type: 3,
+    //                     name: 'options',
+    //                     required: true,
+    //                     description: 'Comma separated options. "option1, options2, option3, ..."'
+    //                 }
+    //             ]
+    //         }
+    //     });
 
-    // poll <poll title> <Apple, Orange, Pineapple, ...>
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'poll',
-            description: `Starts a poll that people can vote on`,
-            options: [
-                {
-                    type: 3,
-                    name: 'title',
-                    required: true,
-                    description: `What's the poll about?`
-                },
-                {
-                    type: 3,
-                    name: 'options',
-                    required: true,
-                    description: 'Comma separated options. "Apple, Orange, Pineapple, ..."'
-                }
-            ]
-        }
-    });
+    //     // poll <poll title> <Apple, Orange, Pineapple, ...>
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'poll',
+    //             description: `Starts a poll that people can vote on`,
+    //             options: [
+    //                 {
+    //                     type: 3,
+    //                     name: 'title',
+    //                     required: true,
+    //                     description: `What's the poll about?`
+    //                 },
+    //                 {
+    //                     type: 3,
+    //                     name: 'options',
+    //                     required: true,
+    //                     description: 'Comma separated options. "Apple, Orange, Pineapple, ..."'
+    //                 }
+    //             ]
+    //         }
+    //     });
 
-    // toma
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'toma',
-            description: `...toma...`
-        }
-    });
+    //     // toma
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'toma',
+    //             description: `...toma...`
+    //         }
+    //     });
 
-    // movie <movie title> [language]
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'movie',
-            description: `Shows info about a movie`,
-            options: [
-                {
-                    type: 3,
-                    name: 'title',
-                    required: true,
-                    description: `What's the name of the movie?`
-                },
-                {
-                    type: 3,
-                    name: 'language',
-                    description: 'Specify the database search language',
-                    choices: [
-                        {
-                            name: 'English',
-                            value: 'en'
-                        },
-                        {
-                            name: 'Portuguese',
-                            value: 'pt'
-                        }
-                    ]
-                }
-            ]
-        }
-    });
+    //     // movie <movie title> [language]
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'movie',
+    //             description: `Shows info about a movie`,
+    //             options: [
+    //                 {
+    //                     type: 3,
+    //                     name: 'title',
+    //                     required: true,
+    //                     description: `What's the name of the movie?`
+    //                 },
+    //                 {
+    //                     type: 3,
+    //                     name: 'language',
+    //                     description: 'Specify the database search language',
+    //                     choices: [
+    //                         {
+    //                             name: 'English',
+    //                             value: 'en'
+    //                         },
+    //                         {
+    //                             name: 'Portuguese',
+    //                             value: 'pt'
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         }
+    //     });
 
-    // donato
-        client.api.applications(appID).commands.post({
-        data:
-        {
-            name: 'donato',
-            description: `Send a Donato in the chat!`
-        }
-    });
-    }
-    catch (e) {
-        reportError(e)
-    }
+    //     // donato
+    //     client.api.applications(appID).commands.post({
+    //         data:
+    //         {
+    //             name: 'donato',
+    //             description: `Send a Donato in the chat!`
+    //         }
+    //     });
+    // }
+    // catch (e) {
+    //     reportError(e)
+    // }
 
     // Gets latest SNM
     try {
