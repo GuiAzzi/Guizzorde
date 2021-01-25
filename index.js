@@ -2393,7 +2393,7 @@ client.on('message', async message => {
             connection = await message.member.voice.channel.join();
 
             if (messageText === 'countdown')
-                dispatcher = connection.play('src/sounds/countdown.ogg', {volume: 0.3});
+                dispatcher = connection.play('src/sounds/countdown.mp3', {volume: 0.7});
             else
             dispatcher = connection.play(ytdl(messageText, { filter: 'audioonly' }), { volume: 0.15 });
 
