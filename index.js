@@ -947,6 +947,28 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 }
             });
             break;
+        case 'queridometro':
+            // Gets user by ID
+            const ratingUser = await client.users.fetch(args[0].value).catch((e) => '');
+
+            // Start interaction
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: {
+                    type: 4,
+                    data: {
+                        content: `Rating <@!${args[0].value}>`
+                    }
+                }
+            });
+
+            const queridometroEmojis = ['🐍', '🤮', '🙂', '☹', '💣', '♥', '💔', '🍌', '🪴'];
+
+            // Send message and react accordingly
+            let queridometroMsg = await client.channels.cache.get(interaction.channel_id).send(ratingUser.avatarURL() || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png');
+            for (let i = 0; i < queridometroEmojis.length; i++) {
+                await queridometroMsg.react(queridometroEmojis[i]);
+            };
+            break;
     }
 
     // Logs stuff
@@ -987,7 +1009,7 @@ client.on('ready', () => {
     //         data:
     //         {
     //             name: 'say',
-    //             description: 'Makes the bot say something',
+    //             description: 'Make the bot say something',
     //             options: [{
     //                 type: 3,
     //                 name: 'message',
@@ -1005,7 +1027,7 @@ client.on('ready', () => {
     //             data:
     //             {
     //                 name: 'snm',
-    //                 description: `Shows this week movies or specified week summary`,
+    //                 description: `Show this week movies or specified week summary`,
     //                 options: [
     //                     {
     //                         type: 4,
@@ -1015,7 +1037,7 @@ client.on('ready', () => {
     //                     {
     //                         type: 4,
     //                         name: 'export',
-    //                         description: 'Exports a SNM .json data',
+    //                         description: 'Export a SNM .json data',
     //                     }
     //                 ]
     //             }
@@ -1144,7 +1166,7 @@ client.on('ready', () => {
     //         data:
     //         {
     //             name: 'torrent',
-    //             description: `Searches for torrents on public trackers`,
+    //             description: `Search for torrents on public trackers`,
     //             options: [
     //                 {
     //                     type: 3,
@@ -1161,7 +1183,7 @@ client.on('ready', () => {
     //         data:
     //         {
     //             name: 'subtitle',
-    //             description: `Searches for a subtitle file`,
+    //             description: `Search for a subtitle file`,
     //             options: [
     //                 {
     //                     type: 3,
@@ -1230,7 +1252,7 @@ client.on('ready', () => {
     //         data:
     //         {
     //             name: 'emoji',
-    //             description: `Converts your message into Discord's regional indicator emojis :abc:`,
+    //             description: `Convert your message into Discord's regional indicator emojis :abc:`,
     //             options: [
     //                 {
     //                     type: 3,
@@ -1247,7 +1269,7 @@ client.on('ready', () => {
     //         data:
     //         {
     //             name: 'random',
-    //             description: `Randomly picks from one of the options`,
+    //             description: `Pick from one of the options randomly`,
     //             options: [
     //                 {
     //                     type: 3,
@@ -1264,7 +1286,7 @@ client.on('ready', () => {
     //         data:
     //         {
     //             name: 'poll',
-    //             description: `Starts a poll that people can vote on`,
+    //             description: `Start a poll that people can vote on`,
     //             options: [
     //                 {
     //                     type: 3,
@@ -1296,7 +1318,7 @@ client.on('ready', () => {
     //         data:
     //         {
     //             name: 'movie',
-    //             description: `Shows info about a movie`,
+    //             description: `Show info about a movie`,
     //             options: [
     //                 {
     //                     type: 3,
@@ -1331,6 +1353,23 @@ client.on('ready', () => {
     //             description: `Send a Donato in the chat!`
     //         }
     //     });
+
+    // // queridometro
+    // client.api.applications(appID).commands.post({
+    //     data: {
+    //         name: 'queridometro',
+    //         description: `Rate a member from this server`,
+    //         options: [
+    //             {
+    //                 type: 6,
+    //                 name: 'friend',
+    //                 required: true,
+    //                 description: 'Tag the user here'
+    //             }
+    //         ]
+    //     }
+    // });
+
     // }
     // catch (e) {
     //     reportError(e)
@@ -2393,7 +2432,7 @@ client.on('message', async message => {
             connection = await message.member.voice.channel.join();
 
             if (messageText === 'countdown')
-                dispatcher = connection.play('src/sounds/countdown.mp3', {volume: 0.7});
+                dispatcher = connection.play('src/sounds/countdown.mp3', { volume: 0.7 });
             else
             dispatcher = connection.play(ytdl(messageText, { filter: 'audioonly' }), { volume: 0.15 });
 
