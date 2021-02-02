@@ -278,7 +278,7 @@ const searchSubtitle = async (title, lang = 'eng') => {
 // Receive Slash Interaction
 client.ws.on('INTERACTION_CREATE', async interaction => {
     const args = interaction.data.options;
-    const logMessage = "";
+    let logMessage = "";
 
     switch (interaction.data.name.toLowerCase()) {
         case 'help':
