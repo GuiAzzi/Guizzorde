@@ -2423,6 +2423,11 @@ client.on('message', async message => {
                 logMessage = "not owner";
                 break;
             }
+            if (!message.member) {
+                message.author.send('You must send this in a server :(');
+                logMessage = 'message not sent in server';
+                break;
+            }
             if (!message.member.voice.channel) {
                 message.channel.send('You must be connected to a channel');
                 logMessage = 'not connected to a channel';
