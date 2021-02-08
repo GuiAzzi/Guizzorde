@@ -956,15 +956,23 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 data: {
                     type: 4,
                     data: {
-                        content: `Rating <@!${args[0].value}>`
+                        content: `Rating user`
                     }
                 }
             });
 
             const queridometroEmojis = ['🐍', '🤮', '🙂', '☹', '💣', '♥', '💔', '🍌', '🪴'];
 
+            // create queridometro embed
+            const queridometroEmbed = new Discord.MessageEmbed()
+                .setTitle(`Queridometro`)
+                .setColor(0x3498DB)
+                .setDescription(`Como você está se sentindo sobre <@!${args[0].value}> hoje?`)
+                .setImage(ratingUser.avatarURL() || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png')
+                .setTimestamp(new Date().toLocaleDateString('pt-BR'));
+
             // Send message and react accordingly
-            let queridometroMsg = await client.channels.cache.get(interaction.channel_id).send(ratingUser.avatarURL() || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png');
+            let queridometroMsg = await client.channels.cache.get(interaction.channel_id).send(queridometroEmbed);
             for (let i = 0; i < queridometroEmojis.length; i++) {
                 await queridometroMsg.react(queridometroEmojis[i]);
             };
@@ -1490,6 +1498,23 @@ client.on('messageReactionAdd', async (reaction, user) => {
             .then((msg) => {
                 reaction.message.edit(new Discord.MessageEmbed().setTitle(`SNM ${lastSnm.week} Second Option`).setColor(0x3498DB).setDescription(oldDesc).setFooter(`click the reaction to swap to this`)).then(() => torrentMessage = msg);
             });
+    }
+    // reaction on queridometro
+    else if (reaction.message.embeds && reaction.message.embeds[0].title === 'Queridometro') {
+        console.log(`${user.username} reacted on queridometro`)
+        // checks if user has a reaction on any other emoji
+        reaction.message.reactions.cache.forEach(async (r) => {
+            // if a previous reaction is found, remove it
+            if (r !== reaction && r.users.cache.find(userIndex => userIndex.id === user.id)){
+                try {
+                    await r.users.remove(user);
+                    console.log(`Removed ${user.username}'s previous reaction from queridometro`)
+                }
+                catch (e) {
+                    console.log(`Could not remove ${user.username}'s reaction from queridometro`)
+                }
+            }
+        })
     }
 });
 
