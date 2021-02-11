@@ -122,6 +122,10 @@ const memes = [
     {
         name: 'motor',
         meme: 'https://cdn.discordapp.com/attachments/168624317049995264/800566815666470922/Pelican_Motor_Mouth.mp4'
+    },
+    {
+        name: 'animals are leaving',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/809568621923008542/o9HmFOlY3-uvW4Ys.mp4'
     }
 ];
 
