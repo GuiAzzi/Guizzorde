@@ -495,12 +495,10 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             }
             break;
         case 'meme':
-
-            const memeName = args ? args.find(arg => arg.name === 'name') : null;
-            const list = args ? args.find(arg => arg.name === 'list') : null;
+            const memeName = args ? args[0] : null;
 
             // If no args = send random meme
-            if (!args || memeName === '') {
+            if (!args || memeName.name === '') {
                 if (usableMemes.length === 0)
                     usableMemes = [...memes];
                 let randomMemeIndex = Math.floor(Math.random() * usableMemes.length);
@@ -512,34 +510,46 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                         }
                     }
                 });
+                break;
             }
 
             // If list is requested
-            if (list && list.value === true) {
-                let user = await client.users.fetch(interaction.member.user.id);
-                await user.send(
-                    new Discord.MessageEmbed()
-                        .setTitle('Available Memes')
-                        .setDescription(memes.map((meme) => meme.name))
-                        .setColor(0x3498DB)
-                );
+            if (memeName.value.trim().toLowerCase() === 'list') {
+                client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 3,
+                        data: {
+                            content: `**Available Memes**\n\`\`\`${memes.map((meme) => meme.name).join('\n')}\`\`\``,
+                            flags: 1 << 6
+                        }
+                    }
+                })
             }
 
-            if (memeName && memeName.value) {
+            else if (memeName) {
                 // If a specific meme is requested
-                const selectedMeme = memes.find((meme) => {
-                    if (meme.name === memeName.value) {
-                        return meme;
-                    };
-                });
+                const selectedMeme = memes.find((meme) => meme.name === memeName.value);
+                if (selectedMeme) {
                 client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
                         type: 4,
                         data: {
-                            content: selectedMeme ? selectedMeme.meme : 'No meme found\nCheck out the /meme list:true command'
+                                content: selectedMeme.meme
+                            }
+                        }
+                    })
+                }
+                else {
+                    client.api.interactions(interaction.id, interaction.token).callback.post({
+                        data: {
+                            type: 3,
+                            data: {
+                                content: 'No meme found.\nCheck out the `/meme name:list` command.',
+                                flags: 1 << 6
                         }
                     }
                 });
+            }
             }
             break;
         case 'rato':
@@ -984,7 +994,13 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
     }
 
     // Logs stuff
-    console.log(`\n${interaction.member.user.username} executed '${interaction.data.name}' ${args ? `with "${JSON.stringify(args)}"` : ""}`);
+    if (interaction.member)
+        // If Slash Command was executed on a server
+        console.log(`\n${interaction.member.user.username} executed '${interaction.data.name}'${args ? ` with "${JSON.stringify(args)}"` : ""} in ${interaction.guild_id}`);
+    else
+        // If Slash Command was executed via DM 
+        console.log(`\n${interaction.user.username} executed '${interaction.data.name}'${args ? ` with "${JSON.stringify(args)}"` : ""} via DM`);
+
     logMessage ? console.log(logMessage) : null;
 })
 
@@ -1509,7 +1525,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
         // checks if user has a reaction on any other emoji
         reaction.message.reactions.cache.forEach(async (r) => {
             // if a previous reaction is found, remove it
-            if (r !== reaction && r.users.cache.find(userIndex => userIndex.id === user.id)){
+            if (r !== reaction && r.users.cache.find(userIndex => userIndex.id === user.id)) {
                 try {
                     await r.users.remove(user);
                     console.log(`Removed ${user.username}'s previous reaction from queridometro`)
