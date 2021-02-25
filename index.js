@@ -1645,14 +1645,16 @@ client.on('message', async message => {
                 .setColor('#4286f4')
                 // Set the main content of the embed
                 .setDescription(description);
-            message.author.send(embed);
+            message.author.send('**⚠ This command will soon be completely replaced with `/help` ⚠**\n', { embed: embed });
             break;
         case 'ping':
             // Calculates ping between sending a message and editing it, giving a nice round-trip latency.
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/ping` ⚠**');
             const m = await message.channel.send('Ping?');
             m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms`);
             break;
         case 'say':
+            await message.author.send('**⚠ This command will soon be completely replaced with `/say` ⚠**');
             message.delete().catch(O_o => { });
             // Removes any command from the text, so the bot doesn't execute !snmStart or loops !say for example
             const sendMessage = messageText.replace(/!\w+/gim, '');
@@ -2218,6 +2220,7 @@ client.on('message', async message => {
             message.reply(attachment);
             break;
         case 'torrent':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/torrent` ⚠**');
             // Search for a torrent on a list of providers
             const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)']
 
@@ -2250,6 +2253,7 @@ client.on('message', async message => {
             });
             break;
         case 'subtitle':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/subtitle` ⚠**');
             // If empty message
             if (!messageText) {
                 message.channel.send(`No search parameter was entered.\nUsage: \`!subtitle <title> [lang]\`\nAccepted lang: \`en\`|\`pt\``);
@@ -2300,6 +2304,7 @@ client.on('message', async message => {
             }
             break;
         case 'meme':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/meme` ⚠**');
             if (messageText) {
                 // If list is requested
                 if (messageText === 'list') {
@@ -2327,6 +2332,7 @@ client.on('message', async message => {
             message.channel.send(usableMemes.splice(randomMemeIndex, 1)[0].meme);
             break;
         case 'ratotenista':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/rato` ⚠**');
             // Uses rato_plaquista as templete for text
 
             // Value cannot be empty
@@ -2348,10 +2354,12 @@ client.on('message', async message => {
             });
             break;
         case 'rato':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/rato` ⚠**');
             // Generates a message with a random 'rato tenista' image
             message.channel.send(`ei!! por favor pare!\nisto me deixa`, { files: [`src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`] });
             break;
         case 'emoji':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/emoji` ⚠**');
             // Converts the inputed message to discord's regional emojis
             let sentence = "";
             for (let letter of cleanMessageText) {
@@ -2406,6 +2414,7 @@ client.on('message', async message => {
             message.channel.send(sentence);
             break;
         case 'random':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/random` ⚠**');
             // Without animation
             // TODO: Append 1), 2), 3) at the star of each option?
 
@@ -2456,6 +2465,7 @@ client.on('message', async message => {
             // }
             break;
         case 'poll':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/poll` ⚠**');
             if (!messageText) {
                 message.channel.send(`Separate each option with a comma ","\nUsage: \`!poll <Poll Title>, Apple, Orange, Pineapple, ...\`\nThe first parameter is always the title`);
                 logMessage = 'No options';
@@ -2506,6 +2516,7 @@ client.on('message', async message => {
             };
             break;
         case 'toma':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/toma` ⚠**');
             message.channel.send('https://cdn.discordapp.com/emojis/487347201706819584.png');
             break;
         case 'play':
@@ -2545,6 +2556,7 @@ client.on('message', async message => {
             dispatcher.end();
             break;
         case 'movie':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/movie` ⚠**');
             // FIXME: Messy AF - Maybe let default be EN
             // If no movie was passed
             if (!messageText) {
@@ -2767,6 +2779,7 @@ client.on('message', async message => {
             );
             break;
         case 'donato':
+            await message.channel.send('**⚠ This command will soon be completely replaced with `/donato` ⚠**');
             message.channel.send(donato[Math.floor(Math.random() * donato.length)]);
             break;
         default:
