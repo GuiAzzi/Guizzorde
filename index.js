@@ -281,6 +281,9 @@ const searchSubtitle = async (title, lang = 'eng') => {
 
 // Receive Slash Interaction
 client.ws.on('INTERACTION_CREATE', async interaction => {
+    // Guizzorde's BOT ID and APP id are different - we need the APP ID to register slash commands
+    // If local bot id is the app id - If on production set manually
+    const appID = config ? client.user.id : '168354315612717056';
     const args = interaction.data.options;
     let logMessage = "";
 
@@ -314,19 +317,19 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             // let user = await client.users.fetch(interaction.member.user.id);
             // user.send(embed);
 
-            client.api.interactions(interaction.id, interaction.token).callback.post({
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 3,
                     data: {
                         content: description,
                         // embeds: [new Discord.MessageEmbed().setTitle('Test').setDescription('Dae')],
                         flags: 64
-                }
+                    }
                 }
             });
             break;
         case 'ping':
-            client.api.interactions(interaction.id, interaction.token).callback.post({
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 4,
                     data: {
@@ -336,7 +339,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             });
             break;
         case 'say':
-            client.api.interactions(interaction.id, interaction.token).callback.post({
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 3,
                     data: {
@@ -349,7 +352,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             // Sends rich embed with SNM infos
             // If no week was specified or if specified week is current one
             if (!args || args[0].value === lastSnm.week && lastSnm.status != "finished") {
-                client.api.interactions(interaction.id, interaction.token).callback.post({
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
                         type: 4,
                         data: {
@@ -361,7 +364,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             }
             else if (args[0].value > lastSnm.week || args[0].value <= 0) {
                 // User entered a week bigger than current one or <= 0
-                client.api.interactions(interaction.id, interaction.token).callback.post({
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
                         type: 3,
                         data: {
@@ -376,7 +379,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             else {
                 // FIXME: Integrate followup message
                 // If a week was specified, show that SNM summary
-                client.api.interactions(interaction.id, interaction.token).callback.post({
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
                         type: 4,
                         data: {
@@ -430,12 +433,12 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                         // Returns the embed
 
                         mongoClient.close();
-                        client.api.webhooks(client.user.id, interaction.token).messages('@original').patch({
+                        client.api.webhooks(appID, interaction.token).messages('@original').patch({
                             data: {
                                 embeds: [embed]
                             }
+                        });
                     });
-                });
                 });
             }
             break;
@@ -446,7 +449,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)']
 
             // Sends to-be-edited message
-            client.api.interactions(interaction.id, interaction.token).callback.post({
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 4,
                     data: {
@@ -456,9 +459,9 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             });
 
             // Searchs torrents
-            await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], args[0].value, null, 3).then((result) => {
+            await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], args[0].value, null, 3).then(async (result) => {
                 if (result.length === 0 || result[0].title === "No results returned")
-                    client.api.webhooks(client.user.id, interaction.token).messages('@original').patch({
+                    await client.api.webhooks(appID, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(`No torrent found 😔`).setColor(0x3498DB)]
                         }
@@ -473,11 +476,11 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                         torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
                     else
                         torrentEmbed.setFooter(`Tip: ${tips[1]}`);
-                    client.api.webhooks(client.user.id, interaction.token).messages('@original').patch({
+                    await client.api.webhooks(appID, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [torrentEmbed]
-                }
-            });
+                        }
+                    });
                 }
             });
             break;
@@ -489,7 +492,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             let objLang = 'en';
 
             // Sends to-be-edited message
-            client.api.interactions(interaction.id, interaction.token).callback.post({
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 4,
                     data: {
@@ -514,27 +517,27 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             try {
                 if (sub) {
                     logMessage = `Found ${sub[objLang].filename}`;
-                    client.api.webhooks(client.user.id, interaction.token).messages('@original').patch({
+                    await client.api.webhooks(appID, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [subEmbed.setDescription(`[${sub[objLang].filename}](${sub[objLang].url})\n${sub[objLang].lang} | ${sub[objLang].downloads} downloads | .${sub[objLang].format}`)]
-                }
+                        }
                     });
                 }
                 else {
                     logMessage = `No sub found`;
-                    client.api.webhooks(client.user.id, interaction.token).messages('@original').patch({
+                    await client.api.webhooks(appID, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [subEmbed.setDescription(`No subtitle found 😔`)]
-                }
+                        }
                     });
-            }
+                }
             }
             catch (e) {
                 reportError(e);
-                client.api.webhooks(client.user.id, interaction.token).messages('@original').patch({
+                await client.api.webhooks(appID, interaction.token).messages('@original').patch({
                     data: {
                         embeds: [subEmbed.setDescription(`An error has occured. Tell my master about it.`)]
-            }
+                    }
                 });
             }
             break;
@@ -546,7 +549,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 if (usableMemes.length === 0)
                     usableMemes = [...memes];
                 let randomMemeIndex = Math.floor(Math.random() * usableMemes.length);
-                client.api.interactions(interaction.id, interaction.token).callback.post({
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
                         type: 4,
                         data: {
@@ -559,7 +562,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
 
             // If list is requested
             if (memeName.value.trim().toLowerCase() === 'list') {
-                client.api.interactions(interaction.id, interaction.token).callback.post({
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
                         type: 3,
                         data: {
@@ -574,26 +577,26 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 // If a specific meme is requested
                 const selectedMeme = memes.find((meme) => meme.name === memeName.value);
                 if (selectedMeme) {
-                client.api.interactions(interaction.id, interaction.token).callback.post({
-                    data: {
-                        type: 4,
+                    await client.api.interactions(interaction.id, interaction.token).callback.post({
                         data: {
+                            type: 4,
+                            data: {
                                 content: selectedMeme.meme
                             }
                         }
                     })
                 }
                 else {
-                    client.api.interactions(interaction.id, interaction.token).callback.post({
+                    await client.api.interactions(interaction.id, interaction.token).callback.post({
                         data: {
                             type: 3,
                             data: {
                                 content: 'No meme found.\nCheck out the `/meme name:list` command.',
                                 flags: 64
+                            }
                         }
-                    }
-                });
-            }
+                    });
+                }
             }
             break;
         case 'rato':
@@ -603,8 +606,8 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 Jimp.read('src/rato/rato_plaquista4x.png').then(image => {
                     Jimp.loadFont('src/rato/font/rato_fontista.fnt').then(font => {
                         image.print(font, 240, 40, args[0].value, 530);
-                        image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(result => {
-                            client.api.interactions(interaction.id, interaction.token).callback.post({
+                        image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(async result => {
+                            await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
                                     type: 4,
                                     data: {
@@ -683,7 +686,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                         break;
                 }
             }
-            client.api.interactions(interaction.id, interaction.token).callback.post({
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 4,
                     data: {
@@ -700,7 +703,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             let embedColors = [0xFF0000, 0x00FF00, 0x0000FF, 0x808080, 0xFFFF00, 0x3498DB];
             let embedEmojis = ['🍀', '🤞', '🎲', '🎰', '🌠'];
             commaArgs[winner] = `\\> ${commaArgs[winner]} <`;
-            client.api.interactions(interaction.id, interaction.token).callback.post({
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 4,
                     data: {
@@ -760,7 +763,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             };
             break;
         case 'toma':
-            client.api.interactions(interaction.id, interaction.token).callback.post({
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 4,
                     data: {
@@ -776,7 +779,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             let jwLocale = args[1] ? args.find(arg => arg.name === 'language').value : null;
 
             // Sends to-be-edited message
-            client.api.interactions(interaction.id, interaction.token).callback.post({
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 4,
                     data: {
@@ -802,7 +805,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             jwSearch.items = jwSearch.items.filter(item => item.object_type === 'movie');
             // If no movie was found
             if (jwSearch.items.length <= 0) {
-                client.api.webhooks(client.user.id, interaction.token).messages('@original').patch({
+                await client.api.webhooks(appID, interaction.token).messages('@original').patch({
                     data: {
                         embeds: [new Discord.MessageEmbed().setDescription('Movie not found 😞').setColor(0x3498DB)]
                     }
@@ -947,63 +950,63 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             }
 
             // Send Embed
-            client.api.webhooks(client.user.id, interaction.token).messages('@original').patch({
+            await client.api.webhooks(appID, interaction.token).messages('@original').patch({
                 data: {
                     embeds: [
                         new Discord.MessageEmbed()
-                // Original title + (release year) - The Lodge (2020)
-                .setTitle(embedTitleValue)
-                // JustWatch URL
-                .setURL(embedURLValue)
-                .setColor(0x3498DB)
-                // Movie poster
-                .setImage(embedImageValue)
-                .addFields(
-                    {
-                        // Synopse
-                        name: 'Plot',
-                        value: embedPlotValue
-                    },
-                    {
-                        // Genres
-                        name: 'Genre',
-                        value: embedGenreValue
-                    },
-                    {
-                        name: 'Directed by',
-                        value: embedDirectorValue,
-                        inline: true
-                    },
-                    {
-                        name: 'Runtime',
-                        value: embedRuntimeValue,
-                        inline: true
-                    },
-                    {
-                        name: 'Where to watch',
-                        value: embedWhereToWatchValue
-                    },
-                    {
-                        name: 'IMDB',
-                        value: embedRatingValue.imdb,
-                        inline: true
-                    },
-                    {
-                        name: 'TMDB',
-                        value: embedRatingValue.tmdb,
-                        inline: true
-                    },
-                    {
-                        name: 'Torrent',
-                        value: jwTorrentField
-                    },
-                )
+                            // Original title + (release year) - The Lodge (2020)
+                            .setTitle(embedTitleValue)
+                            // JustWatch URL
+                            .setURL(embedURLValue)
+                            .setColor(0x3498DB)
+                            // Movie poster
+                            .setImage(embedImageValue)
+                            .addFields(
+                                {
+                                    // Synopse
+                                    name: 'Plot',
+                                    value: embedPlotValue
+                                },
+                                {
+                                    // Genres
+                                    name: 'Genre',
+                                    value: embedGenreValue
+                                },
+                                {
+                                    name: 'Directed by',
+                                    value: embedDirectorValue,
+                                    inline: true
+                                },
+                                {
+                                    name: 'Runtime',
+                                    value: embedRuntimeValue,
+                                    inline: true
+                                },
+                                {
+                                    name: 'Where to watch',
+                                    value: embedWhereToWatchValue
+                                },
+                                {
+                                    name: 'IMDB',
+                                    value: embedRatingValue.imdb,
+                                    inline: true
+                                },
+                                {
+                                    name: 'TMDB',
+                                    value: embedRatingValue.tmdb,
+                                    inline: true
+                                },
+                                {
+                                    name: 'Torrent',
+                                    value: jwTorrentField
+                                },
+                            )
                     ]
                 }
             });
             break;
         case 'donato':
-            client.api.interactions(interaction.id, interaction.token).callback.post({
+            await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 4,
                     data: {
@@ -1977,13 +1980,13 @@ client.on('message', async message => {
                 let finalEmbed = new Discord.MessageEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0x3498DB);
                 await msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`))
                 let torrentEmbed = await createTorrentEmbed(winnerMovie.title, message.guild.owner);
-                    if (!torrentEmbed)
+                if (!torrentEmbed)
                     msgToEdit.edit(finalEmbed.setFooter(`No torrent found 🤔`));
-                    else {
+                else {
                     msgToEdit.edit(finalEmbed.setFooter(" "));
-                        message.channel.send(torrentEmbed).then((msg) => torrentMessage = msg);
-                    }
-                });
+                    message.channel.send(torrentEmbed).then((msg) => torrentMessage = msg);
+                }
+            });
 
             logMessage = `Winner is **${winnerMovie.title}**`;
 
@@ -2002,9 +2005,9 @@ client.on('message', async message => {
             let torrentMsgGet = await client.channels.cache.get(SNMCHANNEL).messages.fetch(args[0]);
             // If message is the old torrent format (only torrent and sub)
             if (torrentMsgGet.embeds[0].description) {
-            torrentMsgGet.edit(torrentMsgGet.embeds[0].setDescription(
-                torrentMsgGet.embeds[0].description.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[1]})`)
-            ));
+                torrentMsgGet.edit(torrentMsgGet.embeds[0].setDescription(
+                    torrentMsgGet.embeds[0].description.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[1]})`)
+                ));
             }
             // Else, if new format (full /movie details)
             else {
@@ -2012,7 +2015,7 @@ client.on('message', async message => {
                 torrentMsgGet.embeds[0].fields[torrentFieldIndex].value = torrentMsgGet.embeds[0].fields[torrentFieldIndex].value.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[1]})`);
                 torrentMsgGet.edit(torrentMsgGet.embeds[0]);
             }
-            
+
             logMessage = `Changed sub from ${args[0]} with ${args[1]}`;
             break;
         case 'snmpause':
@@ -2545,7 +2548,7 @@ client.on('message', async message => {
             else if (messageText === 'countdown2')
                 dispatcher = connection.play(`src/sounds/countdown2.mp3`, { volume: 0.7 });
             else
-            dispatcher = connection.play(ytdl(messageText, { filter: 'audioonly' }), { volume: 0.15 });
+                dispatcher = connection.play(ytdl(messageText, { filter: 'audioonly' }), { volume: 0.15 });
 
             dispatcher.on('finish', () => {
                 connection.disconnect();
@@ -2564,7 +2567,7 @@ client.on('message', async message => {
                 logMessage = `No movie was typed`;
                 break;
             };
-            
+
             // Sends to-be-edited "Checking..." message
             const jwMessage = await message.channel.send(`Checking...`);
 
@@ -2675,7 +2678,7 @@ client.on('message', async message => {
                     let minutes = (hours - rhours) * 60;
                     let rminutes = Math.round(minutes);
                     embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
-            }
+                }
 
                 // Rating
                 jwTitleEN.scoring.map(score => {
@@ -2715,7 +2718,7 @@ client.on('message', async message => {
                     let minutes = (hours - rhours) * 60;
                     let rminutes = Math.round(minutes);
                     embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
-            }
+                }
 
                 // Rating
                 jwTitleBR.scoring.map(score => {
