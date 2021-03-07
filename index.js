@@ -1558,7 +1558,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
         }
     }
     // reaction on torrent second option
-    else if (lastSnm.voteMessage && reaction.message.embeds.length > 0 && reaction.message.embeds[0].title === `SNM ${lastSnm.week} Second Option`) {
+    else if (lastSnm.voteMessage && reaction.message.embeds.length > 0 && reaction.message.embeds[0]?.title === `SNM ${lastSnm.week} Second Option`) {
         await reaction.users.remove(user);
 
         let oldDesc = torrentMessage.embeds[0].description
@@ -1569,7 +1569,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
             });
     }
     // reaction on queridometro
-    else if (reaction.message.embeds && reaction.message.embeds[0].title === 'Queridometro') {
+    else if (reaction.message.embeds && reaction.message.embeds[0]?.title === 'Queridometro') {
         console.log(`${user.username} reacted on queridometro`)
         // checks if user has a reaction on any other emoji
         reaction.message.reactions.cache.forEach(async (r) => {
