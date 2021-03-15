@@ -233,7 +233,7 @@ function snmEmbed() {
 async function createTorrentEmbed(winnerTitle, guildOwner) {
 
     // Gets torrent number and creates embed description
-    createDesc = (i, subUrl) => `[${torrentList[i].title}](${torrentList[i].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrentList[i].magnet) : torrentList[i].desc})\n${torrentList[i].size} | ${torrentList[i].seeds} seeders | ${torrentList[i].provider} ${subUrl['pb'] ? ` | [Subtitle](${subUrl['pb'].url})` : null}`;
+    const createDesc = (i, subUrl) => `[${torrentList[i].title}](${torrentList[i].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrentList[i].magnet) : torrentList[i].desc})\n${torrentList[i].size} | ${torrentList[i].seeds} seeders | ${torrentList[i].provider} ${subUrl['pb'] ? ` | [Subtitle](${subUrl['pb'].url})` : null}`;
 
     // Searchs torrents
     let torrentList = await torrentSearch.search(['Rarbg'], winnerTitle + " 1080", 'Movies', 2).catch((e) => {
@@ -1559,7 +1559,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
     }
     // reaction on torrent second option
     else if (lastSnm.voteMessage && reaction.message.embeds.length > 0 && reaction.message.embeds[0]?.title === `SNM ${lastSnm.week} Second Option`) {
-        await reaction.users.remove(user);
+        // FIXME: Can't remove DM reactions anymore apparently
+        // await reaction.users.remove(user);
 
         let oldDesc = torrentMessage.embeds[0].description
 
@@ -1567,6 +1568,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
             .then((msg) => {
                 reaction.message.edit(new Discord.MessageEmbed().setTitle(`SNM ${lastSnm.week} Second Option`).setColor(0x3498DB).setDescription(oldDesc).setFooter(`click the reaction to swap to this`)).then(() => torrentMessage = msg);
             });
+        console.log('Swapped torrent');
     }
     // reaction on queridometro
     else if (reaction.message.embeds && reaction.message.embeds[0]?.title === 'Queridometro') {
@@ -1753,7 +1755,9 @@ client.on('message', async message => {
                 status: "ongoing",
                 movieCount: 0,
                 users: [],
-                winner: ""
+                winner: "",
+                paused: lastSnm.paused ? true : false,
+                guildId: message.guild.id
             };
 
             message.delete().catch(O_o => { });
