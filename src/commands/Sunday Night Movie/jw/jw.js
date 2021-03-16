@@ -1,4 +1,4 @@
-exports.jwGenresBR = [{
+export const jwGenresBR = [{
     "id": 1,
     "short_name": "act",
     "technical_name": "action",
@@ -114,7 +114,7 @@ exports.jwGenresBR = [{
     "slug": "made-in-europe"
 }]
 
-exports.jwGenresEN = [{
+export const jwGenresEN = [{
     "id": 1,
     "short_name": "act",
     "technical_name": "action",
@@ -241,7 +241,7 @@ exports.jwGenresEN = [{
 }
 ]
 
-exports.jwProvidersBR = [{
+export const jwProvidersBR = [{
     "id": 8,
     "technical_name": "netflix",
     "short_name": "nfx",
@@ -1037,7 +1037,7 @@ exports.jwProvidersBR = [{
     }
 }]
 
-exports.jwProvidersEN = [{
+export const jwProvidersEN = [{
     "id": 8,
     "technical_name": "netflix",
     "short_name": "nfx",

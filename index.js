@@ -1,45 +1,41 @@
-const Discord = require('discord.js');
-const cron = require('cron');
-const Jimp = require('jimp/dist');
-const torrentSearch = require('torrent-search-api');
-const OS = require('opensubtitles-api');
-const mongodb = require('mongodb');
-const fs = require('fs');
-const randomEmoji = require('./src/random-emoji.js');
-const ytdl = require('ytdl-core');
-const JustWatch = require('justwatch-api');
-const { jwGenresBR, jwGenresEN, jwProvidersBR, jwProvidersEN } = require('./src/jw/jw');
-const { donato } = require('./src/stock/donato');
+import cron from 'cron';
+import Discord from 'discord.js';
+import Jimp from 'jimp/dist/index.js';
+import JustWatch from 'justwatch-api';
+import mongodb from 'mongodb';
+import OS from 'opensubtitles-api';
+import torrentSearch from 'torrent-search-api';
+import ytdl from 'ytdl-core';
+
+import { SNMObj } from './src/commands/index.js';
+import {
+  jwGenresBR,
+  jwGenresEN,
+  jwProvidersBR,
+  jwProvidersEN,
+} from './src/commands/Sunday Night Movie/jw/jw.js';
+// Guizzorde config object
+import configObj, { client } from './src/config/Config.class.js';
+import donato from './src/stock/donato.js';
+import { randomEmoji } from './src/util/index.js';
 
 torrentSearch.enablePublicProviders();
-
-// config.json - for running locally
-const config = fs.existsSync('./config.json') ? require('./config.json') : null;
-
-// Bot token
-const token = process.env.TOKEN || config.token;
-// OwnerID
-const ownerId = process.env.OWNER_ID || config.ownerId;
-// Message prefix
-const prefix = process.env.PREFIX || config.prefix;
-// MongoDb URI
-const uri = process.env.MONGODB_URI || config.mongodb;
-// MongoDb collection | snm = production, snmTest = dev
-const collection = config ? config.mongoCollection : "snm";
-// Heroku MongoDb name
-const herokuDb = 'heroku_6zd3qncp';
 // the last snm collection
 let lastSnm;
 // torrentMessage id - short lived, should not be saved to database - used to swap to second option
 let torrentMessage;
 
 // SNM CONFIGS
+// TODO: These should maybe be on a separate collection, containing these server-scoped settings
 // Number of entries allowed by each user
 const NUMBEROFENTRIES = 1;
 // Number of votes allowed by each user
 const NUMBEROFVOTES = 2;
 // Sets to local config channel else sets to #Top Server BR's snm channel
-const SNMCHANNEL = config ? config.testSNMChannel : '556546153689120793';
+// const SNMCHANNEL = config ? config.testSNMChannel : '556546153689120793';
+// FIXME: Hardcoded TOP Server Channel
+const SNMCHANNEL = '766563200313196556';
+
 // !snmNew
 const snmNewJob = new cron.CronJob('0 8 * * 1', () => {
     client.channels.cache.get(SNMCHANNEL).send('!snmNew');
@@ -137,29 +133,26 @@ let usableMemes = [...memes];
 let connection = null;
 let dispatcher = null;
 
-// OS Config
-const OSCredentials = config ? config.OSCredentials : process.env.OSCREDENTIALS.split(',');
+// OpenSub Auth
 const OpenSubtitles = new OS({
-    useragent: OSCredentials[0],
-    username: OSCredentials[1],
-    password: OSCredentials[2],
+    useragent: configObj.OSCredentials[0],
+    username: configObj.OSCredentials[1],
+    password: configObj.OSCredentials[2],
     ssl: true
 });
-
-const client = new Discord.Client({ partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'] });
 
 /**
  * Saves the snmFile from snm variable
  * @param {function} callback - A function to be called after saving the file
  */
 function saveSnmFile(callback) {
-    mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
+    mongodb.MongoClient.connect(configObj.mongodbURI, { useNewUrlParser: true }, (err, mongoClient) => {
         if (err) {
             console.error(err);
             throw err;
         }
 
-        mongoClient.db(herokuDb).collection(collection).replaceOne({ week: lastSnm.week }, lastSnm, (err, result) => {
+        mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollection).replaceOne({ week: lastSnm.week }, lastSnm, (err, result) => {
             if (err) {
                 console.error(err);
                 throw err;
@@ -170,64 +163,6 @@ function saveSnmFile(callback) {
             mongoClient.close();
         });
     });
-}
-
-function insertNewSnm(newSnm, callback) {
-    mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
-        if (err) {
-            console.error(err);
-            throw err;
-        }
-
-        mongoClient.db(herokuDb).collection(collection).insertOne(newSnm, (err, result) => {
-            if (err) {
-                console.error(err);
-                throw err;
-            }
-
-            lastSnm = result.ops[0];
-            callback();
-            mongoClient.close();
-        });
-    });
-}
-
-function snmEmbed() {
-    let description = `Status: **${lastSnm.paused ? 'paused' : lastSnm.status}**\n\n`;
-    let footer = "";
-    let printArray = [];
-
-    // If status is finished, prints winner;
-    if (lastSnm.status === "finished" && lastSnm.winner.titleKey)
-        description += `Winner: **${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner.titleKey)).movies.find(movie => movie.titleKey === lastSnm.winner.titleKey).title}**\n\n`;
-
-    // Builds list ordered by titleKey
-    for (let userIndex in lastSnm.users) {
-        for (let movieIndex in lastSnm.users[userIndex].movies)
-            printArray[lastSnm.users[userIndex].movies[movieIndex].titleKey - 1] = [`${lastSnm.users[userIndex].movies[movieIndex].titleKey}) ${lastSnm.users[userIndex].movies[movieIndex].title}\n`]
-    }
-
-    if (printArray.length === 0)
-        printArray.push(`No movies requested yet 😢\n`);
-
-    if (lastSnm.status === "ongoing")
-        footer = `!snmAdd <movie name> to add`;
-    else if (lastSnm.status === "finished")
-        footer = `!snmRate <text> to leave a rating`;
-    else if (lastSnm.status === "voting")
-        footer = `Votings are open! Go vote 🔥`;
-
-    let embed = new Discord.MessageEmbed()
-        // Set the title of the field
-        .setTitle(`🌟 Sunday Night Movie ${lastSnm.week} 🌟`)
-        // Set the color of the embed
-        .setColor(0x3498DB)
-        // Set the main content of the embed
-        .setDescription(description + printArray.join(""))
-        // Set the footer text
-        .setFooter(footer)
-    // Returns the embed
-    return embed;
 }
 
 async function createTorrentEmbed(winnerTitle, guildOwner) {
@@ -265,7 +200,7 @@ async function createTorrentEmbed(winnerTitle, guildOwner) {
 
 const reportError = async (error) => {
     console.error(error);
-    let owner = await client.users.fetch(ownerId);
+    let owner = await client.users.fetch(configObj.ownerId);
     owner.send(error);
 }
 
@@ -281,9 +216,7 @@ const searchSubtitle = async (title, lang = 'eng') => {
 
 // Receive Slash Interaction
 client.ws.on('INTERACTION_CREATE', async interaction => {
-    // Guizzorde's BOT ID and APP id are different - we need the APP ID to register slash commands
-    // If local bot id is the app id - If on production set manually
-    const appID = config ? client.user.id : '168354315612717056';
+
     const args = interaction.data.options;
     let logMessage = "";
 
@@ -350,103 +283,16 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             break;
         case 'snm':
             // Sends rich embed with SNM infos
-            // If no week was specified or if specified week is current one
-            if (!args || args[0].value === lastSnm.week && lastSnm.status != "finished") {
-                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                    data: {
-                        type: 4,
-                        data: {
-                            embeds: [snmEmbed()]
-                        }
-                    }
-                });
-                break;
-            }
-            else if (args[0].value > lastSnm.week || args[0].value <= 0) {
-                // User entered a week bigger than current one or <= 0
-                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                    data: {
-                        type: 3,
-                        data: {
-                            content: `Thats not a valid week`,
-                            flags: 64
-                        }
-                    }
-                });
-                logMessage = `Week ${args[0].value} is invalid`;
-                break;
-            }
-            else {
-                // FIXME: Integrate followup message
-                // If a week was specified, show that SNM summary
-                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                    data: {
-                        type: 4,
-                        data: {
-                            embeds: [new Discord.MessageEmbed().setTitle('Checking...').setColor(0x3498DB)]
-                        }
-                    }
-                });
-                mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
-                    if (err) {
-                        console.error(err);
-                        throw err;
-                    }
-
-                    mongoClient.db(herokuDb).collection(collection).findOne({ week: args[0].value }, (err, result) => {
-                        if (err) {
-                            console.error(err);
-                            throw err;
-                        }
-
-                        let specifiedSnm = result;
-                        let printArray = [];
-                        let tempMovies = [];
-
-                        // runs through week and get movies, winner and ratings
-                        // let description = `Summary of Sunday Night Movie ${specifiedSnm.week}`;
-                        let description = `Status: **${specifiedSnm.paused ? 'paused' : specifiedSnm.status}**\n`;
-                        for (let userIndex in specifiedSnm.users) {
-                            // If user just voted - no entries or ratings = skip user on summary
-                            if (!specifiedSnm.users[userIndex].movies.length > 0 && !specifiedSnm.users[userIndex].rating) continue;
-                            printArray[userIndex] = `${specifiedSnm.users[userIndex].username} - \n`;
-                            // checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
-                            if (specifiedSnm.users[userIndex].movies) {
-                                for (let movieIndex in specifiedSnm.users[userIndex].movies) {
-                                    // if movie is the winner, add to description text
-                                    if (specifiedSnm.users[userIndex].movies[movieIndex].titleKey === specifiedSnm.winner.titleKey)
-                                        description += `Winner: **${specifiedSnm.users[userIndex].movies[movieIndex].title}**${specifiedSnm.winner.voteCount ? ` | ${specifiedSnm.winner.voteCount} votes` : ""}\n\n`;
-                                    tempMovies.push(`\`${specifiedSnm.users[userIndex].movies[movieIndex].title}\``);
-                                }
-                            }
-                            printArray[userIndex] += `${tempMovies.length > 0 ? `Entries: ${tempMovies.join(" | ")}\n` : ""}${specifiedSnm.users[userIndex].rating ? `Rating: ${specifiedSnm.users[userIndex].rating}\n\n` : "\n"}`;
-                            tempMovies = [];
-                        }
-
-                        let embed = new Discord.MessageEmbed()
-                            // Set the title of the field
-                            .setTitle(`📖 Summary of Sunday Night Movie ${specifiedSnm.week} 📖`)
-                            // Set the color of the embed
-                            .setColor(0x3498DB)
-                            // Set the main content of the embed
-                            .setDescription(description + printArray.join(""));
-                        // Returns the embed
-
-                        mongoClient.close();
-                        client.api.webhooks(appID, interaction.token).messages('@original').patch({
-                            data: {
-                                embeds: [embed]
-                            }
-                        });
-                    });
-                });
-            }
+            SNMObj.snm.handler(interaction);
+            break;
+        case 'snmadmin':
+            SNMObj.snmAdmin.handler(interaction);
             break;
         case 'torrent':
             // Search for a torrent on a list of providers
 
             // Array containing command-specific tips
-            const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)']
+            const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)', 'Looking for a movie? Try the /movie command'];
 
             // Sends to-be-edited message
             await client.api.interactions(interaction.id, interaction.token).callback.post({
@@ -461,7 +307,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             // Searchs torrents
             await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], args[0].value, null, 3).then(async (result) => {
                 if (result.length === 0 || result[0].title === "No results returned")
-                    await client.api.webhooks(appID, interaction.token).messages('@original').patch({
+                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(`No torrent found 😔`).setColor(0x3498DB)]
                         }
@@ -476,7 +322,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                         torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
                     else
                         torrentEmbed.setFooter(`Tip: ${tips[1]}`);
-                    await client.api.webhooks(appID, interaction.token).messages('@original').patch({
+                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [torrentEmbed]
                         }
@@ -517,7 +363,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             try {
                 if (sub) {
                     logMessage = `Found ${sub[objLang].filename}`;
-                    await client.api.webhooks(appID, interaction.token).messages('@original').patch({
+                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [subEmbed.setDescription(`[${sub[objLang].filename}](${sub[objLang].url})\n${sub[objLang].lang} | ${sub[objLang].downloads} downloads | .${sub[objLang].format}`)]
                         }
@@ -525,7 +371,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 }
                 else {
                     logMessage = `No sub found`;
-                    await client.api.webhooks(appID, interaction.token).messages('@original').patch({
+                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [subEmbed.setDescription(`No subtitle found 😔`)]
                         }
@@ -534,7 +380,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             }
             catch (e) {
                 reportError(e);
-                await client.api.webhooks(appID, interaction.token).messages('@original').patch({
+                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                     data: {
                         embeds: [subEmbed.setDescription(`An error has occured. Tell my master about it.`)]
                     }
@@ -602,19 +448,20 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
         case 'rato':
             // If theres a message
             if (args && args[0].value) {
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 4,
+                        data: {
+                            content: '🐀🎾...:'
+                        }
+                    }
+                });
                 // Uses rato_plaquista as templete for text
                 Jimp.read('src/rato/rato_plaquista4x.png').then(image => {
                     Jimp.loadFont('src/rato/font/rato_fontista.fnt').then(font => {
                         image.print(font, 240, 40, args[0].value, 530);
                         image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(async result => {
-                            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                                data: {
-                                    type: 4,
-                                    data: {
-                                        content: '🐀🎾:'
-                                    }
-                                }
-                            });
+                            await client.api.webhooks(configObj.appId, interaction.token).messages('@original').delete();
                             client.channels.cache.get(interaction.channel_id).send({ files: ["src/rato/rato_plaquistaEditado.jpg"] });
                         });
                     });
@@ -805,7 +652,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             jwSearch.items = jwSearch.items.filter(item => item.object_type === 'movie');
             // If no movie was found
             if (jwSearch.items.length <= 0) {
-                await client.api.webhooks(appID, interaction.token).messages('@original').patch({
+                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                     data: {
                         embeds: [new Discord.MessageEmbed().setDescription('Movie not found 😞').setColor(0x3498DB)]
                     }
@@ -950,7 +797,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             }
 
             // Send Embed
-            await client.api.webhooks(appID, interaction.token).messages('@original').patch({
+            await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                 data: {
                     embeds: [
                         new Discord.MessageEmbed()
@@ -1062,14 +909,10 @@ client.on('ready', () => {
     console.log(`${client.user.username} has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.user.setActivity(`Beep boop`);
 
-    // Guizzorde's BOT ID and APP id are different - we need the APP ID to register slash commands
-    // If local bot id is the app id - If on production set manually
-    const appID = config ? client.user.id : '168354315612717056';
-
     // Register slash commands
     // try {
     //     // help
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'help',
@@ -1078,7 +921,7 @@ client.on('ready', () => {
     //     });
 
     //     // ping
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'ping',
@@ -1087,7 +930,7 @@ client.on('ready', () => {
     //     });
 
     //     // say <message>
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'say',
@@ -1101,150 +944,8 @@ client.on('ready', () => {
     //         }
     //     });
 
-    //     // Only register these when not on local bot
-    //     // Exclusive Top Server BR commands
-    //     if (!config) {
-    //         // snm [week]
-    //         client.api.applications(appID).guilds('84290462843670528').commands.post({
-    //             data:
-    //             {
-    //                 name: 'snm',
-    //                 description: `Show this week movies or specified week summary`,
-    //                 options: [
-    //                     {
-    //                         type: 4,
-    //                         name: 'week',
-    //                         description: 'A SNM week number',
-    //                     },
-    //                     {
-    //                         type: 4,
-    //                         name: 'export',
-    //                         description: 'Export a SNM .json data',
-    //                     }
-    //                 ]
-    //             }
-    //         });
-
-    //         // snmTitle add <title>
-    //         // snmTitle remove [title]
-    //         client.api.applications(appID).guilds('84290462843670528').commands.post({
-    //             data:
-    //             {
-    //                 name: 'snmTitle',
-    //                 description: `Add or remove SNM entries`,
-    //                 options: [
-    //                     {
-    //                         type: 1,
-    //                         name: 'add',
-    //                         description: 'Add a movie to current SNM',
-    //                         options: [
-    //                             {
-    //                                 type: 3,
-    //                                 name: 'title',
-    //                                 required: true,
-    //                                 description: 'The movie title'
-    //                             }
-    //                         ]
-    //                     },
-    //                     {
-    //                         type: 1,
-    //                         name: 'remove',
-    //                         description: 'Remove a movie from current SNM',
-    //                         options: [
-    //                             {
-    //                                 type: 3,
-    //                                 name: 'title',
-    //                                 description: 'The movie title or SNM number'
-    //                             }
-    //                         ]
-    //                     }
-    //                 ]
-    //             }
-    //         });
-
-    //         // snmRate <text>
-    //         client.api.applications(appID).guilds('84290462843670528').commands.post({
-    //             data:
-    //             {
-    //                 name: 'snmRate',
-    //                 description: `Add or change your current SNM rating`,
-    //                 options: [
-    //                     {
-    //                         type: 3,
-    //                         name: 'rating',
-    //                         description: 'Your rating',
-    //                         required: true
-    //                     }
-    //                 ]
-    //             }
-    //         });
-
-    //         // snmVotes <Show | Clear>
-    //         client.api.applications(appID).guilds('84290462843670528').commands.post({
-    //             data:
-    //             {
-    //                 name: 'snmVotes',
-    //                 description: `Manage your current SNM votes`,
-    //                 options: [
-    //                     {
-    //                         type: 3,
-    //                         name: 'command',
-    //                         description: 'Show or clear your votes',
-    //                         required: true,
-    //                         choices: [
-    //                             {
-    //                                 name: 'Show',
-    //                                 value: 'show'
-    //                             },
-    //                             {
-    //                                 name: 'Clear',
-    //                                 value: 'clear'
-    //                             }
-    //                         ]
-    //                     }
-    //                 ]
-    //             }
-    //         });
-
-    //         // snmAdmin <new|start|end|pause>
-    //         client.api.applications(appID).guilds('84290462843670528').commands.post({
-    //             data:
-    //             {
-    //                 name: 'snmAdmin',
-    //                 description: `Manage current SNM`,
-    //                 // default: true,
-    //                 options: [
-    //                     {
-    //                         type: 3,
-    //                         name: 'command',
-    //                         required: true,
-    //                         description: 'The admin command',
-    //                         choices: [
-    //                             {
-    //                                 name: 'Create a new SNM',
-    //                                 value: 'new'
-    //                             },
-    //                             {
-    //                                 name: 'Start current SNM voting',
-    //                                 value: 'start'
-    //                             },
-    //                             {
-    //                                 name: 'End current SNM voting',
-    //                                 value: 'end'
-    //                             },
-    //                             {
-    //                                 name: 'Toggle automatic SNM functions',
-    //                                 value: 'pause'
-    //                             }
-    //                         ]
-    //                     }
-    //                 ]
-    //             }
-    //         });
-    //     }
-
     //     // torrent <query>
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'torrent',
@@ -1261,7 +962,7 @@ client.on('ready', () => {
     //     });
 
     //     // subtitle <title> [language]
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'subtitle',
@@ -1293,7 +994,7 @@ client.on('ready', () => {
     //     });
 
     //     // meme [name] | [list]
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'meme',
@@ -1309,7 +1010,7 @@ client.on('ready', () => {
     //     });
 
     //     // rato [message]
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'rato',
@@ -1325,7 +1026,7 @@ client.on('ready', () => {
     //     });
 
     //     // emoji <message>
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'emoji',
@@ -1342,7 +1043,7 @@ client.on('ready', () => {
     //     });
 
     //     // random <option1, option2, option3, ...>
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'random',
@@ -1359,7 +1060,7 @@ client.on('ready', () => {
     //     });
 
     //     // poll <poll title> <Apple, Orange, Pineapple, ...>
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'poll',
@@ -1382,7 +1083,7 @@ client.on('ready', () => {
     //     });
 
     //     // toma
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'toma',
@@ -1391,7 +1092,7 @@ client.on('ready', () => {
     //     });
 
     //     // movie <movie title> [language]
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'movie',
@@ -1423,7 +1124,7 @@ client.on('ready', () => {
     //     });
 
     //     // donato
-    //     client.api.applications(appID).commands.post({
+    //     client.api.applications(configObj.appId).commands.post({
     //         data:
     //         {
     //             name: 'donato',
@@ -1432,7 +1133,7 @@ client.on('ready', () => {
     //     });
 
     // // queridometro
-    // client.api.applications(appID).commands.post({
+    // client.api.applications(configObj.appId).commands.post({
     //     data: {
     //         name: 'queridometro',
     //         description: `Rate a member from this server`,
@@ -1454,13 +1155,13 @@ client.on('ready', () => {
 
     // Gets latest SNM
     try {
-        mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
+        mongodb.MongoClient.connect(configObj.mongodbURI, { useNewUrlParser: true }, (err, mongoClient) => {
             if (err) {
                 console.error(err);
                 throw err;
             }
 
-            mongoClient.db(herokuDb).collection(collection).findOne({}, { sort: { week: -1 }, limit: 1 }, (err, result) => {
+            mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollection).findOne({}, { sort: { week: -1 }, limit: 1 }, (err, result) => {
                 if (err) {
                     console.error(err);
                     throw err;
@@ -1595,7 +1296,7 @@ client.on('message', async message => {
     if (message.author.bot && message.author.id !== client.user.id) return;
 
     // If message does not contain prefix, ignore
-    if (message.content.indexOf(prefix) !== 0) return;
+    if (message.content.indexOf(configObj.prefix) !== 0) return;
 
     // If message is *all* prefix, ignore (ex "!!!!!!!!!")
     if (/^!{2,}.*$/.test(message.content.replace(' ', ''))) return;
@@ -1605,8 +1306,8 @@ client.on('message', async message => {
 
     // Separate message from prefix
     // "clean" means the message does not use discord hashes for channels and mentions. e.g. <!@numbers>
-    const args = message.content.slice(prefix.length).trim().split(/ +/g);
-    const cleanArgs = message.cleanContent.slice(prefix.length).trim().split(/ +/g);
+    const args = message.content.slice(configObj.prefix.length).trim().split(/ +/g);
+    const cleanArgs = message.cleanContent.slice(configObj.prefix.length).trim().split(/ +/g);
 
     const command = args.shift().toLowerCase();
     const cleanCommand = cleanArgs.shift().toLowerCase();
@@ -1623,9 +1324,9 @@ client.on('message', async message => {
             \n!say <message> - Make the bot say something
             \n!snm [week number] - Show this week movies or specified week summary
             \n!snmNew - Start a new week of SNM™
-                \n!snmStart - Initiate voting
-                \n!snmVotes [clear] - See your votes or clear them
-                \n!snmEnd [winner title or position] - Count votes or manually select a winner
+            \n!snmStart - Initiate voting
+            \n!snmVotes [clear] - See your votes or clear them
+            \n!snmEnd [winner title or position] - Count votes or manually select a winner
             \n!snmPause - Pauses/Unpauses this week SNM - stop command scheduling
             \n!snmAdd <movie title> - Add a movie to this week pool
             \n!snmRemove <movie title or number> - Remove a movie from the week pool
@@ -1634,8 +1335,8 @@ client.on('message', async message => {
             \n!torrent <query> - Search for torrents on public trackers
             \n!subtitle <title> [language] - Search for a subtitle file
             \n!meme [meme name | list] - 👀 ||do it||
-                \n!rato - Gets a random tenista™
-                \n!ratoTenista <message> - Make rato tenista say something
+            \n!rato - Gets a random tenista™
+            \n!ratoTenista <message> - Make rato tenista say something
             \n!emoji <message> - Convert your message into Discord's regional indicator emojis :abc:
             \n!random <option1, option2, option3, ...> - Randomly pick from one of the options
             \n!poll <poll title>, <Apple, Orange, Pineapple, ...> - Start a poll that people can vote on
@@ -1669,114 +1370,18 @@ client.on('message', async message => {
                 message.author.send(`You forgot to tell me what to say.\nUsage: \`!say <something>\``);
             break;
         case 'snm':
-            // Sends rich embed with SNM infos
-            // If no week was specified or if specified week is current one
-            if (!messageText || Number(messageText) === lastSnm.week && lastSnm.status != "finished") {
-                message.channel.send(snmEmbed());
-                break;
-            }
-            else if (!Number(messageText) || Number(messageText) > lastSnm.week) {
-                // User entered text or a week bigger than current one
-                message.channel.send(`Thats not a valid week`);
-                logMessage = `Week ${messageText} is invalid`;
-                break;
-            }
-            else {
-                // If a week was specified, show that SNM summary
-                let m = await message.channel.send("Checking...");
-                mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
-                    if (err) {
-                        console.error(err);
-                        throw err;
-                    }
-
-                    mongoClient.db(herokuDb).collection(collection).findOne({ week: Number(messageText) }, (err, result) => {
-                        if (err) {
-                            console.error(err);
-                            throw err;
-                        }
-
-                        let specifiedSnm = result;
-                        let printArray = [];
-                        let tempMovies = [];
-
-                        // runs through week and get movies, winner and ratings
-                        // let description = `Summary of Sunday Night Movie ${specifiedSnm.week}`;
-                        let description = `Status: **${specifiedSnm.paused ? 'paused' : specifiedSnm.status}**\n`;
-                        for (let userIndex in specifiedSnm.users) {
-                            // If user just voted - no entries or ratings = skip user on summary
-                            if (!specifiedSnm.users[userIndex].movies.length > 0 && !specifiedSnm.users[userIndex].rating) continue;
-                            printArray[userIndex] = `${specifiedSnm.users[userIndex].username} - \n`;
-                            // checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
-                            if (specifiedSnm.users[userIndex].movies) {
-                                for (let movieIndex in specifiedSnm.users[userIndex].movies) {
-                                    // if movie is the winner, add to description text
-                                    if (specifiedSnm.users[userIndex].movies[movieIndex].titleKey === specifiedSnm.winner.titleKey)
-                                        description += `Winner: **${specifiedSnm.users[userIndex].movies[movieIndex].title}**${specifiedSnm.winner.voteCount ? ` | ${specifiedSnm.winner.voteCount} votes` : ""}\n\n`;
-                                    tempMovies.push(`\`${specifiedSnm.users[userIndex].movies[movieIndex].title}\``);
-                                }
-                            }
-                            printArray[userIndex] += `${tempMovies.length > 0 ? `Entries: ${tempMovies.join(" | ")}\n` : ""}${specifiedSnm.users[userIndex].rating ? `Rating: ${specifiedSnm.users[userIndex].rating}\n\n` : "\n"}`;
-                            tempMovies = [];
-                        }
-
-                        let embed = new Discord.MessageEmbed()
-                            // Set the title of the field
-                            .setTitle(`📖 Summary of Sunday Night Movie ${specifiedSnm.week} 📖`)
-                            // Set the color of the embed
-                            .setColor(0x3498DB)
-                            // Set the main content of the embed
-                            .setDescription(description + printArray.join(""));
-                        // Returns the embed
-
-                        mongoClient.close();
-                        m.edit('', embed);
-                    });
-                });
-            }
-
+            // No longer supported, use /snm
+            message.channel.send(`This command is no longer supported. Use \`/snm\` instead.`);
             break;
         case 'snmnew':
-            // can only be done by owner and self - for now.
-            if (message.author.id != ownerId && message.author.id != client.user.id) {
-                message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
-                logMessage = "Author is not owner"
-                break;
-            }
-            // Can only start a new SNM if last one is finished
-            else if (lastSnm.status != "finished") {
-                message.channel.send(`\`Sunday Night Movie ${lastSnm.week}\` is stil \`${lastSnm.status}\``);
-                logMessage = `Last SNM is ${lastSnm.status}`;
-                break;
-            }
-
-            let newSnm = {
-                week: lastSnm.week + 1,
-                status: "ongoing",
-                movieCount: 0,
-                users: [],
-                winner: "",
-                paused: lastSnm.paused ? true : false,
-                guildId: message.guild.id
-            };
-
-            message.delete().catch(O_o => { });
-
-            insertNewSnm(newSnm, () => {
-                let snmRole
-                if (message.channel.guild)
-                    snmRole = message.guild.roles.cache.find((role) => role.name === "SNM™");
-                message.channel.send(`\`Sunday Night Movie ${lastSnm.week}\` requests are now open!\n\`!snmAdd <movie name>\` to request a movie.`);
-            })
-
-            logMessage = `SNM ${lastSnm.week + 1} started`;
-
+            // No longer supported, use /snmAdmin command: new
+            message.channel.send(`This command is no longer supported. Use \`/snmAdmin command: new\` instead.`)
             break;
         case 'snmstart':
             // Starts voting system
 
             // can only be done by owner and self - for now.
-            if (message.author.id != ownerId && message.author.id != client.user.id) {
+            if (message.author.id != configObj.ownerId && message.author.id != client.user.id) {
                 message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
                 logMessage = "Author is not owner"
                 break;
@@ -1787,11 +1392,11 @@ client.on('message', async message => {
                 break;
             }
             // can only be used in Top Server BR and Guizzorde Test
-            else if (message.guild.id !== "84290462843670528" && message.guild.id !== "556216789688909834") {
-                message.channel.send("This can't be used in this server. 💋");
-                logMessage = "Wrong guild";
-                break;
-            }
+            // else if (message.guild.id !== "84290462843670528" && message.guild.id !== "556216789688909834") {
+            //     message.channel.send("This can't be used in this server. 💋");
+            //     logMessage = "Wrong guild";
+            //     break;
+            // }
             else if (lastSnm.status === "voting") {
                 message.channel.send(`\`SNM ${lastSnm.week}\` voting has already started!`);
                 logMessage = "SNM voting already started";
@@ -1900,13 +1505,13 @@ client.on('message', async message => {
             let embedDescription;
 
             // can only be done by owner and self - for now.
-            if (message.author.id != ownerId && message.author.id != client.user.id) {
+            if (message.author.id != configObj.ownerId && message.author.id != client.user.id) {
                 message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
                 logMessage = "Author is not owner"
                 break;
             }
             // Can only be ended if status is voting or if requester is owner
-            else if (lastSnm.status !== "voting" && message.author.id !== ownerId) {
+            else if (lastSnm.status !== "voting" && message.author.id !== configObj.ownerId) {
                 message.channel.send(`SNM cannot be ended. It is \`${lastSnm.status}\``);
                 logMessage = `SNM is ${lastSnm.status}`;
                 break;
@@ -1997,7 +1602,7 @@ client.on('message', async message => {
             break;
         case 'changesub':
             // can only be done by owner
-            if (message.author.id != ownerId) {
+            if (message.author.id != configObj.ownerId) {
                 logMessage = "Author is not owner"
                 break;
             }
@@ -2024,7 +1629,7 @@ client.on('message', async message => {
             break;
         case 'snmpause':
             // can only be done by owner - for now.
-            if (message.author.id != ownerId) {
+            if (message.author.id != configObj.ownerId) {
                 message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
                 logMessage = "Author is not owner"
                 break;
@@ -2196,13 +1801,13 @@ client.on('message', async message => {
             // If we got a number as argument, user specified a week
             else if (specifiedWeek && specifiedWeek <= lastSnm.week) {
                 let m = await message.channel.send(`Exporting...`);
-                mongodb.MongoClient.connect(uri, { useNewUrlParser: true }, (err, mongoClient) => {
+                mongodb.MongoClient.connect(configObj.mongodbURI, { useNewUrlParser: true }, (err, mongoClient) => {
                     if (err) {
                         console.error(err);
                         throw err;
                     }
 
-                    mongoClient.db(herokuDb).collection(collection).findOne({ week: specifiedWeek }, (err, result) => {
+                    mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollection).findOne({ week: specifiedWeek }, (err, result) => {
                         if (err) {
                             console.error(err);
                             throw err;
@@ -2229,7 +1834,7 @@ client.on('message', async message => {
         case 'torrent':
             await message.channel.send('**⚠ This command will soon be completely replaced with `/torrent` ⚠**');
             // Search for a torrent on a list of providers
-            const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)']
+            const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)', 'Looking for a movie? Try the /movie command']
 
             // Value cannot be empty
             if (!messageText) {
@@ -2527,7 +2132,7 @@ client.on('message', async message => {
             message.channel.send('https://cdn.discordapp.com/emojis/487347201706819584.png');
             break;
         case 'play':
-            if (message.author.id !== ownerId && message.author.id !== "132410788722769920") {
+            if (message.author.id !== configObj.ownerId && message.author.id !== "132410788722769920") {
                 message.channel.send('Função bloqueada pra você. Desbloqueie com 20 dola na mão do pai.');
                 logMessage = "not owner";
                 break;
@@ -2546,11 +2151,11 @@ client.on('message', async message => {
             connection = await message.member.voice.channel.join();
 
             if (messageText === 'countdown')
-                dispatcher = connection.play(`src/sounds/countdown${Math.floor(Math.random() * 2) + 1}.mp3`, { volume: 0.7 });
+                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown${Math.floor(Math.random() * 2) + 1}.mp3`, { volume: 0.7 });
             else if (messageText === 'countdown1')
-                dispatcher = connection.play(`src/sounds/countdown1.mp3`, { volume: 0.7 });
+                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown1.mp3`, { volume: 0.7 });
             else if (messageText === 'countdown2')
-                dispatcher = connection.play(`src/sounds/countdown2.mp3`, { volume: 0.7 });
+                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown2.mp3`, { volume: 0.7 });
             else
                 dispatcher = connection.play(ytdl(messageText, { filter: 'audioonly' }), { volume: 0.15 });
 
@@ -2799,4 +2404,4 @@ client.on('message', async message => {
     logMessage ? console.log(logMessage) : null;
 });
 
-client.login(token);
+client.login(configObj.token);
