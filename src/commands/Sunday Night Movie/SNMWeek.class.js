@@ -11,15 +11,20 @@ export default class SNMWeek {
      * @param {{channelId: string, messageId: string}} [voteMessage] - Object containing the channel and vote message ID
      * @param {Array} [emojiUsed] - Reference array of emojis used for vonting
      */
-    constructor(guildId, week, status, movieCount, paused, users, winner, voteMessage, emojiUsed) {
-        this.guildId = guildId;
-        this.week = week;
-        this.status = status;
-        this.movieCount = movieCount;
-        this.paused = paused
-        this.users = users;
-        this.winner = winner;
-        this.voteMessage = voteMessage;
-        this.emojiUsed = emojiUsed;
+
+    /**
+     * 
+     * @param {SNMWeek} params 
+     */
+    constructor(params) {
+        this.guildId = params.guildId;
+        this.week = params.week;
+        this.status = params.status;
+        this.movieCount = params.movieCount;
+        this.paused = params.paused
+        this.users = params.users;
+        this.winner = params.winner;
+        this.voteMessage = params.voteMessage;
+        this.emojiUsed = params.emojiUsed;
     };
 }

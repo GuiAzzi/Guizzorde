@@ -1,8 +1,14 @@
 import Discord from 'discord.js';
 
-import { getSNMWeek, insertNewSNM } from '../../api/index.js';
+import {
+    getSNMWeek,
+    upsertSNMWeek,
+} from '../../api/index.js';
 import configObj, { client } from '../../config/Config.class.js';
-import { _slashCommand } from '../../util/index.js';
+import {
+    _slashCommand,
+    reportError,
+} from '../../util/index.js';
 import SNMWeek from './SNMWeek.class.js';
 
 /**
@@ -147,18 +153,29 @@ class SNMCommands {
 
                 try {
                     const snmWeek = await getSNMWeek(interaction.guild_id, week);
-                    snmWeekEmbed.setTitle(`👨‍💻 Sunday Night Movie ${snmWeek.week} Data 👨‍💻`).setDescription(`\`\`\`JSON\n${JSON.stringify(snmWeek, null, 2)}\`\`\``);
-                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                        data: {
-                            embeds: [_export ? snmWeekEmbed : snmEmbed(snmWeek)]
-                        }
-                    });
 
+                    // Week doesn't exist
+                    if (!snmWeek.week) {
+                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                embeds: [snmWeekEmbed.setTitle('Error').setDescription('No week found').setColor('RED')]
+                            }
+                        });
+                    }
+                    else {
+                        snmWeekEmbed.setTitle(`👨‍💻 Sunday Night Movie ${snmWeek.week} Data 👨‍💻`).setDescription(`\`\`\`JSON\n${JSON.stringify(snmWeek, null, 2)}\`\`\``);
+                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                embeds: [_export ? snmWeekEmbed : snmEmbed(snmWeek)]
+                            }
+                        });
+                    }
                 }
                 catch (e) {
+                    reportError(e);
                     await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
-                            embeds: [snmWeekEmbed.setTitle('Error').setDescription(e)]
+                            embeds: [snmWeekEmbed.setTitle('Error').setDescription('An error has occured. Pelase report this bug.').setColor("RED")]
                         }
                     });
                 }
@@ -213,86 +230,114 @@ class SNMCommands {
 
                 switch (command) {
                     case 'new': {
-                        // Can only be used by admins
-                        if (!memberPerformed.hasPermission('ADMINISTRATOR') || !interaction.member.user.id === client.user.id) {
-                            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                                data: {
-                                    type: 3,
-                                    data: {
-                                        content: `You can't do that. Ask my lovely master. 🌵`,
-                                        flags: 64
-                                    }
-                                }
-                            });
-                            break;
-                        }
-
-                        // Interaction first contact (to be edited)
-                        let newSNMEmbed = new Discord.MessageEmbed().setTitle('Starting SNM').setDescription('🛠 Working...').setColor(0x3498DB)
-                        await client.api.interactions(interaction.id, interaction.token).callback.post({
-                            data: {
-                                type: 5,
-                                data: {
-                                    embeds: [newSNMEmbed],
-                                }
-                            }
-                        });
-
-                        // Can only start a new SNM if last one is finished
-                        let lastSNM;
                         try {
-                            lastSNM = await getSNMWeek(interaction.guild_id);
-                        }
-                        catch (e) {
-                            // If error is other than "No data found" it means the database really threw and error
-                            // Otherwise there's simply no lastSNM for this server
-                            if (e !== 'No data found'){
-                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            // Can only be used by admins and bot self
+                            if (!memberPerformed.hasPermission('ADMINISTRATOR') || !interaction.member.user.id === client.user.id) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
-                                        embeds: [snmWeekEmbed.setTitle('Error').setDescription(e)]
+                                        type: 3,
+                                        data: {
+                                            content: `You can't do that. Ask my lovely master. 🌵`,
+                                            flags: 64
+                                        }
                                     }
                                 });
                                 break;
                             }
-                        }
-                        if (lastSNM && lastSNM.status != 'finished') {
+
+                            // Interaction first contact (to be edited)
+                            let newSNMEmbed = new Discord.MessageEmbed().setTitle('Creating SNM').setDescription('🛠 Working...').setColor(0x3498DB)
+                            await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                data: {
+                                    type: 5,
+                                    data: {
+                                        embeds: [newSNMEmbed],
+                                    }
+                                }
+                            });
+
+                            const lastSNM = await getSNMWeek(interaction.guild_id);
+
+                            if (lastSNM && lastSNM.status != 'finished') {
+                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        embeds: [
+                                            newSNMEmbed
+                                                .setTitle(`Can't start new SNM`)
+                                                .setDescription(`Sunday Night Movie ${lastSNM.week} is \`${lastSNM.status}\``)
+                                        ]
+                                    }
+                                })
+                                break;
+                            }
+
+                            let newSNM = new SNMWeek(
+                                {
+                                    guildId: interaction.guild_id,
+                                    week: lastSNM?.week + 1 || 1,
+                                    status: 'ongoing',
+                                    movieCount: 0,
+                                    paused: lastSNM?.paused ? true : false
+                                }
+                            )
+
+                            newSNM = await upsertSNMWeek(newSNM);
+                            let snmRole;
+                            if (interaction?.guild_id)
+                                snmRole = guildPerformed.roles.cache.find(role => role.name.toUpperCase() === "SNM" || role.name.toUpperCase() === "SNM™");
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                 data: {
                                     embeds: [
                                         newSNMEmbed
-                                            .setTitle(`Can't start new SNM`)
-                                            .setDescription(`Sunday Night Movie ${lastSNM.week} is \`${lastSNM.status}\``)
+                                            .setTitle(`🎬 Sunday Night Movie ${newSNM.week} 🎬`)
+                                            .setDescription(`Requests are now open!\n\`/snmTitle add title: <movie name>\` to request a movie.`)
                                     ]
                                 }
                             })
                             break;
                         }
-
-                        let newSNM = new SNMWeek(
-                            interaction.guild_id,
-                            lastSNM?.week + 1 || 1,
-                            'ongoing',
-                            0,
-                            lastSNM?.paused ? true : false
-                        )
-
-                        newSNM = await insertNewSNM(newSNM);
-                        let snmRole;
-                        if (interaction?.guild_id)
-                            snmRole = guildPerformed.roles.cache.find(role => role.name.toUpperCase() === "SNM" || role.name.toUpperCase() === "SNM™");
-                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                            data: {
-                                embeds: [
-                                    newSNMEmbed
-                                        .setTitle(`🎬 Sunday Night Movie ${newSNM.week} 🎬`)
-                                        .setDescription(`Requests are now open!\n\`/snmTitle add title: <movie name>\` to request a movie.`)
-                                ]
-                            }
-                        })
-                        break;
+                        catch (e) {
+                            reportError(e);
+                            await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                data: {
+                                    embeds: [new Discord.MessageEmbed().setTitle('Error').setDescription('An error has occured. Pelase report this bug.').setColor("RED")]
+                                }
+                            });
+                        }
                     }
                     case 'start': {
-                        
+                        try {
+                            // Can only be used by admins and bot self
+                            if (!memberPerformed.hasPermission('ADMINISTRATOR') || !interaction.member.user.id === client.user.id) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                    data: {
+                                        type: 3,
+                                        data: {
+                                            content: `You can't do that. Ask my lovely master. 🌵`,
+                                            flags: 64
+                                        }
+                                    }
+                                });
+                                break;
+                            }
+
+                            // Interaction first contact (to be edited)
+                            let startSNMEmbed = new Discord.MessageEmbed().setTitle('Starting SNM').setDescription('🛠 Working...').setColor(0x3498DB)
+                            await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                data: {
+                                    type: 5,
+                                    data: {
+                                        embeds: [startSNMEmbed],
+                                    }
+                                }
+                            });
+
+                            let lastSNM;
+                            lastSNM = await getSNMWeek(interaction.guild_id);
+                        }
+                        catch (e) {
+                            reportError(e);
+                        }
                     }
                 }
             }
