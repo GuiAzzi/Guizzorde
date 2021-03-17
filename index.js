@@ -1375,95 +1375,11 @@ client.on('message', async message => {
             break;
         case 'snmnew':
             // No longer supported, use /snmAdmin command: new
-            message.channel.send(`This command is no longer supported. Use \`/snmAdmin command: new\` instead.`)
+            message.channel.send(`This command is no longer supported. Use \`/snmAdmin command: new\` instead.`);
             break;
         case 'snmstart':
-            // Starts voting system
-
-            // can only be done by owner and self - for now.
-            if (message.author.id != configObj.ownerId && message.author.id != client.user.id) {
-                message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
-                logMessage = "Author is not owner"
-                break;
-            }
-            else if (!message.guild) {
-                message.channel.send("You can't start a vote for yourself. Use it in a server. 🤦‍");
-                logMessage = "Channel is not a guild";
-                break;
-            }
-            // can only be used in Top Server BR and Guizzorde Test
-            // else if (message.guild.id !== "84290462843670528" && message.guild.id !== "556216789688909834") {
-            //     message.channel.send("This can't be used in this server. 💋");
-            //     logMessage = "Wrong guild";
-            //     break;
-            // }
-            else if (lastSnm.status === "voting") {
-                message.channel.send(`\`SNM ${lastSnm.week}\` voting has already started!`);
-                logMessage = "SNM voting already started";
-                break;
-            }
-            // Cannot start voting if lastSnm is finished
-            else if (lastSnm.status === "finished") {
-                message.channel.send(`\`SNM ${lastSnm.week}\` is finished.\nWait for the next one!`);
-                logMessage = "SNM is finished";
-                break;
-            }
-
-            lastSnm.status = 'voting';
-            message.delete().catch(O_o => { });
-
-            // Check for SNM role
-            let snmRole;
-            if (message.channel.guild)
-                snmRole = message.guild.roles.cache.find((role) => role.name === "SNM™");
-
-            message.channel.send(`${snmRole ? "<@&" + snmRole.id + "> " : ""}\nVoting has started 😱`);
-            let voteMessage = await message.channel.send(new Discord.MessageEmbed().setTitle(`🛠 Building... 🛠`));
-            // need to save the message id in case bot crashes
-            lastSnm.voteMessage = { channelId: voteMessage.channel.id, messageId: voteMessage.id };
-
-            // Builds rich embed with a random emoji for each movie
-            let printArray = [];
-            let emojiArray = message.guild.emojis.cache;
-            let emojisUsed = [];
-
-            lastSnm.users.forEach(user => {
-                user.movies.forEach(movie => {
-                    let rndEmoji;
-                    if (emojiArray.size !== 0) {
-                        rndEmoji = emojiArray.random();
-                        printArray[movie.titleKey - 1] = `<:${rndEmoji.name}:${rndEmoji.id}> - ${movie.title}\n`;
-                        emojisUsed[movie.titleKey - 1] = { titleKey: movie.titleKey, emoji: rndEmoji.identifier };
-                        emojiArray.delete(rndEmoji.id);
-                    }
-                    // It will break if there are more movies than custom emojis
-                    else {
-                        rndEmoji = randomEmoji();
-                        while (emojisUsed.includes(rndEmoji))
-                            rndEmoji = randomEmoji();
-                        printArray[movie.titleKey - 1] = `${rndEmoji} - ${movie.title}\n`;
-                        emojisUsed[movie.titleKey - 1] = { titleKey: movie.titleKey, emoji: rndEmoji };
-                    }
-                })
-            });
-
-            lastSnm.emojisUsed = emojisUsed;
-            saveSnmFile(() => { });
-
-            // Create the embed with titles, emojis and reactions
-            let votingEmbed = new Discord.MessageEmbed()
-                .setTitle(`🌟 Sunday Night Movie ${lastSnm.week} 🌟`)
-                .setColor(0x3498DB)
-                .setDescription(printArray.join(" "))
-                .setFooter('Click the corresponding reaction to vote!');
-
-            voteMessage.edit().then(async msg => {
-                for (let i = 0; i < emojisUsed.length; i++) {
-                    await msg.react(emojisUsed[i].emoji);
-                }
-                msg.edit(votingEmbed);
-            });
-
+            // No longer supported, use /snmAdmin command: start
+            message.channel.send(`This command is no longer supported. Use \`/snmAdmin command: start\` instead.`);
             break;
         case 'snmvotes':
             let userFound = lastSnm.users.find(user => user.userId === message.author.id);

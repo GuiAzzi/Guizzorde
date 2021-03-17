@@ -8,11 +8,12 @@ import configObj, { client } from '../../config/Config.class.js';
 import {
     _slashCommand,
     reportError,
+    randomEmoji,
 } from '../../util/index.js';
 import SNMWeek from './SNMWeek.class.js';
 
 /**
- * 
+ * Creates a SNM Week Embed
  * @param {SNMWeek} snmWeek 
  * @returns {Discord.MessageEmbed} An SNM week embed
  */
@@ -88,7 +89,7 @@ function snmEmbed(snmWeek) {
 }
 
 /**
- * 
+ * Register the SNM commands for the specified server
  * @param {string} guildId - The guild (Server) ID
  * @param {_slashCommand} command - The command settings
  */
@@ -101,6 +102,16 @@ async function register(guildId, command) {
             options: command.options
         }
     });
+}
+
+/**
+ * Gets the '@SNM' role, if it exists
+ * @param {string} guildId - The guild (Server) ID
+ * @returns {Discord.Role}
+ */
+async function getSNMRole(guildId) {
+    await (await client.guilds.fetch(guildId)).roles.fetch();
+    return client.guilds.cache.get(guildId).roles.cache.find(role => role.name.toUpperCase() === "SNM" || role.name.toUpperCase() === "SNM™");
 }
 
 class SNMCommands {
@@ -282,9 +293,7 @@ class SNMCommands {
                             )
 
                             newSNM = await upsertSNMWeek(newSNM);
-                            let snmRole;
-                            if (interaction?.guild_id)
-                                snmRole = guildPerformed.roles.cache.find(role => role.name.toUpperCase() === "SNM" || role.name.toUpperCase() === "SNM™");
+                            const SNMRole = getSNMRole(interaction?.guildId);
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                 data: {
                                     embeds: [
@@ -307,8 +316,21 @@ class SNMCommands {
                     }
                     case 'start': {
                         try {
+                            // Can only be used in guilds
+                            if (!interaction.guild_id) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                    data: {
+                                        type: 3,
+                                        data: {
+                                            content: `Can't use this command in DMs`,
+                                            flags: 64
+                                        }
+                                    }
+                                });
+                                break;
+                            }
                             // Can only be used by admins and bot self
-                            if (!memberPerformed.hasPermission('ADMINISTRATOR') || !interaction.member.user.id === client.user.id) {
+                            else if (!memberPerformed.hasPermission('ADMINISTRATOR') || !interaction.member.user.id === client.user.id) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
                                         type: 3,
@@ -331,9 +353,85 @@ class SNMCommands {
                                     }
                                 }
                             });
+                            // get message to add reactions and save on snmWeek object
+                            const webhookMessage = await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({ data: {} });
+                            const voteMessage = new Discord.Message(client, webhookMessage, client.channels.cache.get(webhookMessage.channel_id));
 
-                            let lastSNM;
-                            lastSNM = await getSNMWeek(interaction.guild_id);
+                            const lastSNM = await getSNMWeek(interaction.guild_id);
+
+                            if (!lastSNM.week) {
+                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        embeds: [startSNMEmbed.setTitle('Error').setDescription('No week to start').setColor("RED")]
+                                    }
+                                });
+                                break;
+                            }
+                            else if (lastSNM.status === 'voting') {
+                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        embeds: [startSNMEmbed.setTitle('Error').setDescription(`\`SNM ${lastSNM.week}\` voting has already started!`).setColor("RED")]
+                                    }
+                                });
+                                break;
+                            }
+                            else if (lastSNM.status === 'finished') {
+                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        embeds: [startSNMEmbed.setTitle('Error').setDescription(`\`SNM ${lastSNM.week}\` is finished.`).setColor("RED")]
+                                    }
+                                });
+                                break;
+                            }
+
+                            lastSNM.status = 'voting';
+                            lastSNM.voteMessage = { channelId: voteMessage.channel.id, messageId: voteMessage.id };
+                            // Builds rich embed with a random emoji for each movie
+                            const printArray = [];
+                            const emojiArray = client.guilds.cache.get(interaction.guild_id).emojis.cache;
+                            const emojisUsed = [];
+
+                            lastSNM.users.forEach(user => {
+                                user.movies.forEach(movie => {
+                                    let rndEmoji;
+                                    if (emojiArray.size !== 0) {
+                                        rndEmoji = emojiArray.random();
+                                        printArray[movie.titleKey - 1] = `<:${rndEmoji.name}:${rndEmoji.id}> - ${movie.title}\n`;
+                                        emojisUsed[movie.titleKey - 1] = { titleKey: movie.titleKey, emoji: rndEmoji.identifier };
+                                        emojiArray.delete(rndEmoji.id);
+                                    }
+                                    // It will break if there are more movies than custom emojis
+                                    else {
+                                        rndEmoji = randomEmoji();
+                                        while (emojisUsed.includes(rndEmoji))
+                                            rndEmoji = randomEmoji();
+                                        printArray[movie.titleKey - 1] = `${rndEmoji} - ${movie.title}\n`;
+                                        emojisUsed[movie.titleKey - 1] = { titleKey: movie.titleKey, emoji: rndEmoji };
+                                    }
+                                })
+                            });
+                            lastSNM.emojisUsed = emojisUsed;
+                            upsertSNMWeek(lastSNM);
+
+                            const SNMRole = await getSNMRole(interaction.guild_id);
+
+                            // Create the embed with titles, emojis and reactions
+                            let votingEmbed = new Discord.MessageEmbed()
+                                .setTitle(`🌟 Sunday Night Movie ${lastSNM.week} 🌟`)
+                                .setColor(0x3498DB)
+                                .setDescription(printArray.join(" "))
+                                .setFooter('Click the corresponding reaction to vote!');
+
+                            for (let emoji of emojisUsed) 
+                                await voteMessage.react(emoji.emoji);
+
+                            await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                data: {
+                                    embeds: [votingEmbed]
+                                }
+                            });
+                            new Discord.WebhookClient(configObj.appId, interaction.token).send(`${SNMRole ? "<@&" + SNMRole.id + "> " : "@here"} Voting has started!`);
+                            break;
                         }
                         catch (e) {
                             reportError(e);

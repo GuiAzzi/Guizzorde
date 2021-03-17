@@ -53,15 +53,24 @@ export async function getSNMWeek(guildId, week) {
 
 /**
  * 
- * @param {SNMWeek} newSNM - The new week to be inserted
- * @returns {SNMWeek} - The inserted snm week
+ * @param {SNMWeek} snmWeek - The snm week to be upserted
+ * @returns {SNMWeek} - The upserted snm week
  */
-export async function upsertSNMWeek(newSNM) {
+export async function upsertSNMWeek(snmWeek) {
     try {
         const mongodb = await dbConnect();
-        const res = await mongodb.db(configObj.mongodbName).collection(configObj.mongodbCollection).insertOne(newSNM);
+        const res = await mongodb.db(configObj.mongodbName)
+            .collection(configObj.mongodbCollection)
+            .findOneAndUpdate({
+                guildId: snmWeek.guildId, week: snmWeek.week
+            }, {
+                $set: snmWeek
+            }, {
+                upsert: true,
+                returnOriginal: false
+            });
         mongodb.close();
-        return Promise.resolve(new SNMWeek(res.ops[0]));
+        return Promise.resolve(new SNMWeek(res.value));
     }
     catch (e) {
         reportError(e);
