@@ -1,4 +1,4 @@
-export default [
+export const donato = [
     "https://cdn.hubblecontent.osi.office.net/m365content/publish/8da42b09-6399-410b-909a-679e1d6e10c7/thumbnails/medium.png",
     "https://cdn.hubblecontent.osi.office.net/m365content/publish/f1236e00-0e9e-43a1-bbdc-120de4f52722/thumbnails/medium.png",
     "https://cdn.hubblecontent.osi.office.net/m365content/publish/ff23d9bd-f2a2-4031-882f-efb953b621f9/thumbnails/medium.png",

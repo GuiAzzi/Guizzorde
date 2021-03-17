@@ -1,6 +1,6 @@
-export default class SNMWeek {
+export class SNMWeek {
     /**
-     * 
+     * A SNM Week
      * @param {string} guildId - The server this SNM belongs to
      * @param {number} week - The SNM number
      * @param {"ongoing"|"voting"|"finished"} status - The SNM current status
@@ -13,7 +13,6 @@ export default class SNMWeek {
      */
 
     /**
-     * 
      * @param {SNMWeek} params 
      */
     constructor(params) {

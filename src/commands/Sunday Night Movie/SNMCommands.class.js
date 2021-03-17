@@ -1,16 +1,19 @@
 import Discord from 'discord.js';
 
 import {
+    upsertSNMServer,
     getSNMWeek,
     upsertSNMWeek,
+    getSNMServer,
 } from '../../api/index.js';
-import configObj, { client } from '../../config/Config.class.js';
+import { configObj, client, deregister, register } from '../../config/index.js';
 import {
     _slashCommand,
     reportError,
     randomEmoji,
 } from '../../util/index.js';
-import SNMWeek from './SNMWeek.class.js';
+import { SNMWeek } from './index.js';
+import { SNMServer } from './SNMServer.class.js';
 
 /**
  * Creates a SNM Week Embed
@@ -20,7 +23,7 @@ import SNMWeek from './SNMWeek.class.js';
 function snmEmbed(snmWeek) {
     // If snm is finished
     if (snmWeek.status === 'finished') {
-        let printArray = [];
+        const printArray = [];
         let tempMovies = [];
 
         // runs through week and get movies, winner and ratings
@@ -54,7 +57,7 @@ function snmEmbed(snmWeek) {
     else {
         let description = `Status: **${snmWeek.paused ? 'paused' : snmWeek.status}**\n\n`;
         let footer = "";
-        let printArray = [];
+        const printArray = [];
 
         // If status is finished, prints winner;
         // if (snmWeek.status === "finished" && snmWeek.winner.titleKey)
@@ -89,22 +92,6 @@ function snmEmbed(snmWeek) {
 }
 
 /**
- * Register the SNM commands for the specified server
- * @param {string} guildId - The guild (Server) ID
- * @param {_slashCommand} command - The command settings
- */
-async function register(guildId, command) {
-    client.api.applications(configObj.appId).guilds(guildId).commands.post({
-        data:
-        {
-            name: command.name,
-            description: command.description,
-            options: command.options
-        }
-    });
-}
-
-/**
  * Gets the '@SNM' role, if it exists
  * @param {string} guildId - The guild (Server) ID
  * @returns {Discord.Role}
@@ -118,6 +105,7 @@ class SNMCommands {
     /**
      * @param {object} snm - /snm [week] [export]
      * @param {object} snmAdmin - /snmAdmin <New|Start|End|Pause>
+     * @param {object} snmTitle - /snmTitle add <title> | /snmTitle remove [title]
      */
     constructor() {
         this.snm = {
@@ -138,12 +126,17 @@ class SNMCommands {
                 ]
             ),
             /**
-             * 
+             * Registers the /snm command
              * @param {string} guildId - The guild (Server) ID
              */
-            register: (guildId) => register(guildId, this.snm.command),
+            register: (guildId) => register(this.snm.command, guildId),
             /**
-             * 
+             * Deregisters the /snm command
+             * @param {string} guildId - The guild (Server) ID
+             */
+            deregister: (guildId) => deregister(this.snm.command, guildId),
+            /**
+             * Handles the /snm command
              * @param {*} interaction - Interaction object
              */
             handler: async function (interaction) {
@@ -214,22 +207,23 @@ class SNMCommands {
                             {
                                 name: 'End current SNM voting',
                                 value: 'end'
-                            },
-                            {
-                                name: 'Toggle automatic SNM functions',
-                                value: 'pause'
                             }
                         ]
                     }
                 ]
             ),
             /**
-             * 
+             * Registers the /snmAdmin command
              * @param {string} guildId - The guild (Server) ID
              */
-            register: (guildId) => register(guildId, this.snmAdmin.command),
+            register: (guildId) => register(this.snmAdmin.command, guildId),
             /**
-             * 
+             * Deregisters the /snmAdmin command
+             * @param {string} guildId - The guild (Server) ID
+             */
+            deregister: (guildId) => deregister(this.snmAdmin.command, guildId),
+            /**
+             * Handles the /snmAdmin command
              * @param {*} interaction - Interaction object
              */
             handler: async function (interaction) {
@@ -248,7 +242,7 @@ class SNMCommands {
                                     data: {
                                         type: 3,
                                         data: {
-                                            content: `You can't do that. Ask my lovely master. 🌵`,
+                                            content: `Insufficient permissions.`,
                                             flags: 64
                                         }
                                     }
@@ -257,7 +251,7 @@ class SNMCommands {
                             }
 
                             // Interaction first contact (to be edited)
-                            let newSNMEmbed = new Discord.MessageEmbed().setTitle('Creating SNM').setDescription('🛠 Working...').setColor(0x3498DB)
+                            let newSNMEmbed = new Discord.MessageEmbed().setTitle('Creating SNM').setDescription('🛠 Working...').setColor(0x3498DB);
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
                                     type: 5,
@@ -335,7 +329,7 @@ class SNMCommands {
                                     data: {
                                         type: 3,
                                         data: {
-                                            content: `You can't do that. Ask my lovely master. 🌵`,
+                                            content: `Insufficient permissions.`,
                                             flags: 64
                                         }
                                     }
@@ -344,7 +338,7 @@ class SNMCommands {
                             }
 
                             // Interaction first contact (to be edited)
-                            let startSNMEmbed = new Discord.MessageEmbed().setTitle('Starting SNM').setDescription('🛠 Working...').setColor(0x3498DB)
+                            let startSNMEmbed = new Discord.MessageEmbed().setTitle('Starting SNM').setDescription('🛠 Working...').setColor(0x3498DB);
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
                                     type: 5,
@@ -422,7 +416,7 @@ class SNMCommands {
                                 .setDescription(printArray.join(" "))
                                 .setFooter('Click the corresponding reaction to vote!');
 
-                            for (let emoji of emojisUsed) 
+                            for (let emoji of emojisUsed)
                                 await voteMessage.react(emoji.emoji);
 
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
@@ -437,8 +431,584 @@ class SNMCommands {
                             reportError(e);
                         }
                     }
+                    case 'end': {
+                        try {
+                            // Can only be used in guilds
+                            if (!interaction.guild_id) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                    data: {
+                                        type: 3,
+                                        data: {
+                                            content: `Can't use this command in DMs`,
+                                            flags: 64
+                                        }
+                                    }
+                                });
+                                break;
+                            }
+                            // Can only be used by admins and bot self
+                            else if (!memberPerformed.hasPermission('ADMINISTRATOR') || !interaction.member.user.id === client.user.id) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                    data: {
+                                        type: 3,
+                                        data: {
+                                            content: `Insufficient permissions.`,
+                                            flags: 64
+                                        }
+                                    }
+                                });
+                                break;
+                            }
+
+                            // Interaction first contact (to be edited)
+                            let endSNMEmbed = new Discord.MessageEmbed().setTitle('Ending SNM').setDescription('🛠 Working...').setColor(0x3498DB);
+                            await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                data: {
+                                    type: 5,
+                                    data: {
+                                        embeds: [endSNMEmbed],
+                                    }
+                                }
+                            });
+
+                            let winnerMovie;
+                            let embedDescription;
+
+                            const lastSNM = await getSNMWeek(interaction.guild_id);
+
+                            if (!lastSNM.week) {
+                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        embeds: [endSNMEmbed.setTitle('Error').setDescription('No week to end').setColor("RED")]
+                                    }
+                                });
+                                break;
+                            }
+
+                            // TODO: If a movie was passed - select it as winner
+                            // <logic>
+                            // creates array with titleKey and voteCount (movie:votes)
+                            let allVotes = [];
+
+                            for (let userIndex in lastSNM.users) {
+                                for (let movieIndex in lastSNM.users[userIndex].movies) {
+                                    let titleKey = lastSNM.users[userIndex].movies[movieIndex].titleKey
+                                    !allVotes[titleKey - 1] ? allVotes[titleKey - 1] = { titleKey: titleKey, voteCount: 0 } : allVotes[titleKey - 1].titleKey = titleKey;
+                                }
+                                for (let voteIndex in lastSNM.users[userIndex].votes) {
+                                    let voteTitleKey = lastSNM.users[userIndex].votes[voteIndex];
+                                    !allVotes[voteTitleKey - 1] ? allVotes[voteTitleKey - 1] = { titleKey: null, voteCount: 1 } : allVotes[voteTitleKey - 1].voteCount++
+                                }
+                            }
+
+                            // get what voteCount is the highest
+                            const maxVotes = allVotes.reduce((prev, current) => {
+                                return (prev.voteCount > current.voteCount) ? prev : current;
+                            });
+                            // get movies that had more votes (=== maxVotes)
+                            const winners = allVotes.filter((obj) => {
+                                return obj.voteCount === maxVotes.voteCount
+                            });
+                            // if more than 1 winner => tied
+                            if (winners.length > 1) {
+                                const tiedWinnersTitle = [];
+                                for (let winner in winners) {
+                                    tiedWinnersTitle.push(`\`${lastSNM.users.find(user => user.movies.find(movie => movie.titleKey === winners[winner].titleKey)).movies.find(movie => movie.titleKey === winners[winner].titleKey).title}\``);
+                                }
+
+                                embedDescription = `\n${tiedWinnersTitle.join(" | ")} got ${maxVotes.voteCount} votes each!\nRandomly picking a movie...\n\n`;
+                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        embeds: [
+                                            endSNMEmbed
+                                                .setTitle(`😲 It's a tie! 😲`)
+                                                .setDescription(embedDescription + `Checking...`)
+                                        ]
+                                    }
+                                });
+                                const rndWinnerPos = Math.floor(Math.random() * winners.length);
+                                lastSNM.winner = winners[rndWinnerPos];
+                                winnerMovie = { title: tiedWinnersTitle[rndWinnerPos].substr(1, tiedWinnersTitle[rndWinnerPos].length - 2) };
+                            }
+                            else {
+                                embedDescription = `With ${maxVotes.voteCount} votes:\n\n`
+                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        embeds: [
+                                            endSNMEmbed
+                                                .setTitle(`🙌 We have a winner! 🙌`)
+                                                .setDescription(embedDescription + `Checking...`)
+                                        ]
+                                    }
+                                });
+                                lastSNM.winner = winners[0];
+                                winnerMovie = { title: lastSNM.users.find(user => user.movies.find(movie => movie.titleKey === lastSNM.winner.titleKey)).movies.find(movie => movie.titleKey === lastSNM.winner.titleKey).title };
+                            }
+
+                            lastSNM.status = 'finished';
+                            await upsertSNMWeek(lastSNM);
+                            await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                data: {
+                                    embeds: [
+                                        endSNMEmbed
+                                            .setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`)
+                                    ]
+                                }
+                            });
+
+                            // TODO:
+                            // /movie followup message
+                            // new Discord.WebhookClient(configObj.appId, interaction.token).send();
+
+                            // saveSnmFile(async () => {
+                            //     await msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`))
+                            //     let torrentEmbed = await createTorrentEmbed(winnerMovie.title, message.guild.owner);
+                            //     if (!torrentEmbed)
+                            //         msgToEdit.edit(finalEmbed.setFooter(`No torrent found 🤔`));
+                            //     else {
+                            //         msgToEdit.edit(finalEmbed.setFooter(" "));
+                            //         message.channel.send(torrentEmbed).then((msg) => torrentMessage = msg);
+                            //     }
+                            // });
+                            break;
+                        }
+                        catch (e) {
+                            reportError(e);
+                        }
+                    }
                 }
             }
+        }
+        this.snmTitle = {
+            command: new _slashCommand(
+                'snmTitle',
+                `Add or remove SNM entries`,
+                [
+                    {
+                        type: 1,
+                        name: 'add',
+                        description: 'Add a movie to current SNM',
+                        options: [
+                            {
+                                type: 3,
+                                name: 'title',
+                                required: true,
+                                description: 'The movie title'
+                            },
+                            {
+                                type: 5,
+                                name: 'silent',
+                                description: 'No message will be sent to the channel.'
+                            }
+                        ]
+                    },
+                    {
+                        type: 1,
+                        name: 'remove',
+                        description: 'Remove a movie from current SNM',
+                        options: [
+                            {
+                                type: 3,
+                                name: 'title',
+                                required: true,
+                                description: 'The movie title or SNM number'
+                            },
+                            {
+                                type: 5,
+                                name: 'silent',
+                                description: 'No message will be sent to the channel.'
+                            }
+                        ]
+                    }
+                ]
+            ),
+            /**
+             * Registers the /snmTitle command
+             * @param {string} guildId - The guild (Server) ID
+             */
+            register: (guildId) => register(this.snmTitle.command, guildId),
+            /**
+             * Deregisters the /snmTitle command
+             * @param {string} guildId - The guild (Server) ID
+             */
+            deregister: (guildId) => deregister(this.snmTitle.command, guildId),
+            /**
+             * Handles the /snmTitle command
+             * @param {*} interaction - Interaction object
+             */
+            handler: async function (interaction) {
+                try {
+                    const interactionOptions = interaction.data.options?.find((arg => arg.name === 'add' || arg.name === 'remove'));
+                    const interactionChoice = interactionOptions.name;
+                    const titleName = interactionOptions.options?.find((arg => arg.name === 'title'))?.value;
+                    const silent = interactionOptions.options?.find((arg => arg.name === 'silent'))?.value;
+
+                    switch (interactionChoice) {
+                        case 'add': {
+                            // Interaction first contact (to be edited)
+                            let snmTitleEmbed = new Discord.MessageEmbed().setTitle('Adding title').setDescription('🛠 Working...').setColor(0x3498DB);
+                            // if silent - don't send message
+                            if (!silent) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                    data: {
+                                        type: 5,
+                                        data: {
+                                            embeds: [snmTitleEmbed],
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                        case 'remove': {
+                            // Interaction first contact (to be edited)
+                            let snmTitleEmbed = new Discord.MessageEmbed().setTitle('Removing title').setDescription('🛠 Working...').setColor(0x3498DB);
+                            // if silent - don't send message
+                            if (!silent) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                    data: {
+                                        type: 5,
+                                        data: {
+                                            embeds: [snmTitleEmbed],
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+
+                    const lastSNM = await getSNMWeek(interaction.guild_id);
+
+                    if (!lastSNM.week) {
+                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                embeds: [snmTitleEmbed.setTitle('Error').setDescription(`No week to interact with`).setColor("RED")]
+                            }
+                        });
+                    }
+                    // Adding title
+                    else if (addTitle) {
+
+                    }
+                    // Removing title
+                    else if (removeTitle) {
+
+                    }
+                }
+                catch (e) {
+                    reportError(e);
+                }
+            }
+        }
+        this.snmConfig = {
+            command: new _slashCommand(
+                'snmConfig',
+                'Change SNM settings for this Server',
+                [
+                    {
+                        type: 4,
+                        name: 'max_entries',
+                        description: 'Maximum number of entries allowed per user'
+                    },
+                    {
+                        type: 4,
+                        name: 'max_votes',
+                        description: 'Maximum number of votes allowed per user'
+                    },
+                    {
+                        type: 7,
+                        name: 'default_channel',
+                        description: 'Where should SNM messages be sent | Must be a text channel'
+                    },
+                    {
+                        type: 5,
+                        name: 'schedule',
+                        description: 'Pauses or unpauses automatic SNM'
+                    },
+                    {
+                        type: 3,
+                        name: 'new',
+                        description: 'When to create a new SNM Week | CRON format https://crontab.guru/ | Enter "default" for Monday 8AM'
+                    },
+                    {
+                        type: 3,
+                        name: 'start',
+                        description: 'When to start SNM voting | CRON format https://crontab.guru/ | Enter "default" for Friday 8PM'
+                    },
+                    {
+                        type: 3,
+                        name: 'end',
+                        description: 'When to end SNM voting | CRON format https://crontab.guru/ | Enter "default" for Saturday 8PM'
+                    }
+                ]
+            ),
+            register: (guildId) => register(this.snmConfig.command, guildId),
+            deregister: (guildId) => deregister(this.snmConfig.command, guildId),
+            handler: async function (interaction) {
+                try {
+                    // Cannot be used in DM
+                    if (!interaction.guild_id) {
+                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                            data: {
+                                type: 4,
+                                data: {
+                                    content: `Can't use this command a DM channel.`,
+                                    flags: 64
+                                }
+                            }
+                        });
+                    }
+                    // If no parameter was passed
+                    else if (!interaction.data.options) {
+                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                            data: {
+                                type: 3,
+                                data: {
+                                    content: `No option was passed`,
+                                    flags: 64
+                                }
+                            }
+                        });
+                    }
+
+                    // Fetch guild and member (to ADMINISTRATOR check permission)
+                    const guildPerformed = await client.guilds.fetch(interaction.guild_id);
+                    const memberPerformed = await guildPerformed.members.fetch(interaction.member.user.id);
+
+                    // Can only be used by admins and bot self
+                    if (!memberPerformed.hasPermission('ADMINISTRATOR') || !interaction.member.user.id === client.user.id) {
+                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                            data: {
+                                type: 3,
+                                data: {
+                                    content: `Insufficient permissions.`,
+                                    flags: 64
+                                }
+                            }
+                        });
+                    }
+
+                    // First contact
+                    await client.api.interactions(interaction.id, interaction.token).callback.post({
+                        data: {
+                            type: 3,
+                            data: {
+                                content: `Saving...`,
+                                flags: 64
+                            }
+                        }
+                    });
+
+                    const cronRegex = /((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})|default/g
+                    const maxEntries = interaction.data.options?.find((arg => arg.name === 'max_entries'))?.value;
+                    const maxVotes = interaction.data.options?.find((arg => arg.name === 'max_votes'))?.value;
+                    const defaultChannel = interaction.data.options?.find((arg => arg.name === 'default_channel'))?.value;
+                    const running = interaction.data.options?.find((arg => arg.name === 'schedule'))?.value;
+                    const cronNew = interaction.data.options?.find((arg => arg.name === 'new'))?.value;
+                    const cronStart = interaction.data.options?.find((arg => arg.name === 'start'))?.value;
+                    const cronEnd = interaction.data.options?.find((arg => arg.name === 'end'))?.value;
+
+                    // If channel doesn't belong to this guild
+                    if (defaultChannel && client.channels.cache.get(defaultChannel).type !== 'text') {
+                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                            data: {
+                                type: 3,
+                                data: {
+                                    content: `\`default_channel\` must be a text channel`,
+                                    flags: 64
+                                }
+                            }
+                        });
+                    }
+                    else if (cronNew && !cronRegex.test(cronNew)) {
+                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                            data: {
+                                type: 3,
+                                data: {
+                                    content: `Invalid \`new\` CRON syntax. Visit https://crontab.guru/ for reference`,
+                                    flags: 64
+                                }
+                            }
+                        });
+                    }
+                    else if (cronStart && !cronRegex.test(cronStart)) {
+                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                            data: {
+                                type: 3,
+                                data: {
+                                    content: `Invalid \`start\` CRON syntax. Visit https://crontab.guru/ for reference`,
+                                    flags: 64
+                                }
+                            }
+                        });
+                    }
+                    else if (cronEnd && !cronRegex.test(cronEnd)) {
+                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                            data: {
+                                type: 3,
+                                data: {
+                                    content: `Invalid \`end\` CRON syntax. Visit https://crontab.guru/ for reference`,
+                                    flags: 64
+                                }
+                            }
+                        });
+                    }
+
+                    let snmServer = await getSNMServer(interaction.guild_id);
+
+                    // FIXME: Should be a better way to do this
+                    maxEntries ? snmServer.maxEntries = maxEntries : null;
+                    maxVotes ? snmServer.maxVotes = maxVotes : null;
+                    defaultChannel ? snmServer.defaultChannel = defaultChannel : null;
+                    running ? snmServer.schedule.running = running : null;
+                    cronNew ? snmServer.schedule.new = cronNew : null;
+                    cronStart ? snmServer.schedule.new = cronStart : null;
+                    cronEnd ? snmServer.schedule.new = cronEnd : null;
+
+                    // Doesn't work because undefined props were being set
+                    // snmServer = {
+                    //     ...snmServer,
+                    //     maxEntries: maxEntries,
+                    //     maxVotes: maxVotes,
+                    //     defaultChannel: defaultChannel,
+                    //     schedule: {
+                    //         running: running,
+                    //         new: cronNew,
+                    //         start: cronStart,
+                    //         end: cronEnd
+                    //     }
+                    // }
+
+                    await upsertSNMServer(snmServer);
+                    return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                        data: {
+                            content: `Saved!`
+                        }
+                    });
+
+                }
+                catch (e) {
+                    reportError(e);
+                }
+
+            }
+        }
+    }
+
+    /**
+     * Toggles SNM commands for specified server
+     * @param {string} guildId - The Server ID to enable SNM
+     */
+    async toggleSNM(guildId, enabled) {
+        if (enabled) {
+            for (const command of Object.values(this)) {
+                await command.register(guildId, command.command);
+            }
+        }
+        else if (!enabled) {
+            for (const command of Object.values(this)) {
+                await command.deregister(guildId, command.command);
+            }
+        }
+    }
+}
+
+export const snmEnable = {
+    command: new _slashCommand(
+        'snmEnable',
+        'Enables or disables Sunday Night Movie',
+        [
+            {
+                type: 5,
+                name: "enable",
+                required: true,
+                description: "True to enable | False to disable"
+            }
+        ]
+    ),
+    register: () => register(snmEnable.command),
+    deregister: () => deregister(snmEnable.command),
+    handler: async function (interaction) {
+        try {
+            // Cannot be used in DM
+            if (!interaction.guild_id) {
+                return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 4,
+                        data: {
+                            content: `Can't enable SNM in a DM channel.`,
+                            flags: 64
+                        }
+                    }
+                });
+            }
+
+            // Fetch guild and member (to ADMINISTRATOR check permission)
+            const guildPerformed = await client.guilds.fetch(interaction.guild_id);
+            const memberPerformed = await guildPerformed.members.fetch(interaction.member.user.id);
+
+            // Can only be used by admins
+            if (!memberPerformed.hasPermission('ADMINISTRATOR')) {
+                return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 3,
+                        data: {
+                            content: `Insufficient permissions.`,
+                            flags: 64
+                        }
+                    }
+                });
+            }
+
+            const option = interaction.data.options?.find((arg => arg.name === 'option')).value;
+
+            if (option) {
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 3,
+                        data: {
+                            content: `SNM should be enabled shortly for this server! 🌵`,
+                            flags: 64
+                        }
+                    }
+                })
+            }
+            else if (!option) {
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 3,
+                        data: {
+                            content: `SNM should be disabled shortly for this server. ✌`,
+                            flags: 64
+                        }
+                    }
+                })
+            }
+
+            let snmServer = await getSNMServer(interaction.guild_id);
+
+            // No SNMServer for this Server
+            if (!snmServer.guildId) {
+                snmServer = new SNMServer({
+                    guildId: interaction.guild_id,
+                    enabled: true,
+                    defaultChannel: interaction.channel_id,
+                    maxEntries: 1,
+                    maxVotes: 2,
+                    schedule: {
+                        running: false,
+                        new: '0 8 * * 1',
+                        start: '0 20 * * 5',
+                        end: '0 20 * * 6'
+                    }
+                })
+            }
+            snmServer.enabled = option;
+            await upsertSNMServer(snmServer);
+            await SNMObj.toggleSNM(interaction.guild_id, option);
+        }
+        catch (e) {
+            reportError(e);
         }
     }
 }
@@ -446,43 +1016,6 @@ class SNMCommands {
 export const SNMObj = new SNMCommands();
 
 export function snm_register(appId, guildId) {
-    // snmTitle add <title>
-    // snmTitle remove [title]
-    client.api.applications(appId).guilds(guildId).commands.post({
-        data:
-        {
-            name: 'snmTitle',
-            description: `Add or remove SNM entries`,
-            options: [
-                {
-                    type: 1,
-                    name: 'add',
-                    description: 'Add a movie to current SNM',
-                    options: [
-                        {
-                            type: 3,
-                            name: 'title',
-                            required: true,
-                            description: 'The movie title'
-                        }
-                    ]
-                },
-                {
-                    type: 1,
-                    name: 'remove',
-                    description: 'Remove a movie from current SNM',
-                    options: [
-                        {
-                            type: 3,
-                            name: 'title',
-                            description: 'The movie title or SNM number'
-                        }
-                    ]
-                }
-            ]
-        }
-    });
-
     // snmRate <text>
     client.api.applications(appId).guilds(guildId).commands.post({
         data:

@@ -1,6 +1,5 @@
 export class _slashCommand {
     /**
-     * 
      * @param {string} name 
      * @param {string} description 
      * @param {array} option 

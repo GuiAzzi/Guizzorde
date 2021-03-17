@@ -14,7 +14,7 @@ export class Config {
    * @param {string} ownerId - OwnerID
    * @param {string} mongodbURI - MongoDb URI
    * @param {string} mongodbName - MongoDb Name
-   * @param {string} mongodbCollection - MongoDb SNM Collection
+   * @param {array} mongodbCollections - MongoDb SNM Collection
    * @param {string} OSCredentials - Open Subtitle Credentials
    */
   constructor() {
@@ -24,10 +24,69 @@ export class Config {
     this.ownerId = process.env.OWNER_ID || configJSON.ownerId;
     this.mongodbURI = process.env.MONGODB_URI || configJSON.mongodbURI;
     this.mongodbName = process.env.MONGODB_NAME || configJSON.mongodbName;
-    this.mongodbCollection = process.env.MONGODB_COLLECTION || configJSON.mongodbCollection;
+    this.mongodbCollections = process.env.MONGODB_COLLECTIONS || configJSON.mongodbCollections;
     this.OSCredentials = process.env.OSCREDENTIALS?.split(',') || configJSON.OSCredentials;
   }
 }
 
-export default new Config();
-export const client = new Discord.Client({ partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'] }); 
+/**
+ * Register a command
+ * @param {_slashCommand} command - The command settings
+ * @param {string} [guildId] - The guild (Server) ID
+ */
+export async function register(command, guildId) {
+  try {
+    // If guild-specific
+    if (guildId) {
+      await client.api.applications(configObj.appId).guilds(guildId).commands.post({
+        data:
+        {
+          name: command.name,
+          description: command.description,
+          options: command.options
+        }
+      });
+    }
+    else {
+      await client.api.applications(configObj.appId).commands.post({
+        data:
+        {
+          name: command.name,
+          description: command.description,
+          options: command.options
+        }
+      });
+    }
+  }
+  catch (e) {
+    reportError(e);
+  }
+}
+/**
+ * Deregister a command
+ * @param {_slashCommand} command - The command settings
+ * @param {string} [guildId] - The guild (Server) ID
+ */
+export async function deregister(command, guildId) {
+  try {
+    // if guild-specific
+    if (guildId) {
+      const guildCommands = await client.api.applications(configObj.appId).guilds(guildId).commands.get();
+      const specifiedCommand = guildCommands.find(gCommand => gCommand.name.toLowerCase() === command.name.toLowerCase());
+      if (specifiedCommand)
+        await client.api.applications(configObj.appId).guilds(guildId).commands(specifiedCommand.id).delete();
+    }
+    else {
+      const globalCommands = await client.api.applications(configObj.appId).commands.get();
+      const specifiedCommand = globalCommands.find(gCommand => gCommand.name.toLowerCase() === command.name.toLowerCase());
+      if (specifiedCommand)
+        await client.api.applications(configObj.appId).commands(specifiedCommand.id).delete();
+    }
+  }
+  catch (e) {
+    reportError(e);
+  }
+}
+
+export const configObj = new Config();
+export const client = new Discord.Client({ partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'] });

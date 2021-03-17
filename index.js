@@ -7,7 +7,7 @@ import OS from 'opensubtitles-api';
 import torrentSearch from 'torrent-search-api';
 import ytdl from 'ytdl-core';
 
-import { SNMObj } from './src/commands/index.js';
+import { snmEnable, SNMObj } from './src/commands/index.js';
 import {
   jwGenresBR,
   jwGenresEN,
@@ -15,8 +15,8 @@ import {
   jwProvidersEN,
 } from './src/commands/Sunday Night Movie/jw/jw.js';
 // Guizzorde config object
-import configObj, { client } from './src/config/Config.class.js';
-import donato from './src/stock/donato.js';
+import { configObj, client } from './src/config/index.js';
+import { donato } from './src/stock/donato.js';
 import { randomEmoji } from './src/util/index.js';
 
 torrentSearch.enablePublicProviders();
@@ -152,7 +152,7 @@ function saveSnmFile(callback) {
             throw err;
         }
 
-        mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollection).replaceOne({ week: lastSnm.week }, lastSnm, (err, result) => {
+        mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).replaceOne({ week: lastSnm.week }, lastSnm, (err, result) => {
             if (err) {
                 console.error(err);
                 throw err;
@@ -281,12 +281,22 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 }
             });
             break;
+        case 'snmenable':
+            // Register SNM commands for this guild
+            snmEnable.handler(interaction);
+            break;
         case 'snm':
             // Sends rich embed with SNM infos
             SNMObj.snm.handler(interaction);
             break;
+        case 'snmconfig': 
+            SNMObj.snmConfig.handler(interaction);
+            break;
         case 'snmadmin':
             SNMObj.snmAdmin.handler(interaction);
+            break;
+        case 'snmtitle':
+            SNMObj.snmTitle.handler(interaction);
             break;
         case 'torrent':
             // Search for a torrent on a list of providers
@@ -1161,7 +1171,7 @@ client.on('ready', () => {
                 throw err;
             }
 
-            mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollection).findOne({}, { sort: { week: -1 }, limit: 1 }, (err, result) => {
+            mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({}, { sort: { week: -1 }, limit: 1 }, (err, result) => {
                 if (err) {
                     console.error(err);
                     throw err;
@@ -1415,106 +1425,8 @@ client.on('message', async message => {
 
             break;
         case 'snmend':
-            let winnerMovie;
-            let msgToEdit;
-            let embedTitle;
-            let embedDescription;
-
-            // can only be done by owner and self - for now.
-            if (message.author.id != configObj.ownerId && message.author.id != client.user.id) {
-                message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
-                logMessage = "Author is not owner"
-                break;
-            }
-            // Can only be ended if status is voting or if requester is owner
-            else if (lastSnm.status !== "voting" && message.author.id !== configObj.ownerId) {
-                message.channel.send(`SNM cannot be ended. It is \`${lastSnm.status}\``);
-                logMessage = `SNM is ${lastSnm.status}`;
-                break;
-            }
-            // If a movie was passed
-            else if (messageText != "") {
-                message.delete().catch(O_o => { });
-                embedTitle = `🙌 We have a winner! 🙌`;
-                embedDescription = ""
-                msgToEdit = await message.channel.send(new Discord.MessageEmbed().setTitle(embedTitle).setDescription("Checking...").setColor(0x3498DB));
-                winnerMovie = lastSnm.users.find(user => user.movies.find(movie => movie.title === messageText))
-                    || lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === Number(messageText)));
-                if (winnerMovie)
-                    winnerMovie = winnerMovie.movies.find(movie => movie.title === messageText)
-                        || winnerMovie.movies.find(movie => movie.titleKey === Number(messageText))
-                // sets winner
-                lastSnm.winner = { titleKey: winnerMovie.titleKey };
-
-
-                if (!winnerMovie) {
-                    message.channel.send(`Movie not found`);
-                    logMessage = `${messageText} was not found`;
-                    break;
-                }
-            }
-            // if no movie was passed
-            else {
-                message.delete().catch(O_o => { });
-                // creates array with titleKey and voteCount (movie:votes)
-                let allVotes = [];
-
-                for (let userIndex in lastSnm.users) {
-                    for (let movieIndex in lastSnm.users[userIndex].movies) {
-                        let titleKey = lastSnm.users[userIndex].movies[movieIndex].titleKey
-                        !allVotes[titleKey - 1] ? allVotes[titleKey - 1] = { titleKey: titleKey, voteCount: 0 } : allVotes[titleKey - 1].titleKey = titleKey;
-                    }
-                    for (let voteIndex in lastSnm.users[userIndex].votes) {
-                        let voteTitleKey = lastSnm.users[userIndex].votes[voteIndex];
-                        !allVotes[voteTitleKey - 1] ? allVotes[voteTitleKey - 1] = { titleKey: null, voteCount: 1 } : allVotes[voteTitleKey - 1].voteCount++
-                    }
-                }
-
-                // get what voteCount is the highest
-                let maxVotes = allVotes.reduce((prev, current) => {
-                    return (prev.voteCount > current.voteCount) ? prev : current;
-                });
-                // get movies that had more votes (=== maxVotes)
-                let winners = allVotes.filter((obj) => {
-                    return obj.voteCount === maxVotes.voteCount
-                });
-                // if more than 1 winner => tied
-                if (winners.length > 1) {
-                    let tiedWinnersTitle = [];
-                    for (let winner in winners) {
-                        tiedWinnersTitle.push(`\`${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === winners[winner].titleKey)).movies.find(movie => movie.titleKey === winners[winner].titleKey).title}\``);
-                    }
-                    embedTitle = `😲 It's a tie! 😲`;
-                    embedDescription = `\n${tiedWinnersTitle.join(" | ")} got ${maxVotes.voteCount} votes each!\nRandomly picking a movie...\n\n`;
-                    msgToEdit = await message.channel.send(new Discord.MessageEmbed().setTitle(embedTitle).setDescription(embedDescription + `Checking...`).setColor(0x3498DB));
-                    let rndWinnerPos = Math.floor(Math.random() * winners.length);
-                    lastSnm.winner = winners[rndWinnerPos];
-                    winnerMovie = { title: tiedWinnersTitle[rndWinnerPos].substr(1, tiedWinnersTitle[rndWinnerPos].length - 2) };
-                }
-                else {
-                    embedTitle = `🙌 We have a winner! 🙌`;
-                    embedDescription = `With ${maxVotes.voteCount} votes:\n\n`
-                    msgToEdit = await message.channel.send(new Discord.MessageEmbed().setTitle(embedTitle).setDescription(embedDescription + `Checking...`).setColor(0x3498DB));
-                    lastSnm.winner = winners[0];
-                    winnerMovie = { title: lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === lastSnm.winner.titleKey)).movies.find(movie => movie.titleKey === lastSnm.winner.titleKey).title };
-                }
-            }
-
-            lastSnm.status = "finished";
-            saveSnmFile(async () => {
-                let finalEmbed = new Discord.MessageEmbed().setTitle(embedTitle).setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`).setColor(0x3498DB);
-                await msgToEdit.edit(finalEmbed.setFooter(`Checking for torrents...`))
-                let torrentEmbed = await createTorrentEmbed(winnerMovie.title, message.guild.owner);
-                if (!torrentEmbed)
-                    msgToEdit.edit(finalEmbed.setFooter(`No torrent found 🤔`));
-                else {
-                    msgToEdit.edit(finalEmbed.setFooter(" "));
-                    message.channel.send(torrentEmbed).then((msg) => torrentMessage = msg);
-                }
-            });
-
-            logMessage = `Winner is **${winnerMovie.title}**`;
-
+            // No longer supported, use /snmAdmin command: end
+            message.channel.send(`This command is no longer supported. Use \`/snmAdmin command: end\` instead.`);
             break;
         case 'changesub':
             // can only be done by owner
@@ -1723,7 +1635,7 @@ client.on('message', async message => {
                         throw err;
                     }
 
-                    mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollection).findOne({ week: specifiedWeek }, (err, result) => {
+                    mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ week: specifiedWeek }, (err, result) => {
                         if (err) {
                             console.error(err);
                             throw err;

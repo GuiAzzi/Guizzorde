@@ -1,10 +1,17 @@
-{ 
+{
     "appId": "<Application ID>",
     "token": "<Bot-Token>",
     "prefix": "!",
     "ownerId": "<Discord User ID",
     "mongodbURI": "mongodb://example:example@example.mlab.com:17816/heroku_example",
     "mongodbName": "heroku_6zd3qncp",
-    "mongodbCollection": "<Mongo-Collection-Name>",
-    "OSCredentials": ["useragent", "username", "password"]
+    "mongodbCollections": [
+        "<snm-servers-collection>",
+        "<snm-weeks-collection>"
+    ],
+    "OSCredentials": [
+        "useragent",
+        "username",
+        "password"
+    ]
 }

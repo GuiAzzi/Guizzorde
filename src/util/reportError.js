@@ -1,7 +1,6 @@
-import configObj, { client } from '../config/Config.class.js'
+import { configObj, client } from '../config/index.js'
 
 /**
- * 
  * @param {string} err 
  */
 export function reportError(err) {
