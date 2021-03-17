@@ -9,10 +9,10 @@ import ytdl from 'ytdl-core';
 
 import { snmEnable, SNMObj } from './src/commands/index.js';
 import {
-  jwGenresBR,
-  jwGenresEN,
-  jwProvidersBR,
-  jwProvidersEN,
+    jwGenresBR,
+    jwGenresEN,
+    jwProvidersBR,
+    jwProvidersEN,
 } from './src/commands/Sunday Night Movie/jw/jw.js';
 // Guizzorde config object
 import { configObj, client } from './src/config/index.js';
@@ -289,7 +289,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             // Sends rich embed with SNM infos
             SNMObj.snm.handler(interaction);
             break;
-        case 'snmconfig': 
+        case 'snmconfig':
             SNMObj.snmConfig.handler(interaction);
             break;
         case 'snmadmin':
@@ -297,6 +297,12 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             break;
         case 'snmtitle':
             SNMObj.snmTitle.handler(interaction);
+            break;
+        case 'snmrate':
+            SNMObj.snmRate.handler(interaction);
+            break;
+        case 'snmvotes':
+            SNMObj.snmVotes.handler(interaction);
             break;
         case 'torrent':
             // Search for a torrent on a list of providers
@@ -1391,42 +1397,13 @@ client.on('message', async message => {
             // No longer supported, use /snmAdmin command: start
             message.channel.send(`This command is no longer supported. Use \`/snmAdmin command: start\` instead.`);
             break;
-        case 'snmvotes':
-            let userFound = lastSnm.users.find(user => user.userId === message.author.id);
-
-            if (lastSnm.status !== "voting") {
-                message.author.send(`Voting has not started`);
-                logMessage = `Voting has not started`;
-            }
-            else if (!userFound || userFound.votes.length === 0) {
-                message.author.send(`You have not voted`);
-                logMessage = `User has no votes`;
-            }
-            else if (messageText === "clear") {
-                // can't alter votes if snm is finished
-                if (lastSnm.status !== 'voting') {
-                    message.channel.send(`SNM is finished. You can't alter your votes 👀.`);
-                    logMessage = `Last SNM is finished`;
-                    break;
-                }
-                userFound.votes = [];
-                logMessage = `${message.author.username} votes reset`;
-                saveSnmFile(() => {
-                    message.channel.send(`Your votes have been reset.`);
-                });
-            }
-            else {
-                let moviesVoted = [];
-                userFound.votes.forEach(movieTitleKey => {
-                    moviesVoted.push(`\`${lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title}\``);
-                });
-                message.author.send(`Your votes: ${moviesVoted.join(" | ")}`);
-            }
-
-            break;
         case 'snmend':
             // No longer supported, use /snmAdmin command: end
             message.channel.send(`This command is no longer supported. Use \`/snmAdmin command: end\` instead.`);
+            break;
+        case 'snmvotes':
+            // No longer supported, use /snmVotes
+            message.channel.send(`This command is no longer supported. Use \`/snmVotes\` instead.`);
             break;
         case 'changesub':
             // can only be done by owner
@@ -1456,139 +1433,16 @@ client.on('message', async message => {
             logMessage = `Changed sub from ${args[0]} with ${args[1]}`;
             break;
         case 'snmpause':
-            // can only be done by owner - for now.
-            if (message.author.id != configObj.ownerId) {
-                message.channel.send(`You can't do that. Ask my lovely master. 🌵`);
-                logMessage = "Author is not owner"
-                break;
-            }
-            // Pauses/Unpauses current SNM
-            lastSnm.paused = !lastSnm.paused;
-            saveSnmFile(() => {
-                // paused = true -> stops jobs
-                // paused = false -> starts jobs
-                snmToggleJobs(!lastSnm.paused);
-                message.channel.send(`SNM ${lastSnm.week} is now \`${lastSnm.paused ? 'paused' : 'unpaused'}\``);
-                logMessage = `${lastSnm.paused ? 'Paused' : 'Unpaused'} SNM ${lastSnm.week}`;
-            });
-
+            // No longer supported, use /snmConfig
+            message.channel.send(`This command is no longer supported. Use \`/snmConfig\` instead.`);
             break;
         case 'snmadd':
-            // if nothing was passed
-            if (!messageText) {
-                message.channel.send(`You forgot to name the movie.\nUsage: \`!snmAdd <movie-name>\``);
-                logMessage = `No movie was passed`;
-                break;
-            }
-            // If snm status != ongoing, cancel request and warn user.
-            if (lastSnm.status != "ongoing") {
-                message.channel.send(`Requesting period for \`Sunday Night Movie ${lastSnm.week}\` has ended`);
-                logMessage = `SNM is ${lastSnm.status}`;
-                break;
-            }
-
-            let authorId = message.author.id;
-            // Checks if user is already on the list
-            let userObject = lastSnm.users.find((user) => user.userId === authorId);
-
-            if (userObject) {
-                // Check user entries
-                if (userObject.movies.length === NUMBEROFENTRIES) {
-                    message.channel.send(`You have no entries left.\nRemove entries with \`!snmRemove <movie title or number>\`.`);
-                    logMessage = `No entries left ${userObject.movies.length}/${NUMBEROFENTRIES}`;
-                    break;
-                }
-            }
-            // Add user to the list and update userObject
-            else
-                userObject = lastSnm.users[lastSnm.users.push({ userId: authorId, username: message.author.username, movies: [], votes: [] }) - 1];
-
-            // If movie is already on the list, cancel and inform user
-            if (lastSnm.users.find((user) => user.movies.find((movie) => movie.title === messageText))) {
-                message.channel.send("Movie already on the list");
-                logMessage = "Movie was already on the list";
-                break;
-            }
-
-            // Adds movie to the list
-            lastSnm.movieCount++
-            userObject.movies.push({ title: messageText, titleKey: lastSnm.movieCount });
-
-            saveSnmFile(() => {
-                message.channel.send(`Added \`${messageText}\` to the list`);
-                // message.channel.send(snmEmbed())
-            });
-
-            logMessage = `${message.author.username} added '${messageText}' to the list`;
+            // No longer supported, use /snmTitle add
+            message.channel.send(`This command is no longer supported. Use \`/snmTitle add\` instead.`);
             break;
         case 'snmremove':
-            // Removes a movie from the list
-            let stringFound;
-            let numberFound;
-            let checkNumber;
-            let deleted;
-
-            // Prioritize strings over numbers, as they are more specific.
-            // Movie can be "007" which would be a string and not position 7.
-            // If message is a number, we will save the titleKey that matches it. In case we don't find a string.
-            if (Number(messageText))
-                checkNumber = true;
-
-            // Checks if there is a movie with the same name as the message string
-            for (let userIndex in lastSnm.users) {
-                for (let movieIndex in lastSnm.users[userIndex].movies) {
-                    if (lastSnm.users[userIndex].movies[movieIndex].title === messageText) {
-                        stringFound = true;
-                        // Checks if movie found was submitted by message author
-                        if (lastSnm.users[userIndex].userId === message.author.id)
-                            deleted = lastSnm.users[userIndex].movies.splice(movieIndex, 1);
-                        else {
-                            message.channel.send("This is not your movie 😒");
-                            logMessage = `${lastSnm.users[userIndex].movies[movieIndex].title} is not authors movie`;
-                            break;
-                        }
-                        break;
-                    }
-                    // If checkNumber is true and we didn't find a string yet. Check if titleKey matches user message.
-                    // If it does, save indexes
-                    else if (checkNumber) {
-                        if (Number(messageText) === lastSnm.users[userIndex].movies[movieIndex].titleKey)
-                            numberFound = [userIndex, movieIndex];
-                    }
-                }
-            }
-
-            // If we didn't find a string but found a matching titleKey, try to delete
-            if (numberFound && !stringFound) {
-                // Checks if movie found was submitted by message author
-                if (lastSnm.users[numberFound[0]].userId === message.author.id)
-                    deleted = lastSnm.users[numberFound[0]].movies.splice(numberFound[1], 1);
-                else {
-                    message.channel.send("This is not your movie 😒");
-                    logMessage = `${lastSnm.users[numberFound[0]].movies[numberFound[1]].title} is not authors movie`;
-                    break;
-                }
-            }
-
-            // Fixes titleKeys and movieCount
-            if (deleted) {
-                deleted = deleted[0]
-                lastSnm.movieCount--;
-                for (let userIndex in lastSnm.users) {
-                    for (let movieIndex in lastSnm.users[userIndex].movies) {
-                        if (lastSnm.users[userIndex].movies[movieIndex].titleKey > deleted.titleKey)
-                            lastSnm.users[userIndex].movies[movieIndex].titleKey--
-                    }
-                }
-
-                saveSnmFile(() => {
-                    message.channel.send(`Removed \`${deleted.title}\` from the list`);
-                    // message.channel.send(snmEmbed())
-                });
-                logMessage = `${message.author.username} removed '${deleted.title}' from the list`;
-            }
-            else
-                message.channel.send(`Movie not found.\nUsage: \`!snmRemove <movie title or number>\`\n\`!snm\` to see the list`);
+            // No longer supported, use /snmTitle remove
+            message.channel.send(`This command is no longer supported. Use \`/snmTitle remove\` instead.`);
             break;
         case 'snmrate':
             // Leave a rating for the movie watched
@@ -1616,48 +1470,8 @@ client.on('message', async message => {
             }
             break;
         case 'snmexport':
-            // Exports SNM week data
-
-            let specifiedWeek = Number(messageText) || null;
-
-            // User entered text (not number) or a future week
-            if (messageText && !specifiedWeek || Number(messageText) > lastSnm.week) {
-                message.channel.send(`\`${messageText}\` is not a valid week\nType \`!snmExport [week number]:optional\` to export a file`);
-                logMessage = `${messageText} is not a valid week`;
-                break;
-            }
-            // If we got a number as argument, user specified a week
-            else if (specifiedWeek && specifiedWeek <= lastSnm.week) {
-                let m = await message.channel.send(`Exporting...`);
-                mongodb.MongoClient.connect(configObj.mongodbURI, { useNewUrlParser: true }, (err, mongoClient) => {
-                    if (err) {
-                        console.error(err);
-                        throw err;
-                    }
-
-                    mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ week: specifiedWeek }, (err, result) => {
-                        if (err) {
-                            console.error(err);
-                            throw err;
-                        }
-                        mongoClient.close();
-
-                        // Exports specific snm.json as file
-                        fs.writeFileSync(`SNM${specifiedWeek}.txt`, JSON.stringify(result, null, 2));
-                        const buffer = fs.readFileSync(`./SNM${specifiedWeek}.txt`)
-                        const attachment = new Discord.MessageAttachment(buffer, `SNM${specifiedWeek}.txt`);
-                        m.delete().catch(O_o => { });
-                        message.reply(attachment);
-                    });
-                });
-                break;
-            }
-
-            // Exports snm.json as file
-            fs.writeFileSync(`SNM${lastSnm.week}.txt`, JSON.stringify(lastSnm, null, 2));
-            const buffer = fs.readFileSync(`./SNM${lastSnm.week}.txt`)
-            const attachment = new Discord.MessageAttachment(buffer, `SNM${lastSnm.week}.txt`);
-            message.reply(attachment);
+            // No longer supported, use /snm
+            message.channel.send(`This command is no longer supported. Use \`/snm\` instead.`);
             break;
         case 'torrent':
             await message.channel.send('**⚠ This command will soon be completely replaced with `/torrent` ⚠**');

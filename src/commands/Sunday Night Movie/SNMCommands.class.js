@@ -28,13 +28,13 @@ function snmEmbed(snmWeek) {
 
         // runs through week and get movies, winner and ratings
         let description = `Status: **${snmWeek.paused ? 'paused' : snmWeek.status}**\n`;
-        for (let userIndex in snmWeek.users) {
+        for (const userIndex in snmWeek.users) {
             // If user only voted - no entries or ratings = skip user on summary
             if (!snmWeek.users[userIndex].movies.length > 0 && !snmWeek.users[userIndex].rating) continue;
             printArray[userIndex] = `${snmWeek.users[userIndex].username} - \n`;
             // checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
             if (snmWeek.users[userIndex].movies) {
-                for (let movieIndex in snmWeek.users[userIndex].movies) {
+                for (const movieIndex in snmWeek.users[userIndex].movies) {
                     // if movie is the winner, add to description text
                     if (snmWeek.users[userIndex].movies[movieIndex].titleKey === snmWeek.winner.titleKey)
                         description += `Winner: **${snmWeek.users[userIndex].movies[movieIndex].title}**${snmWeek.winner.voteCount ? ` | ${snmWeek.winner.voteCount} votes` : ""}\n\n`;
@@ -64,8 +64,8 @@ function snmEmbed(snmWeek) {
         //     description += `Winner: **${snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === snmWeek.winner.titleKey)).movies.find(movie => movie.titleKey === snmWeek.winner.titleKey).title}**\n\n`;
 
         // Builds list ordered by titleKey
-        for (let userIndex in snmWeek.users) {
-            for (let movieIndex in snmWeek.users[userIndex].movies)
+        for (const userIndex in snmWeek.users) {
+            for (const movieIndex in snmWeek.users[userIndex].movies)
                 printArray[snmWeek.users[userIndex].movies[movieIndex].titleKey - 1] = [`${snmWeek.users[userIndex].movies[movieIndex].titleKey}) ${snmWeek.users[userIndex].movies[movieIndex].title}\n`]
         }
 
@@ -106,6 +106,8 @@ class SNMCommands {
      * @param {object} snm - /snm [week] [export]
      * @param {object} snmAdmin - /snmAdmin <New|Start|End|Pause>
      * @param {object} snmTitle - /snmTitle add <title> | /snmTitle remove [title]
+     * @param {object} snmRate - /snmRate <text>
+     * @param {object} snmVotes - /snmVotes <Show | Clear>
      */
     constructor() {
         this.snm = {
@@ -416,7 +418,7 @@ class SNMCommands {
                                 .setDescription(printArray.join(" "))
                                 .setFooter('Click the corresponding reaction to vote!');
 
-                            for (let emoji of emojisUsed)
+                            for (const emoji of emojisUsed)
                                 await voteMessage.react(emoji.emoji);
 
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
@@ -490,13 +492,13 @@ class SNMCommands {
                             // creates array with titleKey and voteCount (movie:votes)
                             let allVotes = [];
 
-                            for (let userIndex in lastSNM.users) {
-                                for (let movieIndex in lastSNM.users[userIndex].movies) {
-                                    let titleKey = lastSNM.users[userIndex].movies[movieIndex].titleKey
+                            for (const userIndex in lastSNM.users) {
+                                for (const movieIndex in lastSNM.users[userIndex].movies) {
+                                    const titleKey = lastSNM.users[userIndex].movies[movieIndex].titleKey
                                     !allVotes[titleKey - 1] ? allVotes[titleKey - 1] = { titleKey: titleKey, voteCount: 0 } : allVotes[titleKey - 1].titleKey = titleKey;
                                 }
-                                for (let voteIndex in lastSNM.users[userIndex].votes) {
-                                    let voteTitleKey = lastSNM.users[userIndex].votes[voteIndex];
+                                for (const voteIndex in lastSNM.users[userIndex].votes) {
+                                    const voteTitleKey = lastSNM.users[userIndex].votes[voteIndex];
                                     !allVotes[voteTitleKey - 1] ? allVotes[voteTitleKey - 1] = { titleKey: null, voteCount: 1 } : allVotes[voteTitleKey - 1].voteCount++
                                 }
                             }
@@ -512,7 +514,7 @@ class SNMCommands {
                             // if more than 1 winner => tied
                             if (winners.length > 1) {
                                 const tiedWinnersTitle = [];
-                                for (let winner in winners) {
+                                for (const winner in winners) {
                                     tiedWinnersTitle.push(`\`${lastSNM.users.find(user => user.movies.find(movie => movie.titleKey === winners[winner].titleKey)).movies.find(movie => movie.titleKey === winners[winner].titleKey).title}\``);
                                 }
 
@@ -638,61 +640,226 @@ class SNMCommands {
              */
             handler: async function (interaction) {
                 try {
+                    // Cannot be used in DM
+                    if (!interaction.guild_id) {
+                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                            data: {
+                                type: 4,
+                                data: {
+                                    content: `Can't use this command a DM channel.`,
+                                    flags: 64
+                                }
+                            }
+                        });
+                    }
+
                     const interactionOptions = interaction.data.options?.find((arg => arg.name === 'add' || arg.name === 'remove'));
                     const interactionChoice = interactionOptions.name;
                     const titleName = interactionOptions.options?.find((arg => arg.name === 'title'))?.value;
                     const silent = interactionOptions.options?.find((arg => arg.name === 'silent'))?.value;
 
-                    switch (interactionChoice) {
-                        case 'add': {
-                            // Interaction first contact (to be edited)
-                            let snmTitleEmbed = new Discord.MessageEmbed().setTitle('Adding title').setDescription('🛠 Working...').setColor(0x3498DB);
-                            // if silent - don't send message
-                            if (!silent) {
-                                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                                    data: {
-                                        type: 5,
-                                        data: {
-                                            embeds: [snmTitleEmbed],
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                        case 'remove': {
-                            // Interaction first contact (to be edited)
-                            let snmTitleEmbed = new Discord.MessageEmbed().setTitle('Removing title').setDescription('🛠 Working...').setColor(0x3498DB);
-                            // if silent - don't send message
-                            if (!silent) {
-                                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                                    data: {
-                                        type: 5,
-                                        data: {
-                                            embeds: [snmTitleEmbed],
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    }
-
-
+                    const snmServer = await getSNMServer(interaction.guild_id);
                     const lastSNM = await getSNMWeek(interaction.guild_id);
 
                     if (!lastSNM.week) {
-                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
                             data: {
-                                embeds: [snmTitleEmbed.setTitle('Error').setDescription(`No week to interact with`).setColor("RED")]
+                                type: 3,
+                                data: {
+                                    content: `No week to interact with`,
+                                    flags: 64
+                                }
                             }
                         });
                     }
-                    // Adding title
-                    else if (addTitle) {
 
-                    }
-                    // Removing title
-                    else if (removeTitle) {
+                    switch (interactionChoice) {
+                        case 'add': {
+                            // Interaction first contact (to be edited)
+                            // if silent - use ephemeral messages
+                            if (silent) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                    data: {
+                                        type: 3,
+                                        data: {
+                                            content: `Adding title...`,
+                                            flags: 64
+                                        }
+                                    }
+                                })
+                            }
+                            else if (!silent) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                    data: {
+                                        type: 5,
+                                        data: {
+                                            content: `Adding title...`,
+                                        }
+                                    }
+                                });
+                            }
 
+                            // If week is no longer "ongoing"
+                            if (lastSNM.status != 'ongoing') {
+                                return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        content: `Can't modify \`Sunday Night Movie ${lastSNM.week}\` as it is \`${lastSNM.status}\``
+                                    }
+                                });
+                            }
+
+                            const authorId = interaction.member.user.id;
+                            // Checks if user is already on the list
+                            let userObject = lastSNM.users.find((user) => user.userId === authorId);
+
+                            if (userObject) {
+                                // Check user entries
+                                if (userObject.movies.length === snmServer.maxEntries) {
+                                    return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                        data: {
+                                            content: `You have no entries left.\nRemove entries with \`/snmTitle remove\`.`
+                                        }
+                                    });
+                                }
+                            }
+                            // Add user to the list and update userObject
+                            else
+                                userObject = lastSNM.users[lastSNM.users.push({ userId: authorId, username: interaction.member.user.username, movies: [], votes: [] }) - 1];
+
+                            // If movie is already on the list, cancel and inform user
+                            if (lastSNM.users.find((user) => user.movies.find((movie) => movie.title === titleName))) {
+                                return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        content: `This title is already on the list!`
+                                    }
+                                });
+                            }
+
+                            // Adds movie to the list
+                            lastSNM.movieCount++
+                            userObject.movies.push({ title: titleName, titleKey: lastSNM.movieCount });
+
+                            await upsertSNMWeek(lastSNM);
+
+                            return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                data: {
+                                    content: `Added \`${titleName}\` to the list`
+                                }
+                            });
+                            // TODO: Followup with /movie
+                        }
+                        case 'remove': {
+                            // Interaction first contact (to be edited)
+                            // if silent - use ephemeral messages
+                            if (silent) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                    data: {
+                                        type: 3,
+                                        data: {
+                                            content: `Removing title...`,
+                                            flags: 64
+                                        }
+                                    }
+                                })
+                            }
+                            else if (!silent) {
+                                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                                    data: {
+                                        type: 5,
+                                        data: {
+                                            content: `Removing title...`,
+                                        }
+                                    }
+                                });
+                            }
+
+                            // If week is no longer "ongoing"
+                            if (lastSNM.status != 'ongoing') {
+                                return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        content: `Can't modify \`Sunday Night Movie ${lastSNM.week}\` as it is \`${lastSNM.status}\``
+                                    }
+                                });
+                            }
+
+                            // Removes a movie from the list
+                            let stringFound;
+                            let numberFound;
+                            let checkNumber;
+                            let deleted;
+
+                            // Prioritize strings over numbers, as they are more specific.
+                            // Movie can be "007" which would be a string and not position 7.
+                            // If message is a number, we will save the titleKey that matches it. In case we don't find a string.
+                            if (Number(titleName))
+                                checkNumber = true;
+
+                            // Checks if there is a movie with the same name as the message string
+                            for (const userIndex in lastSNM.users) {
+                                for (const movieIndex in lastSNM.users[userIndex].movies) {
+                                    if (lastSNM.users[userIndex].movies[movieIndex].title === titleName) {
+                                        stringFound = true;
+                                        // Checks if movie found was submitted by message author
+                                        if (lastSNM.users[userIndex].userId === interaction.member.user.id)
+                                            deleted = lastSNM.users[userIndex].movies.splice(movieIndex, 1);
+                                        else {
+                                            return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                                data: {
+                                                    content: `This is not your movie 😒`
+                                                }
+                                            });
+                                        }
+                                        break;
+                                    }
+                                    // If checkNumber is true and we didn't find a string yet. Check if titleKey matches user message.
+                                    // If it does, save indexes
+                                    else if (checkNumber) {
+                                        if (Number(titleName) === lastSNM.users[userIndex].movies[movieIndex].titleKey)
+                                            numberFound = [userIndex, movieIndex];
+                                    }
+                                }
+                            }
+
+                            // If we didn't find a string but found a matching titleKey, try to delete
+                            if (numberFound && !stringFound) {
+                                // Checks if movie found was submitted by message author
+                                if (lastSNM.users[numberFound[0]].userId === interaction.member.user.id)
+                                    deleted = lastSNM.users[numberFound[0]].movies.splice(numberFound[1], 1);
+                                else {
+                                    return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                        data: {
+                                            content: `This is not your movie 😒`
+                                        }
+                                    });
+                                }
+                            }
+
+                            // Fixes titleKeys and movieCount
+                            if (deleted) {
+                                deleted = deleted[0]
+                                lastSNM.movieCount--;
+                                for (const userIndex in lastSNM.users) {
+                                    for (const movieIndex in lastSNM.users[userIndex].movies) {
+                                        if (lastSNM.users[userIndex].movies[movieIndex].titleKey > deleted.titleKey)
+                                            lastSNM.users[userIndex].movies[movieIndex].titleKey--
+                                    }
+                                }
+
+                                await upsertSNMWeek(lastSNM);
+                                return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        content: `Removed \`${deleted.title}\` from the list`
+                                    }
+                                });
+                            }
+                            else {
+                                return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        content: `Movie not found.\n\`/snm\` to see the list`
+                                    }
+                                });
+                            }
+                        }
                     }
                 }
                 catch (e) {
@@ -742,8 +909,20 @@ class SNMCommands {
                     }
                 ]
             ),
+            /**
+             * Registers the /snmConfig command
+             * @param {string} guildId - The guild (Server) ID
+             */
             register: (guildId) => register(this.snmConfig.command, guildId),
+            /**
+             * Deregisters the /snmConfig command
+             * @param {string} guildId - The guild (Server) ID
+             */
             deregister: (guildId) => deregister(this.snmConfig.command, guildId),
+            /**
+             * Handles the /snmConfig command
+             * @param {*} interaction - Interaction object
+             */
             handler: async function (interaction) {
                 try {
                     // Cannot be used in DM
@@ -893,6 +1072,192 @@ class SNMCommands {
 
             }
         }
+        this.snmRate = {
+            command: new _slashCommand(
+                'snmRate',
+                `Add or change your current SNM rating`,
+                [
+                    {
+                        type: 3,
+                        name: 'rating',
+                        description: 'Your rating',
+                        required: true
+                    }
+                ]
+            ),
+            /**
+             * Registers the /snmRate command
+             * @param {string} guildId - The guild (Server) ID
+             */
+            register: (guildId) => register(this.snmRate.command, guildId),
+            /**
+             * Deregisters the /snmRate command
+             * @param {string} guildId - The guild (Server) ID
+             */
+            deregister: (guildId) => deregister(this.snmRate.command, guildId),
+            /**
+             * Handles the /snmRate command
+             * @param {*} interaction - Interaction object
+             */
+            handler: async function (interaction) {
+                try {
+                    const rating = interaction.data.options?.find((arg => arg.name === 'rating'))?.value;
+
+                    // Sends to-be-edited message
+                    await client.api.interactions(interaction.id, interaction.token).callback.post({
+                        data: {
+                            type: 5,
+                            data: {
+                                content: `Saving...`
+                            }
+                        }
+                    });
+
+                    const lastSNM = await getSNMWeek(interaction.guild_id);
+
+                    // Week doesn't exist
+                    if (!lastSNM.week) {
+                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                content: `No week to interact with.`
+                            }
+                        });
+                    }
+                    // Can only be done if week's SNM is finished
+                    else if (lastSNM.status !== 'finished') {
+                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                content: `\`Can't rate week ${lastSNM.week}\` as it is still \`${lastSNM.status}\``
+                            }
+                        });
+                    }
+
+                    const userObject = lastSNM.users.find((user) => user.userId === interaction.member.user.id);
+
+                    // If new user
+                    if (!userObject)
+                        userObject = lastSNM.users[lastSNM.users.push({ userId: interaction.member.user.id, username: interaction.member.user.username, movies: [], votes: [] }) - 1];
+
+                    userObject.rating = rating;
+
+                    await upsertSNMWeek(lastSNM);
+
+                    return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                        data: {
+                            content: `Your rating was updated.`
+                        }
+                    });
+                }
+                catch (e) {
+                    reportError(e);
+                }
+            }
+        }
+        this.snmVotes = {
+            command: new _slashCommand(
+                'snmVotes',
+                'Manage your current SNM votes',
+                [
+                    {
+                        type: 3,
+                        name: 'command',
+                        description: 'Show or clear your votes',
+                        required: true,
+                        choices: [
+                            {
+                                name: 'Show',
+                                value: 'show'
+                            },
+                            {
+                                name: 'Clear',
+                                value: 'clear'
+                            }
+                        ]
+                    }
+                ]
+            ),
+            /**
+             * Registers the /snmVotes command
+             * @param {string} guildId - The guild (Server) ID
+             */
+            register: (guildId) => register(this.snmVotes.command, guildId),
+            /**
+             * Deregisters the /snmVotes command
+             * @param {string} guildId - The guild (Server) ID
+             */
+            deregister: (guildId) => deregister(this.snmVotes.command, guildId),
+            /**
+             * Handles the /snmVotes command
+             * @param {*} interaction - Interaction object
+             */
+            handler: async function (interaction) {
+                try {
+                    const choice = interaction.data.options[0].value;
+
+                    // Sends to-be-edited message
+                    await client.api.interactions(interaction.id, interaction.token).callback.post({
+                        data: {
+                            type: 3,
+                            data: {
+                                content: `Working...`,
+                                flags: 64
+                            }
+                        }
+                    });
+
+                    const lastSNM = await getSNMWeek(interaction.guild_id);
+                    const userFound = lastSNM.users.find(user => user.userId === interaction.member.user.id); 
+
+                    // Week doesn't exist
+                    if (!lastSNM.week) {
+                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                content: `No week to interact with.`
+                            }
+                        });
+                    }
+                    else if (!userFound || !userFound.votes || userFound.votes.length === 0) {
+                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                content: `You have not voted.`
+                            }
+                        });
+                    }
+
+                    if (choice === 'show') {
+                        const moviesVoted = [];
+                        userFound.votes.forEach(movieTitleKey => {
+                            moviesVoted.push(`\`${lastSNM.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title}\``);
+                        });
+                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                content: `Your votes: ${moviesVoted.join(" | ")}`
+                            }
+                        });
+                    }
+                    else if (choice === 'clear') {
+                        if (lastSNM.status === 'finished') {
+                            return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                data: {
+                                    content: `SNM is finished. You can't alter your votes 👀.`
+                                }
+                            });
+                        }
+                        userFound.votes = [];
+                        await upsertSNMWeek(lastSNM);
+                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                content: `Your votes have been cleared.`
+                            }
+                        });
+                    }
+
+                }
+                catch (e) {
+                    reportError(e);
+                }
+            }
+        }
     }
 
     /**
@@ -1014,49 +1379,3 @@ export const snmEnable = {
 }
 
 export const SNMObj = new SNMCommands();
-
-export function snm_register(appId, guildId) {
-    // snmRate <text>
-    client.api.applications(appId).guilds(guildId).commands.post({
-        data:
-        {
-            name: 'snmRate',
-            description: `Add or change your current SNM rating`,
-            options: [
-                {
-                    type: 3,
-                    name: 'rating',
-                    description: 'Your rating',
-                    required: true
-                }
-            ]
-        }
-    });
-
-    // snmVotes <Show | Clear>
-    client.api.applications(appId).guilds(guildId).commands.post({
-        data:
-        {
-            name: 'snmVotes',
-            description: `Manage your current SNM votes`,
-            options: [
-                {
-                    type: 3,
-                    name: 'command',
-                    description: 'Show or clear your votes',
-                    required: true,
-                    choices: [
-                        {
-                            name: 'Show',
-                            value: 'show'
-                        },
-                        {
-                            name: 'Clear',
-                            value: 'clear'
-                        }
-                    ]
-                }
-            ]
-        }
-    });
-}
