@@ -2,7 +2,14 @@ import mongodb from 'mongodb';
 
 import { SNMWeek } from '../commands/Sunday Night Movie/index.js';
 import { SNMServer } from '../commands/Sunday Night Movie/SNMServer.class.js';
-import { configObj, client } from '../config/index.js';
+import {
+    client,
+    configObj,
+} from '../config/index.js';
+
+// In-memory SNMServers and latest SNMWeeks
+export const SNMServerArray = [];
+export const SNMWeekArray = [];
 
 async function dbConnect() {
     return await mongodb.MongoClient.connect(configObj.mongodbURI, { useNewUrlParser: true })
@@ -21,7 +28,7 @@ export async function getSNMWeek(guildId, week) {
         if (week)
             lastSNM = new SNMWeek(await mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ guildId, week }) || {});
         else
-            lastSNM = new SNMWeek(await mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ guildId }, { sort: { week: -1 }, limit: 1 }));
+            lastSNM = new SNMWeek(await mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ guildId }, { sort: { week: -1 }, limit: 1 }) || {});
         await mongoClient.close();
 
         // if there is a vote going on, add voting message to cache
@@ -70,7 +77,14 @@ export async function upsertSNMWeek(snmWeek) {
                 returnOriginal: false
             });
         mongodb.close();
-        return Promise.resolve(new SNMWeek(res.value));
+        const week = new SNMWeek(res.value);
+        // if false = object got inserted - insert in local memory
+        if (!res.lastErrorObject.updatedExisting)
+            SNMWeekArray.push(week);
+        // if true = object got updated - update in local memory
+        else if (res.lastErrorObject.updatedExisting)
+            SNMWeekArray[SNMWeekArray.findIndex(aWeek => aWeek.guildId === week.guildId && aWeek.week === week.week)] = week;
+        return Promise.resolve(week);
     }
     catch (e) {
         return Promise.reject(e);
@@ -117,7 +131,14 @@ export async function upsertSNMServer(snmServer) {
                 returnOriginal: false
             });
         mongodb.close();
-        return Promise.resolve(new SNMServer(res.value));
+        const server = new SNMServer(res.value);
+        // if false = object got inserted - insert in local memory
+        if (!res.lastErrorObject.updatedExisting)
+            SNMServerArray.push(server);
+        // if true = object got updated - update in local memory
+        else if (res.lastErrorObject.updatedExisting)
+            SNMServerArray[SNMServerArray.findIndex(aServer => aServer.guildId === server.guildId)] = server;
+        return Promise.resolve(server);
     }
     catch (e) {
         return Promise.reject(e);

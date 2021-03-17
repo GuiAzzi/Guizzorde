@@ -6,10 +6,10 @@ export class SNMWeek {
      * @param {"ongoing"|"voting"|"finished"} status - The SNM current status
      * @param {number} movieCount - The number of movies in this SNM
      * @param {boolean} paused - True if CRON schedule is paused
-     * @param {[{userId: string, username: string, votes: Array, movies: Array}]} [users] - Array of user objects
-     * @param {{titleKey: number, voteCount: number}} [winner] - Object containing the key of the winner title and its vote count
+     * @param {[{userId: string, username: string, votes: Array, movies: Array}]} users - Array of user objects
+     * @param {{titleKey: number, voteCount: number}} winner - Object containing the key of the winner title and its vote count
      * @param {{channelId: string, messageId: string}} [voteMessage] - Object containing the channel and vote message ID
-     * @param {Array} [emojiUsed] - Reference array of emojis used for vonting
+     * @param {Array} [emojisUsed] - Reference array of emojis used for vonting
      */
 
     /**
@@ -24,6 +24,6 @@ export class SNMWeek {
         this.users = params.users;
         this.winner = params.winner;
         this.voteMessage = params.voteMessage;
-        this.emojiUsed = params.emojiUsed;
+        this.emojisUsed = params.emojisUsed;
     };
 }

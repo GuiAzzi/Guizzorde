@@ -1,16 +1,21 @@
 import Discord from 'discord.js';
 
 import {
-    upsertSNMServer,
-    getSNMWeek,
-    upsertSNMWeek,
     getSNMServer,
+    getSNMWeek,
+    upsertSNMServer,
+    upsertSNMWeek,
 } from '../../api/index.js';
-import { configObj, client, deregister, register } from '../../config/index.js';
+import {
+    client,
+    configObj,
+    deregister,
+    register,
+} from '../../config/index.js';
 import {
     _slashCommand,
-    reportError,
     randomEmoji,
+    reportError,
 } from '../../util/index.js';
 import { SNMWeek } from './index.js';
 import { SNMServer } from './SNMServer.class.js';
@@ -265,7 +270,7 @@ class SNMCommands {
 
                             const lastSNM = await getSNMWeek(interaction.guild_id);
 
-                            if (lastSNM && lastSNM.status != 'finished') {
+                            if (lastSNM.week && lastSNM.status != 'finished') {
                                 await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                     data: {
                                         embeds: [
@@ -284,12 +289,14 @@ class SNMCommands {
                                     week: lastSNM?.week + 1 || 1,
                                     status: 'ongoing',
                                     movieCount: 0,
-                                    paused: lastSNM?.paused ? true : false
+                                    paused: lastSNM?.paused ? true : false,
+                                    users: [],
+                                    winner: ''
                                 }
                             )
 
                             newSNM = await upsertSNMWeek(newSNM);
-                            const SNMRole = getSNMRole(interaction?.guildId);
+                            const SNMRole = await getSNMRole(interaction.guild_id);
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                 data: {
                                     embeds: [
@@ -407,7 +414,7 @@ class SNMCommands {
                                 })
                             });
                             lastSNM.emojisUsed = emojisUsed;
-                            upsertSNMWeek(lastSNM);
+                            await upsertSNMWeek(lastSNM);
 
                             const SNMRole = await getSNMRole(interaction.guild_id);
 
@@ -1206,7 +1213,7 @@ class SNMCommands {
                     });
 
                     const lastSNM = await getSNMWeek(interaction.guild_id);
-                    const userFound = lastSNM.users.find(user => user.userId === interaction.member.user.id); 
+                    const userFound = lastSNM.users.find(user => user.userId === interaction.member.user.id);
 
                     // Week doesn't exist
                     if (!lastSNM.week) {

@@ -1,6 +1,10 @@
-import { configObj, client } from '../config/index.js'
+import {
+    client,
+    configObj,
+} from '../config/index.js';
 
 /**
+ * Logs an error and tries to message owner
  * @param {string} err 
  */
 export function reportError(err) {

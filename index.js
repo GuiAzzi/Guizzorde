@@ -7,7 +7,17 @@ import OS from 'opensubtitles-api';
 import torrentSearch from 'torrent-search-api';
 import ytdl from 'ytdl-core';
 
-import { snmEnable, SNMObj } from './src/commands/index.js';
+import {
+    getSNMServer,
+    getSNMWeek,
+    SNMServerArray,
+    SNMWeekArray,
+    upsertSNMWeek,
+} from './src/api/snmService.js';
+import {
+    snmEnable,
+    SNMObj,
+} from './src/commands/index.js';
 import {
     jwGenresBR,
     jwGenresEN,
@@ -15,22 +25,23 @@ import {
     jwProvidersEN,
 } from './src/commands/Sunday Night Movie/jw/jw.js';
 // Guizzorde config object
-import { configObj, client } from './src/config/index.js';
+import {
+    client,
+    configObj,
+} from './src/config/index.js';
 import { donato } from './src/stock/donato.js';
-import { randomEmoji } from './src/util/index.js';
+import {
+    randomEmoji,
+    reportError,
+} from './src/util/index.js';
 
 torrentSearch.enablePublicProviders();
-// the last snm collection
-let lastSnm;
+
 // torrentMessage id - short lived, should not be saved to database - used to swap to second option
 let torrentMessage;
 
 // SNM CONFIGS
 // TODO: These should maybe be on a separate collection, containing these server-scoped settings
-// Number of entries allowed by each user
-const NUMBEROFENTRIES = 1;
-// Number of votes allowed by each user
-const NUMBEROFVOTES = 2;
 // Sets to local config channel else sets to #Top Server BR's snm channel
 // const SNMCHANNEL = config ? config.testSNMChannel : '556546153689120793';
 // FIXME: Hardcoded TOP Server Channel
@@ -163,45 +174,6 @@ function saveSnmFile(callback) {
             mongoClient.close();
         });
     });
-}
-
-async function createTorrentEmbed(winnerTitle, guildOwner) {
-
-    // Gets torrent number and creates embed description
-    const createDesc = (i, subUrl) => `[${torrentList[i].title}](${torrentList[i].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrentList[i].magnet) : torrentList[i].desc})\n${torrentList[i].size} | ${torrentList[i].seeds} seeders | ${torrentList[i].provider} ${subUrl['pb'] ? ` | [Subtitle](${subUrl['pb'].url})` : null}`;
-
-    // Searchs torrents
-    let torrentList = await torrentSearch.search(['Rarbg'], winnerTitle + " 1080", 'Movies', 2).catch((e) => {
-        reportError(e);
-    });
-
-    let description = `\n`;
-
-    if (torrentList.length === 0 || torrentList[0].title === "No results returned")
-        return null;
-    else {
-        // Search subtitle
-        // Main torrent
-        const subUrl = await searchSubtitle(torrentList[0].title, 'pob').catch((e) => reportError(e));
-        // Alt torrent
-        const altUrl = await searchSubtitle(torrentList[1].title, 'pob').catch((e) => reportError(e));
-
-        description += await createDesc(0, subUrl);
-        // Sends second torrent option to guildOwner
-        await guildOwner.send(new Discord.MessageEmbed()
-            .setTitle(`SNM ${lastSnm.week} Second Option`)
-            .setColor(0x3498DB)
-            .setDescription(await createDesc(1, altUrl))
-            .setFooter(`click the reaction to swap to this`)).then((msg) => msg.react('🔄'));
-    }
-
-    return new Discord.MessageEmbed().setTitle(`Torrent and Subtitle`).setColor(0x3498DB).setDescription(description);
-}
-
-const reportError = async (error) => {
-    console.error(error);
-    let owner = await client.users.fetch(configObj.ownerId);
-    owner.send(error);
 }
 
 const searchSubtitle = async (title, lang = 'eng') => {
@@ -921,7 +893,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
     logMessage ? console.log(logMessage) : null;
 })
 
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log(`${client.user.username} has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.user.setActivity(`Beep boop`);
 
@@ -1169,65 +1141,45 @@ client.on('ready', () => {
     //     reportError(e)
     // }
 
-    // Gets latest SNM
+    // Gets SNMServer objects
     try {
-        mongodb.MongoClient.connect(configObj.mongodbURI, { useNewUrlParser: true }, (err, mongoClient) => {
-            if (err) {
-                console.error(err);
-                throw err;
+        for (const guild of client.guilds.cache) {
+            const server = await getSNMServer(guild[0]);
+            server.guildId ? SNMServerArray.push(server) : null;
+            // TODO: Register CRON
+            if (server.schedule.running) {
+                // TODO:
             }
+        }
 
-            mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({}, { sort: { week: -1 }, limit: 1 }, (err, result) => {
-                if (err) {
-                    console.error(err);
-                    throw err;
-                }
-
-                lastSnm = result;
-
-                // Schedule SNM Comands
-                if (!lastSnm.paused) {
-                    snmToggleJobs(true);
-                }
-
-                // if there is a vote going on, add voting message to cache
-                if (lastSnm.voteMessage) {
-                    client.channels.fetch(lastSnm.voteMessage.channelId).then(channel => {
-                        channel.messages.fetch(lastSnm.voteMessage.messageId);
-                    });
-                }
-
-                mongoClient.close();
-            });
-        });
+        for (const server of SNMServerArray) {
+            const week = await getSNMWeek(server.guildId);
+            week.week ? SNMWeekArray.push(week) : null;
+            // Fetch voteMessage (so we can capture reactions)
+            if (week?.voteMessage) {
+                await (await client.channels.fetch(week.voteMessage.channelId)).messages.fetch(week.voteMessage.messageId);
+            }
+        }
     }
     catch (e) {
         reportError(e);
     }
 });
 
-// client.on('raw', event => {
-//     if (!lastSnm || lastSnm.status != 'voting') return;
-
-//     let channel = client.channels.get(lastSnm.voteMessage.channelId);
-
-//     if (channel.messages.has(lastSnm.voteMessage.messageId)) return;    
-
-//     if (event.t === 'MESSAGE_REACTION_ADD' && event.d.message_id === lastSnm.voteMessage.messageId)
-// 	    console.log('\nRaw event data:\n', event);
-// });
-
 client.on('error', (error) => {
     reportError(error);
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {
-    // reactions from self, do nothing
+    // Reactions from self, do nothing
     if (user.id === client.user.id) return;
-    // reaction on snm voting message
-    else if (lastSnm.voteMessage && reaction.message.id === lastSnm.voteMessage.messageId) {
-        if (reaction.users.cache.find(userIndex => userIndex.id === user.id)) {
+    // Reaction on a SNMWeek voteMessage
+    else if (SNMWeekArray.find((snmWeek => snmWeek.voteMessage?.messageId === reaction.message.id))) {
 
+        const snmWeek = SNMWeekArray.find((snmWeek => snmWeek.voteMessage?.messageId === reaction.message.id));
+        const snmServer = SNMServerArray.find((server => server.guildId === snmWeek.guildId));
+
+        if (reaction.users.cache.find(userIndex => userIndex.id === user.id)) {
             // User added a new reaction ( = did not click an existing reaction), remove and do nothing
             if (reaction.count === 1) {
                 await reaction.users.remove(user);
@@ -1235,20 +1187,20 @@ client.on('messageReactionAdd', async (reaction, user) => {
                 return;
             }
             // If SNM not voting, remove and warn user
-            else if (lastSnm.status !== "voting") {
+            else if (snmWeek.status !== "voting") {
                 await reaction.users.remove(user);
                 console.log(`${user.username} - Voting has ended`);
                 return client.users.cache.get(user.id).send(`Voting has ended`);
             }
 
-            let userObject = lastSnm.users.find(userIndex => userIndex.userId === user.id)
-            let movieTitleKey = lastSnm.emojisUsed.find(emoji => emoji.emoji === reaction.emoji.identifier || emoji.emoji === reaction.emoji.name).titleKey;
+            let userObject = snmWeek.users.find(userIndex => userIndex.userId === user.id);
+            let movieTitleKey = snmWeek.emojisUsed.find(emoji => emoji.emoji === reaction.emoji.identifier || emoji.emoji === reaction.emoji.name).titleKey;
 
             // user is not on the list yet
             if (!userObject) {
-                let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
-                userObject = lastSnm.users[lastSnm.users.push({ userId: user.id, username: user.username, movies: [], votes: [movieTitleKey] }) - 1];
-                saveSnmFile(() => { });
+                let movieTitle = snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
+                userObject = snmWeek.users[snmWeek.users.push({ userId: user.id, username: user.username, movies: [], votes: [movieTitleKey] }) - 1];
+                await upsertSNMWeek(snmWeek);
                 client.users.cache.get(user.id).send(`You voted on \`${movieTitle}\``);
                 console.log(`Added user ${user.username} with his/her vote`);
             }
@@ -1258,16 +1210,16 @@ client.on('messageReactionAdd', async (reaction, user) => {
                 console.log(`Duplicate vote`);
             }
             // valid vote
-            else if (userObject.votes.length < NUMBEROFVOTES) {
-                let movieTitle = lastSnm.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
+            else if (userObject.votes.length < snmServer.maxVotes) {
+                let movieTitle = snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
                 userObject.votes.push(movieTitleKey);
                 client.users.cache.get(user.id).send(`You voted on \`${movieTitle}\``);
-                saveSnmFile(() => { });
-                console.log(`${user.username} voted. ${userObject.votes.length}/${NUMBEROFVOTES}`);
+                await upsertSNMWeek(snmWeek);
+                console.log(`${user.username} voted. ${userObject.votes.length}/${snmServer.maxVotes}`);
             }
             // no votes left
             else {
-                client.users.cache.get(user.id).send(`You have no votes left.\n\`!snmVotes clear\` to reset all your votes.`);
+                client.users.cache.get(user.id).send(`You have no votes left.\n\`/snmVotes clear\` to clear your votes.`);
                 console.log(`No votes left`);
             }
 
