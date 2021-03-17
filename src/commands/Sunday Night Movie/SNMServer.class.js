@@ -1,3 +1,21 @@
+import cron, { CronJob } from 'cron';
+
+import { client } from '../../config/index.js';
+import { reportError } from '../../util/index.js';
+import { SNMObj } from './index.js';
+
+// In-memory SNMServers
+/**
+ * @type {Map<string, SNMServer>}
+ */
+export const SNMServerArray = new Map();
+
+// In-memory schedules
+/**
+ * @type {Map<string, {cronNew: CronJob, cronStart: CronJob, cronEnd: CronJob}>}
+ */
+export const SNMSchedulesArray = new Map();
+
 export class SNMServer {
     /**
      * SNM Settings for a Server
@@ -19,5 +37,97 @@ export class SNMServer {
         this.maxEntries = params.maxEntries;
         this.maxVotes = params.maxVotes;
         this.schedule = params.schedule;
+    }
+
+    /**
+     * Toggles this server schedule
+     * @param {boolean} running - If cron should be active or not
+     */
+    async toggleSchedule(running) {
+        try {
+            // if running true
+            if (running) {
+                // if Schedule already exist
+                SNMSchedulesArray.set(this.guildId, {
+                    cronNew: new cron.CronJob(
+                        this.schedule.new,
+                        async () => {
+                            await SNMObj.snmAdmin.handler({
+                                fromScheduler: true,
+                                guild_id: this.guildId,
+                                channel_id: this.defaultChannel,
+                                member: {
+                                    user: {
+                                        id: client.user.id,
+                                        username: client.user.username
+                                    }
+                                },
+                                data: {
+                                    name: 'snmadmin',
+                                    options: [{ value: 'new', name: 'command' }],
+                                }
+                            })
+                        },
+                        null,
+                        true,
+                        'America/Sao_Paulo'
+                    ),
+                    cronStart: new cron.CronJob(
+                        this.schedule.start,
+                        async () => {
+                            await SNMObj.snmAdmin.handler({
+                                fromScheduler: true,
+                                guild_id: this.guildId,
+                                channel_id: this.defaultChannel,
+                                member: {
+                                    user: {
+                                        id: client.user.id,
+                                        username: client.user.username
+                                    }
+                                },
+                                data: {
+                                    name: 'snmadmin',
+                                    options: [{ value: 'start', name: 'command' }],
+                                }
+                            })
+                        },
+                        null,
+                        true,
+                        'America/Sao_Paulo'
+                    ),
+                    cronEnd: new cron.CronJob(
+                        this.schedule.end,
+                        async () => {
+                            await SNMObj.snmAdmin.handler({
+                                fromScheduler: true,
+                                guild_id: this.guildId,
+                                channel_id: this.defaultChannel,
+                                member: {
+                                    user: {
+                                        id: client.user.id,
+                                        username: client.user.username
+                                    }
+                                },
+                                data: {
+                                    name: 'snmadmin',
+                                    options: [{ value: 'end', name: 'command' }],
+                                }
+                            })
+                        },
+                        null,
+                        true,
+                        'America/Sao_Paulo'
+                    )
+                })
+            }
+            else if (running === false) {
+                SNMSchedulesArray.get(this.guildId)?.cronNew.stop();
+                SNMSchedulesArray.get(this.guildId)?.cronStart.stop();
+                SNMSchedulesArray.get(this.guildId)?.cronEnd.stop();
+            }
+        }
+        catch (e) {
+            reportError(e)
+        }
     }
 }

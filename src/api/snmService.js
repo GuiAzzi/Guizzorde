@@ -1,15 +1,15 @@
 import mongodb from 'mongodb';
 
-import { SNMWeek } from '../commands/Sunday Night Movie/index.js';
-import { SNMServer } from '../commands/Sunday Night Movie/SNMServer.class.js';
+import {
+    SNMServer,
+    SNMServerArray,
+    SNMWeek,
+    SNMWeekArray,
+} from '../commands/index.js';
 import {
     client,
     configObj,
 } from '../config/index.js';
-
-// In-memory SNMServers and latest SNMWeeks
-export const SNMServerArray = [];
-export const SNMWeekArray = [];
 
 async function dbConnect() {
     return await mongodb.MongoClient.connect(configObj.mongodbURI, { useNewUrlParser: true })
@@ -23,20 +23,20 @@ async function dbConnect() {
  */
 export async function getSNMWeek(guildId, week) {
     try {
-        let lastSNM = null;
+        let snmWeek = null;
         const mongoClient = await dbConnect();
         if (week)
-            lastSNM = new SNMWeek(await mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ guildId, week }) || {});
+            snmWeek = new SNMWeek(await mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ guildId, week }) || {});
         else
-            lastSNM = new SNMWeek(await mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ guildId }, { sort: { week: -1 }, limit: 1 }) || {});
+            snmWeek = new SNMWeek(await mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ guildId }, { sort: { week: -1 }, limit: 1 }) || {});
         await mongoClient.close();
 
         // if there is a vote going on, add voting message to cache
-        if (lastSNM?.voteMessage) {
+        if (snmWeek?.voteMessage) {
             try {
-                const channel = await client.channels.fetch(lastSNM.voteMessage.channelId);
+                const channel = await client.channels.fetch(snmWeek.voteMessage.channelId);
                 if (channel)
-                    await channel.messages.fetch(lastSNM.voteMessage.messageId);
+                    await channel.messages.fetch(snmWeek.voteMessage.messageId);
             }
             catch (e) {
                 console.log(`Couldn't retrieve voteMessage channel or message, maybe it was deleted?`);
@@ -44,13 +44,8 @@ export async function getSNMWeek(guildId, week) {
 
         }
 
-        // TODO:
-        //     // Schedule SNM Comands
-        //     if (!lastSnm.paused) {
-        //         snmToggleJobs(true);
-        //     }
-
-        return Promise.resolve(lastSNM);
+        SNMWeekArray.set(snmWeek.guildId, snmWeek);
+        return Promise.resolve(snmWeek);
 
     }
     catch (e) {
@@ -78,12 +73,8 @@ export async function upsertSNMWeek(snmWeek) {
             });
         mongodb.close();
         const week = new SNMWeek(res.value);
-        // if false = object got inserted - insert in local memory
-        if (!res.lastErrorObject.updatedExisting)
-            SNMWeekArray.push(week);
-        // if true = object got updated - update in local memory
-        else if (res.lastErrorObject.updatedExisting)
-            SNMWeekArray[SNMWeekArray.findIndex(aWeek => aWeek.guildId === week.guildId && aWeek.week === week.week)] = week;
+        // Updates local memory
+        SNMWeekArray.set(week.guildId, week);
         return Promise.resolve(week);
     }
     catch (e) {
@@ -105,6 +96,7 @@ export async function getSNMServer(guildId) {
             .collection(configObj.mongodbCollections[0])
             .findOne({ guildId }) || {});
         await mongodb.close();
+        SNMServerArray.set(snmServer.guildId, snmServer);
         return Promise.resolve(snmServer);
     }
     catch (e) {
@@ -132,12 +124,7 @@ export async function upsertSNMServer(snmServer) {
             });
         mongodb.close();
         const server = new SNMServer(res.value);
-        // if false = object got inserted - insert in local memory
-        if (!res.lastErrorObject.updatedExisting)
-            SNMServerArray.push(server);
-        // if true = object got updated - update in local memory
-        else if (res.lastErrorObject.updatedExisting)
-            SNMServerArray[SNMServerArray.findIndex(aServer => aServer.guildId === server.guildId)] = server;
+        SNMServerArray.set(server.guildId, server);
         return Promise.resolve(server);
     }
     catch (e) {

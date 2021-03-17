@@ -1,3 +1,9 @@
+// In-memory SNMWeeks
+/**
+ * @type {Map<string, SNMWeek>}
+ */
+export const SNMWeekArray = new Map();
+
 export class SNMWeek {
     /**
      * A SNM Week

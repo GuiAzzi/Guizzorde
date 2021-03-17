@@ -1,4 +1,3 @@
-import cron from 'cron';
 import Discord from 'discord.js';
 import Jimp from 'jimp/dist/index.js';
 import JustWatch from 'justwatch-api';
@@ -10,20 +9,18 @@ import ytdl from 'ytdl-core';
 import {
     getSNMServer,
     getSNMWeek,
-    SNMServerArray,
-    SNMWeekArray,
     upsertSNMWeek,
-} from './src/api/snmService.js';
-import {
-    snmEnable,
-    SNMObj,
-} from './src/commands/index.js';
+} from './src/api/index.js';
 import {
     jwGenresBR,
     jwGenresEN,
     jwProvidersBR,
     jwProvidersEN,
-} from './src/commands/Sunday Night Movie/jw/jw.js';
+    snmEnable,
+    SNMObj,
+    SNMServerArray,
+    SNMWeekArray,
+} from './src/commands/index.js';
 // Guizzorde config object
 import {
     client,
@@ -47,31 +44,6 @@ let torrentMessage;
 // FIXME: Hardcoded TOP Server Channel
 const SNMCHANNEL = '766563200313196556';
 
-// !snmNew
-const snmNewJob = new cron.CronJob('0 8 * * 1', () => {
-    client.channels.cache.get(SNMCHANNEL).send('!snmNew');
-}, null, false, 'America/Sao_Paulo');
-// !snmStart
-const snmStartJob = new cron.CronJob('0 20 * * 5', () => {
-    client.channels.cache.get(SNMCHANNEL).send('!snmStart');
-}, null, false, 'America/Sao_Paulo');
-// !snmEnd
-const snmEndJob = new cron.CronJob('0 20 * * 6', () => {
-    client.channels.cache.get(SNMCHANNEL).send('!snmEnd');
-}, null, false, 'America/Sao_Paulo');
-// Starts or stops SNM Scheduled jobs
-const snmToggleJobs = (start) => {
-    if (start) {
-        !snmNewJob.running ? snmNewJob.start() : null;
-        !snmStartJob.running ? snmStartJob.start() : null;
-        !snmEndJob.running ? snmEndJob.start() : null;
-    }
-    else {
-        snmNewJob.running ? snmNewJob.stop() : null;
-        snmStartJob.running ? snmStartJob.stop() : null;
-        snmEndJob.running ? snmEndJob.stop() : null;
-    }
-}
 // Base Memes Array
 const memes = [
     {
@@ -1145,21 +1117,22 @@ client.on('ready', async () => {
     try {
         for (const guild of client.guilds.cache) {
             const server = await getSNMServer(guild[0]);
-            server.guildId ? SNMServerArray.push(server) : null;
-            // TODO: Register CRON
-            if (server.schedule.running) {
-                // TODO:
-            }
+            // Register CRON
+            if (server.schedule.running)
+                server.toggleSchedule(true);
+            else
+                server.toggleSchedule(false);
         }
 
         for (const server of SNMServerArray) {
-            const week = await getSNMWeek(server.guildId);
-            week.week ? SNMWeekArray.push(week) : null;
+            const week = await getSNMWeek(server[0]);
             // Fetch voteMessage (so we can capture reactions)
             if (week?.voteMessage) {
                 await (await client.channels.fetch(week.voteMessage.channelId)).messages.fetch(week.voteMessage.messageId);
             }
         }
+
+        console.log('Got SNM files');
     }
     catch (e) {
         reportError(e);
@@ -1174,10 +1147,9 @@ client.on('messageReactionAdd', async (reaction, user) => {
     // Reactions from self, do nothing
     if (user.id === client.user.id) return;
     // Reaction on a SNMWeek voteMessage
-    else if (SNMWeekArray.find((snmWeek => snmWeek.voteMessage?.messageId === reaction.message.id))) {
-
-        const snmWeek = SNMWeekArray.find((snmWeek => snmWeek.voteMessage?.messageId === reaction.message.id));
-        const snmServer = SNMServerArray.find((server => server.guildId === snmWeek.guildId));
+    else if (SNMWeekArray.get(reaction.message.guild.id)?.voteMessage?.messageId === reaction.message.id) {
+        const snmWeek = SNMWeekArray.get(reaction.message.guild.id);
+        const snmServer = SNMServerArray.get(reaction.message.guild.id);
 
         if (reaction.users.cache.find(userIndex => userIndex.id === user.id)) {
             // User added a new reaction ( = did not click an existing reaction), remove and do nothing
