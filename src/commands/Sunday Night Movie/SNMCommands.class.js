@@ -1107,7 +1107,10 @@ class SNMCommands {
                     // FIXME: Should be a better way to do this
                     maxEntries ? snmServer.maxEntries = maxEntries : null;
                     maxVotes ? snmServer.maxVotes = maxVotes : null;
-                    defaultChannel ? snmServer.defaultChannel = defaultChannel : null;
+                    if (defaultChannel) {
+                        snmServer.defaultChannel = defaultChannel;
+                        client.channels.fetch(defaultChannel);
+                    }
                     running ? snmServer.schedule.running = running : null;
 
                     if (cronNew)
