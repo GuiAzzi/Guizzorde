@@ -1075,10 +1075,10 @@ class SNMCommands {
                     const cronEnd = interaction.data.options?.find((arg => arg.name === 'end'))?.value;
 
                     // If channel doesn't belong to this guild
-                    if (defaultChannel && client.channels.cache.get(defaultChannel).type !== 'text') {
+                    if (defaultChannel && client.channels.cache.get(defaultChannel)?.type !== 'text') {
                         return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                             data: {
-                                content: `\`default_channel\` must be a text channel`
+                                content: `\`default_channel\` must be a text channel or bot has no access to it`
                             }
                         });
                     }
@@ -1111,25 +1111,31 @@ class SNMCommands {
                     maxVotes ? snmServer.maxVotes = maxVotes : null;
                     if (defaultChannel) {
                         snmServer.defaultChannel = defaultChannel;
-                        client.channels.fetch(defaultChannel);
+                        // Certifies that we have all channels cached
+                        client.guilds.fetch(interaction.guild_id, true, true);
+                        client.channels.fetch(defaultChannel, true, true);
                     }
+
                     running ? snmServer.schedule.running = running : null;
 
                     const SNMSchedule = SNMSchedulesArray.get(interaction.guild_id);
                     if (cronNew) {
                         cronNew === 'default' ? snmServer.schedule.new = '0 8 * * 1' : snmServer.schedule.new = cronNew;
                         // Update cronJob if it exists
-                        SNMSchedule?.cronNew.setTime(new CronTime(cronNew, 'America/Sao_Paulo'));
+                        SNMSchedule?.cronNew.setTime(new CronTime(snmServer.schedule.new, 'America/Sao_Paulo'));
+                        snmServer.schedule.running ? SNMSchedule?.cronNew.start() : null;
                     }
                     if (cronStart) {
                         cronStart === 'default' ? snmServer.schedule.start = '0 20 * * 5' : snmServer.schedule.start = cronStart;
                         // Update cronJob if it exists
-                        SNMSchedule?.cronStart.setTime(new CronTime(cronStart, 'America/Sao_Paulo'));
+                        SNMSchedule?.cronStart.setTime(new CronTime(snmServer.schedule.start, 'America/Sao_Paulo'));
+                        snmServer.schedule.running ? SNMSchedule?.cronStart.start() : null;
                     }
                     if (cronEnd) {
                         cronEnd === 'default' ? snmServer.schedule.end = '0 20 * * 6' : snmServer.schedule.end = cronEnd;
                         // Update cronJob if it exists
-                        SNMSchedule?.cronEnd.setTime(new CronTime(cronEnd, 'America/Sao_Paulo'));
+                        SNMSchedule?.cronEnd.setTime(new CronTime(snmServer.schedule.end, 'America/Sao_Paulo'));
+                        snmServer.schedule.running ? SNMSchedule?.cronEnd.start() : null;
                     }
 
                     // Doesn't work because undefined props were being set

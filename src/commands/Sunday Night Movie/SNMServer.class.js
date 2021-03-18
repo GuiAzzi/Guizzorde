@@ -63,7 +63,8 @@ export class SNMServer {
                                 await SNMObj.snmAdmin.handler({
                                     fromScheduler: true,
                                     guild_id: this.guildId,
-                                    channel_id: this.defaultChannel,
+                                    // get defaultChannel from SNMServerArray because it keeps the reference, if changed later
+                                    channel_id: SNMServerArray.get(this.guildId).defaultChannel,
                                     member: {
                                         user: {
                                             id: client.user.id,
@@ -86,7 +87,7 @@ export class SNMServer {
                                 await SNMObj.snmAdmin.handler({
                                     fromScheduler: true,
                                     guild_id: this.guildId,
-                                    channel_id: this.defaultChannel,
+                                    channel_id: SNMServerArray.get(this.guildId).defaultChannel,
                                     member: {
                                         user: {
                                             id: client.user.id,
@@ -109,7 +110,7 @@ export class SNMServer {
                                 await SNMObj.snmAdmin.handler({
                                     fromScheduler: true,
                                     guild_id: this.guildId,
-                                    channel_id: this.defaultChannel,
+                                    channel_id: SNMServerArray.get(this.guildId).defaultChannel,
                                     member: {
                                         user: {
                                             id: client.user.id,

@@ -1174,18 +1174,19 @@ client.on('messageReactionAdd', async (reaction, user) => {
         }
     }
     // reaction on torrent second option
-    else if (lastSnm.voteMessage && reaction.message.embeds.length > 0 && reaction.message.embeds[0]?.title === `SNM ${lastSnm.week} Second Option`) {
-        // FIXME: Can't remove DM reactions anymore apparently
-        // await reaction.users.remove(user);
+    // TODO: Redo this
+    // else if (lastSnm.voteMessage && reaction.message.embeds.length > 0 && reaction.message.embeds[0]?.title === `SNM ${lastSnm.week} Second Option`) {
+    //     // FIXME: Can't remove DM reactions anymore apparently
+    //     // await reaction.users.remove(user);
 
-        let oldDesc = torrentMessage.embeds[0].description
+    //     let oldDesc = torrentMessage.embeds[0].description
 
-        torrentMessage.edit(new Discord.MessageEmbed().setTitle(`Torrent and Subtitle`).setColor(0x3498DB).setDescription(reaction.message.embeds[0].description))
-            .then((msg) => {
-                reaction.message.edit(new Discord.MessageEmbed().setTitle(`SNM ${lastSnm.week} Second Option`).setColor(0x3498DB).setDescription(oldDesc).setFooter(`click the reaction to swap to this`)).then(() => torrentMessage = msg);
-            });
-        console.log('Swapped torrent');
-    }
+    //     torrentMessage.edit(new Discord.MessageEmbed().setTitle(`Torrent and Subtitle`).setColor(0x3498DB).setDescription(reaction.message.embeds[0].description))
+    //         .then((msg) => {
+    //             reaction.message.edit(new Discord.MessageEmbed().setTitle(`SNM ${lastSnm.week} Second Option`).setColor(0x3498DB).setDescription(oldDesc).setFooter(`click the reaction to swap to this`)).then(() => torrentMessage = msg);
+    //         });
+    //     console.log('Swapped torrent');
+    // }
     // reaction on queridometro
     else if (reaction.message.embeds && reaction.message.embeds[0]?.title === 'Queridometro') {
         console.log(`${user.username} reacted on queridometro`)
