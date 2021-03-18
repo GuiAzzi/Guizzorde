@@ -8,7 +8,7 @@ import {
  * @param {string} err 
  */
 export function reportError(err) {
-    console.error(err);
+    console.error('APP Error', err);
     client.users.fetch(configObj.ownerId)
         .then((owner) => owner.send(err));
 }

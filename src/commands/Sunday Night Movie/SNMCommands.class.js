@@ -1063,7 +1063,7 @@ class SNMCommands {
                         }
                     });
 
-                    const cronRegex = /((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})|default/g
+                    const cronRegex = /((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})|default/;
                     const maxEntries = interaction.data.options?.find((arg => arg.name === 'max_entries'))?.value;
                     const maxVotes = interaction.data.options?.find((arg => arg.name === 'max_votes'))?.value;
                     const defaultChannel = interaction.data.options?.find((arg => arg.name === 'default_channel'))?.value;
@@ -1115,7 +1115,7 @@ class SNMCommands {
                     if (cronStart)
                         cronStart === 'default' ? snmServer.schedule.start = '0 20 * * 5' : snmServer.schedule.start = cronStart;
                     if (cronEnd)
-                        cronEnd === 'default' ? snmServer.schedule.end = '0 20 * * 6' :  snmServer.schedule.end = cronStart;
+                        cronEnd === 'default' ? snmServer.schedule.end = '0 20 * * 6' : snmServer.schedule.end = cronEnd;
 
                     // Doesn't work because undefined props were being set
                     // snmServer = {
