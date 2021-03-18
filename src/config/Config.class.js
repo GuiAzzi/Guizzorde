@@ -24,7 +24,7 @@ export class Config {
     this.ownerId = process.env.OWNER_ID || configJSON.ownerId;
     this.mongodbURI = process.env.MONGODB_URI || configJSON.mongodbURI;
     this.mongodbName = process.env.MONGODB_NAME || configJSON.mongodbName;
-    this.mongodbCollections = process.env.MONGODB_COLLECTIONS || configJSON.mongodbCollections;
+    this.mongodbCollections = process.env.MONGODB_COLLECTIONS.split(',') || configJSON.mongodbCollections;
     this.OSCredentials = process.env.OSCREDENTIALS?.split(',') || configJSON.OSCredentials;
   }
 }

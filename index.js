@@ -1,7 +1,6 @@
 import Discord from 'discord.js';
 import Jimp from 'jimp/dist/index.js';
 import JustWatch from 'justwatch-api';
-import mongodb from 'mongodb';
 import OS from 'opensubtitles-api';
 import torrentSearch from 'torrent-search-api';
 import ytdl from 'ytdl-core';
@@ -123,30 +122,6 @@ const OpenSubtitles = new OS({
     password: configObj.OSCredentials[2],
     ssl: true
 });
-
-/**
- * Saves the snmFile from snm variable
- * @param {function} callback - A function to be called after saving the file
- */
-function saveSnmFile(callback) {
-    mongodb.MongoClient.connect(configObj.mongodbURI, { useNewUrlParser: true }, (err, mongoClient) => {
-        if (err) {
-            console.error(err);
-            throw err;
-        }
-
-        mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).replaceOne({ week: lastSnm.week }, lastSnm, (err, result) => {
-            if (err) {
-                console.error(err);
-                throw err;
-            }
-
-            lastSnm = result.ops[0];
-            callback();
-            mongoClient.close();
-        });
-    });
-}
 
 const searchSubtitle = async (title, lang = 'eng') => {
     const sub = await OpenSubtitles.search({
@@ -1118,7 +1093,7 @@ client.on('ready', async () => {
         for (const guild of client.guilds.cache) {
             const server = await getSNMServer(guild[0]);
             // Register CRON
-            if (server.schedule.running)
+            if (server.schedule?.running)
                 server.toggleSchedule(true);
             else
                 server.toggleSchedule(false);
@@ -1369,29 +1344,8 @@ client.on('message', async message => {
             message.channel.send(`This command is no longer supported. Use \`/snmTitle remove\` instead.`);
             break;
         case 'snmrate':
-            // Leave a rating for the movie watched
-
-            // Can only be done if week's SNM is finished
-            if (lastSnm.status !== "finished") {
-                message.channel.send(`\`Sunday Night Movie ${lastSnm.week}\` is still \`${lastSnm.status}\``);
-                logMessage = `SNM ${lastSnm.week} is ${lastSnm.status}`;
-                break;
-            }
-            else {
-                let userObject = lastSnm.users.find((user) => user.userId === message.author.id);
-
-                // If new user
-                if (!userObject)
-                    userObject = lastSnm.users[lastSnm.users.push({ userId: message.author.id, username: message.author.username, movies: [], votes: [] }) - 1];
-
-                userObject.rating = messageText;
-
-                saveSnmFile(() => {
-                    message.channel.send(`Your rating was updated.`);
-                });
-
-                logMessage = (`${message.author.username}'s rating was updated to: ${messageText}`);
-            }
+            // No longer supported, use /snmRate
+            message.channel.send(`This command is no longer supported. Use \`/snmRate\` instead.`);
             break;
         case 'snmexport':
             // No longer supported, use /snm
