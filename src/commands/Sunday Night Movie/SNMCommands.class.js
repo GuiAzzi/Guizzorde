@@ -1,3 +1,4 @@
+import { CronTime } from 'cron';
 import Discord from 'discord.js';
 
 import {
@@ -18,6 +19,7 @@ import {
     reportError,
 } from '../../util/index.js';
 import {
+    SNMSchedulesArray,
     SNMServer,
     SNMWeek,
 } from './index.js';
@@ -1113,12 +1115,22 @@ class SNMCommands {
                     }
                     running ? snmServer.schedule.running = running : null;
 
-                    if (cronNew)
+                    const SNMSchedule = SNMSchedulesArray.get(interaction.guild_id);
+                    if (cronNew) {
                         cronNew === 'default' ? snmServer.schedule.new = '0 8 * * 1' : snmServer.schedule.new = cronNew;
-                    if (cronStart)
+                        // Update cronJob if it exists
+                        SNMSchedule?.cronNew.setTime(new CronTime(cronNew, 'America/Sao_Paulo'));
+                    }
+                    if (cronStart) {
                         cronStart === 'default' ? snmServer.schedule.start = '0 20 * * 5' : snmServer.schedule.start = cronStart;
-                    if (cronEnd)
+                        // Update cronJob if it exists
+                        SNMSchedule?.cronStart.setTime(new CronTime(cronStart, 'America/Sao_Paulo'));
+                    }
+                    if (cronEnd) {
                         cronEnd === 'default' ? snmServer.schedule.end = '0 20 * * 6' : snmServer.schedule.end = cronEnd;
+                        // Update cronJob if it exists
+                        SNMSchedule?.cronEnd.setTime(new CronTime(cronEnd, 'America/Sao_Paulo'));
+                    }
 
                     // Doesn't work because undefined props were being set
                     // snmServer = {
