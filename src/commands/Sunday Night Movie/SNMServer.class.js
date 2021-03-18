@@ -47,78 +47,87 @@ export class SNMServer {
         try {
             // if running true
             if (running) {
+                const snmSchedule = SNMSchedulesArray.get(this.guildId);
                 // if Schedule already exist
-                SNMSchedulesArray.set(this.guildId, {
-                    cronNew: new cron.CronJob(
-                        this.schedule.new,
-                        async () => {
-                            await SNMObj.snmAdmin.handler({
-                                fromScheduler: true,
-                                guild_id: this.guildId,
-                                channel_id: this.defaultChannel,
-                                member: {
-                                    user: {
-                                        id: client.user.id,
-                                        username: client.user.username
+                if (snmSchedule) {
+                    snmSchedule.cronNew.running ? null : snmSchedule.cronNew.start();
+                    snmSchedule.cronStart.running ? null : snmSchedule.cronStart.start();
+                    snmSchedule.cronEnd.running ? null : snmSchedule.cronEnd.start();
+                }
+                else {
+                    // new Schedule
+                    SNMSchedulesArray.set(this.guildId, {
+                        cronNew: new cron.CronJob(
+                            this.schedule.new,
+                            async () => {
+                                await SNMObj.snmAdmin.handler({
+                                    fromScheduler: true,
+                                    guild_id: this.guildId,
+                                    channel_id: this.defaultChannel,
+                                    member: {
+                                        user: {
+                                            id: client.user.id,
+                                            username: client.user.username
+                                        }
+                                    },
+                                    data: {
+                                        name: 'snmadmin',
+                                        options: [{ value: 'new', name: 'command' }],
                                     }
-                                },
-                                data: {
-                                    name: 'snmadmin',
-                                    options: [{ value: 'new', name: 'command' }],
-                                }
-                            })
-                        },
-                        null,
-                        true,
-                        'America/Sao_Paulo'
-                    ),
-                    cronStart: new cron.CronJob(
-                        this.schedule.start,
-                        async () => {
-                            await SNMObj.snmAdmin.handler({
-                                fromScheduler: true,
-                                guild_id: this.guildId,
-                                channel_id: this.defaultChannel,
-                                member: {
-                                    user: {
-                                        id: client.user.id,
-                                        username: client.user.username
+                                })
+                            },
+                            null,
+                            true,
+                            'America/Sao_Paulo'
+                        ),
+                        cronStart: new cron.CronJob(
+                            this.schedule.start,
+                            async () => {
+                                await SNMObj.snmAdmin.handler({
+                                    fromScheduler: true,
+                                    guild_id: this.guildId,
+                                    channel_id: this.defaultChannel,
+                                    member: {
+                                        user: {
+                                            id: client.user.id,
+                                            username: client.user.username
+                                        }
+                                    },
+                                    data: {
+                                        name: 'snmadmin',
+                                        options: [{ value: 'start', name: 'command' }],
                                     }
-                                },
-                                data: {
-                                    name: 'snmadmin',
-                                    options: [{ value: 'start', name: 'command' }],
-                                }
-                            })
-                        },
-                        null,
-                        true,
-                        'America/Sao_Paulo'
-                    ),
-                    cronEnd: new cron.CronJob(
-                        this.schedule.end,
-                        async () => {
-                            await SNMObj.snmAdmin.handler({
-                                fromScheduler: true,
-                                guild_id: this.guildId,
-                                channel_id: this.defaultChannel,
-                                member: {
-                                    user: {
-                                        id: client.user.id,
-                                        username: client.user.username
+                                })
+                            },
+                            null,
+                            true,
+                            'America/Sao_Paulo'
+                        ),
+                        cronEnd: new cron.CronJob(
+                            this.schedule.end,
+                            async () => {
+                                await SNMObj.snmAdmin.handler({
+                                    fromScheduler: true,
+                                    guild_id: this.guildId,
+                                    channel_id: this.defaultChannel,
+                                    member: {
+                                        user: {
+                                            id: client.user.id,
+                                            username: client.user.username
+                                        }
+                                    },
+                                    data: {
+                                        name: 'snmadmin',
+                                        options: [{ value: 'end', name: 'command' }],
                                     }
-                                },
-                                data: {
-                                    name: 'snmadmin',
-                                    options: [{ value: 'end', name: 'command' }],
-                                }
-                            })
-                        },
-                        null,
-                        true,
-                        'America/Sao_Paulo'
-                    )
-                })
+                                })
+                            },
+                            null,
+                            true,
+                            'America/Sao_Paulo'
+                        )
+                    })
+                }
             }
             else if (running === false) {
                 SNMSchedulesArray.get(this.guildId)?.cronNew.stop();

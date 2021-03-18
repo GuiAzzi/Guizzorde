@@ -1074,46 +1074,30 @@ class SNMCommands {
 
                     // If channel doesn't belong to this guild
                     if (defaultChannel && client.channels.cache.get(defaultChannel).type !== 'text') {
-                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                             data: {
-                                type: 3,
-                                data: {
-                                    content: `\`default_channel\` must be a text channel`,
-                                    flags: 64
-                                }
+                                content: `\`default_channel\` must be a text channel`
                             }
                         });
                     }
                     else if (cronNew && !cronRegex.test(cronNew)) {
-                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                             data: {
-                                type: 3,
-                                data: {
-                                    content: `Invalid \`new\` CRON syntax. Visit https://crontab.guru/ for reference`,
-                                    flags: 64
-                                }
+                                content: `Invalid \`new\` CRON syntax. Visit https://crontab.guru/ for reference`
                             }
                         });
                     }
                     else if (cronStart && !cronRegex.test(cronStart)) {
-                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                             data: {
-                                type: 3,
-                                data: {
-                                    content: `Invalid \`start\` CRON syntax. Visit https://crontab.guru/ for reference`,
-                                    flags: 64
-                                }
+                                content: `Invalid \`start\` CRON syntax. Visit https://crontab.guru/ for reference`
                             }
                         });
                     }
                     else if (cronEnd && !cronRegex.test(cronEnd)) {
-                        return await client.api.interactions(interaction.id, interaction.token).callback.post({
+                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                             data: {
-                                type: 3,
-                                data: {
-                                    content: `Invalid \`end\` CRON syntax. Visit https://crontab.guru/ for reference`,
-                                    flags: 64
-                                }
+                                content: `Invalid \`end\` CRON syntax. Visit https://crontab.guru/ for reference`
                             }
                         });
                     }
@@ -1125,9 +1109,13 @@ class SNMCommands {
                     maxVotes ? snmServer.maxVotes = maxVotes : null;
                     defaultChannel ? snmServer.defaultChannel = defaultChannel : null;
                     running ? snmServer.schedule.running = running : null;
-                    cronNew ? snmServer.schedule.new = cronNew : null;
-                    cronStart ? snmServer.schedule.new = cronStart : null;
-                    cronEnd ? snmServer.schedule.new = cronEnd : null;
+
+                    if (cronNew)
+                        cronNew === 'default' ? snmServer.schedule.new = '0 8 * * 1' : snmServer.schedule.new = cronNew;
+                    if (cronStart)
+                        cronStart === 'default' ? snmServer.schedule.start = '0 20 * * 5' : snmServer.schedule.start = cronStart;
+                    if (cronEnd)
+                        cronEnd === 'default' ? snmServer.schedule.end = '0 20 * * 6' :  snmServer.schedule.end = cronStart;
 
                     // Doesn't work because undefined props were being set
                     // snmServer = {
