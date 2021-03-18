@@ -80,9 +80,9 @@ function snmEmbed(snmWeek) {
             printArray.push(`No movies requested yet 😢\n`);
 
         if (snmWeek.status === "ongoing")
-            footer = `!snmAdd <movie name> to add`;
+            footer = `/snmTitle add to enter a movie`;
         else if (snmWeek.status === "finished")
-            footer = `!snmRate <text> to leave a rating`;
+            footer = `/snmRate to leave a rating`;
         else if (snmWeek.status === "voting")
             footer = `Votings are open! Go vote 🔥`;
 
