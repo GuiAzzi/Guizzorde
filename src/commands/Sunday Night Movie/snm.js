@@ -28,8 +28,6 @@ import {
     SNMWeek,
 } from './index.js';
 
-console.log('test snm');
-
 export const snmCommands = {
     /** @type {GuizzordeCommand} /snm [week] [export] */
     snm: new GuizzordeCommand({
