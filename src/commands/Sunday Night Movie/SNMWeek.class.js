@@ -1,35 +1,28 @@
 // In-memory SNMWeeks
-/**
- * @type {Map<string, SNMWeek>}
- */
+/** @type {Map<string, SNMWeek>} */
 export const SNMWeekArray = new Map();
 
+/** A SNM Week */
 export class SNMWeek {
-    /**
-     * A SNM Week
-     * @param {string} guildId - The server this SNM belongs to
-     * @param {number} week - The SNM number
-     * @param {"ongoing"|"voting"|"finished"} status - The SNM current status
-     * @param {number} movieCount - The number of movies in this SNM
-     * @param {boolean} paused - True if CRON schedule is paused
-     * @param {[{userId: string, username: string, votes: Array, movies: Array}]} users - Array of user objects
-     * @param {{titleKey: number, voteCount: number}} winner - Object containing the key of the winner title and its vote count
-     * @param {{channelId: string, messageId: string}} [voteMessage] - Object containing the channel and vote message ID
-     * @param {Array} [emojisUsed] - Reference array of emojis used for vonting
-     */
-
-    /**
-     * @param {SNMWeek} params 
-     */
+    /** @param {SNMWeek} params */
     constructor(params) {
+        /** @type {string} The server this SNM belongs to */
         this.guildId = params.guildId;
+        /** @type {number} The SNM number */
         this.week = params.week;
+        /** @type {"ongoing"|"voting"|"finished"} The SNM current status */
         this.status = params.status;
+        /** @type {number} The number of movies in this SNM */
         this.movieCount = params.movieCount;
+        /** @type {boolean} True if CRON schedule is paused */
         this.paused = params.paused
+        /** @type {[{userId: string, username: string, votes: Array, movies: Array}]} Array of user objects */
         this.users = params.users;
+        /** @type {{titleKey: number, voteCount: number}} Object containing the key of the winner title and its vote count */
         this.winner = params.winner;
+        /** @type {{channelId: string, messageId: string}} Object containing the channel and vote message ID */
         this.voteMessage = params.voteMessage;
+        /** @type {[Array]} Reference array of emojis used for vonting */
         this.emojisUsed = params.emojisUsed;
     };
 }

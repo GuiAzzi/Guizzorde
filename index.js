@@ -1,6 +1,5 @@
 import Discord from 'discord.js';
 import Jimp from 'jimp/dist/index.js';
-import JustWatch from 'justwatch-api';
 import OS from 'opensubtitles-api';
 import torrentSearch from 'torrent-search-api';
 import ytdl from 'ytdl-core';
@@ -11,12 +10,9 @@ import {
     upsertSNMWeek,
 } from './src/api/index.js';
 import {
-    jwGenresBR,
-    jwGenresEN,
-    jwProvidersBR,
-    jwProvidersEN,
+    slashMovie,
+    snmCommands,
     snmEnable,
-    SNMObj,
     SNMServerArray,
     SNMWeekArray,
 } from './src/commands/index.js';
@@ -25,7 +21,7 @@ import {
     client,
     configObj,
 } from './src/config/index.js';
-import { donato } from './src/stock/donato.js';
+// import { donato } from './src/stock/donato.js';
 import {
     randomEmoji,
     reportError,
@@ -206,22 +202,22 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             break;
         case 'snm':
             // Sends rich embed with SNM infos
-            SNMObj.snm.handler(interaction);
+            snmCommands.snm.handler(interaction);
             break;
         case 'snmconfig':
-            SNMObj.snmConfig.handler(interaction);
+            snmCommands.snmConfig.handler(interaction);
             break;
         case 'snmadmin':
-            SNMObj.snmAdmin.handler(interaction);
+            snmCommands.snmAdmin.handler(interaction);
             break;
         case 'snmtitle':
-            SNMObj.snmTitle.handler(interaction);
+            snmCommands.snmTitle.handler(interaction);
             break;
         case 'snmrate':
-            SNMObj.snmRate.handler(interaction);
+            snmCommands.snmRate.handler(interaction);
             break;
         case 'snmvotes':
-            SNMObj.snmVotes.handler(interaction);
+            snmCommands.snmVotes.handler(interaction);
             break;
         case 'torrent':
             // Search for a torrent on a list of providers
@@ -555,237 +551,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             });
             break;
         case 'movie':
-            // FIXME: Messy AF - Maybe let default be EN
-
-            let title = args ? args.find(arg => arg.name === 'title').value : null;
-            let jwLocale = args[1] ? args.find(arg => arg.name === 'language').value : null;
-
-            // Sends to-be-edited message
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        embeds: [new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB)]
-                    }
-                }
-            });
-
-            const jwEN = new JustWatch();
-            const jwBR = new JustWatch({ locale: 'pt_BR' });
-            // Gets movie Just Watch's ID
-            // Primary locale for search is pt_BR but optionally can be en_US
-            let jwSearch;
-            if (jwLocale === 'en') {
-                jwSearch = await jwEN.search({ query: args[0].value });
-            }
-            else {
-                jwLocale = 'pt';
-                jwSearch = await jwBR.search({ query: args[0].value });
-            };
-
-            // Filter by movies
-            jwSearch.items = jwSearch.items.filter(item => item.object_type === 'movie');
-            // If no movie was found
-            if (jwSearch.items.length <= 0) {
-                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                    data: {
-                        embeds: [new Discord.MessageEmbed().setDescription('Movie not found 😞').setColor(0x3498DB)]
-                    }
-                });
-                break;
-            }
-            // Gets full movie detail
-            const jwTitleBR = await jwBR.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
-            // Searchs movie in english - need to get the english title for torrent finding
-            const jwTitleEN = await jwEN.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
-
-            // Creates provider list so I can ignore duplicate versions (sd, hd, 4k - doesn't matter for this use case)
-            const providerIdsBR = [];
-            const providerIdsEN = [];
-            // Removes duplicates
-            jwTitleBR.offers ? jwTitleBR.offers = jwTitleBR.offers.filter(offer => {
-                if (offer.monetization_type === 'flatrate' && providerIdsBR.indexOf(offer.provider_id) < 0) {
-                    providerIdsBR.push(offer.provider_id)
-                    return offer;
-                }
-            }) : null;
-            jwTitleEN.offers ? jwTitleEN.offers = jwTitleEN.offers.filter(offer => {
-                if (offer.monetization_type === 'flatrate' && providerIdsEN.indexOf(offer.provider_id) < 0) {
-                    providerIdsEN.push(offer.provider_id)
-                    return offer;
-                }
-            }) : null;
-            // We just need IMDB and TMDB score
-            jwTitleBR.scoring = jwTitleBR.scoring.filter(score => score.provider_type === 'imdb:score' || score.provider_type === 'tmdb:score');
-
-            // Searchs torrent and subtitle
-            let jwTorrentField = 'No torrent found';
-            let jwSubtitle;
-            let jwTorrent = await torrentSearch.search(['Rarbg'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
-
-            // If Rarbg breaks, try again
-            if (jwTorrent.length === 0 || !jwTorrent) {
-                // Little hack to force second execution - without this the code was being skipped - something to do with async stuff
-                await new Promise(resolve => setTimeout(resolve, 0));
-                // Searches in other trackers
-                jwTorrent = await torrentSearch.search(['Rarbg', 'ThePirateBay', '1337x'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
-            }
-
-            if (jwTorrent && jwTorrent.length !== 0 && jwTorrent[0].title !== "No results returned") {
-                if (jwLocale === 'en')
-                    jwSubtitle = await searchSubtitle(jwTorrent[0].title, 'eng').catch((e) => reportError(e));
-                else
-                    jwSubtitle = await searchSubtitle(jwTorrent[0].title, 'pob').catch((e) => reportError(e));
-                jwTorrentField = `[${jwTorrent[0].title}](${jwTorrent[0].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(jwTorrent[0].magnet) : jwTorrent[0].desc})\n${jwTorrent[0].size} | ${jwTorrent[0].seeds} seeders | ${jwTorrent[0].provider} | ${jwSubtitle ? `[Subtitle](${jwLocale === 'en' ? jwSubtitle['en'].url : jwSubtitle['pb'].url})` : `No subtitle found`}` || 'No torrent found';
-            }
-
-            let embedTitleValue;
-            let embedURLValue;
-            let embedImageValue;
-
-            let embedPlotValue;
-            let embedGenreValue;
-            let embedWhereToWatchValue;
-            let embedDirectorValue;
-            let embedRuntimeValue = 'Not Found';
-            let embedRatingValue = {};
-
-            if (jwLocale === 'en') {
-                embedTitleValue = `${jwTitleEN.title} (${jwTitleEN.original_release_year})`;
-                embedURLValue = `https://justwatch.com${jwTitleEN.full_path}`;
-                embedImageValue = `https://images.justwatch.com${jwTitleEN.poster.replace('{profile}', 's592')}`
-                embedPlotValue = jwTitleEN.short_description || 'Not Found';
-
-                // Genre
-                embedGenreValue = jwTitleEN.genre_ids.map(genreArray => {
-                    return jwGenresEN.find(genre => genreArray === genre.id).translation
-                }).join(' | ') || 'Not Found';
-
-                // Where to watch
-                embedWhereToWatchValue = jwTitleEN.offers ? jwTitleEN.offers.map(offer => {
-                    let offerRtn = jwProvidersEN.find(provider => provider.id === offer.provider_id);
-                    return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
-                }).join(' | ') || 'Not Found' : 'Not Found';
-
-                // Director
-                embedDirectorValue = jwTitleEN.credits.map(credit => {
-                    if (credit.role === 'DIRECTOR') return credit.name
-                }) || 'Not Found';
-
-                // Runtime
-                if (jwTitleEN.runtime) {
-                    let hours = (jwTitleEN.runtime / 60);
-                    let rhours = Math.floor(hours);
-                    let minutes = (hours - rhours) * 60;
-                    let rminutes = Math.round(minutes);
-                    embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
-                }
-
-                // Rating
-                jwTitleEN.scoring.map(score => {
-                    if (score.provider_type === 'imdb:score')
-                        embedRatingValue.imdb = `|| ${score.value} ||` || 'Not Found';
-                    else if (score.provider_type === 'tmdb:score')
-                        embedRatingValue.tmdb = `|| ${score.value} ||` || 'Not Found';
-                    else null
-                });
-            }
-            else {
-                embedTitleValue = `${jwTitleBR.title} (${jwTitleBR.original_release_year})`;
-                embedURLValue = `https://justwatch.com${jwTitleBR.full_path}`;
-                embedImageValue = `https://images.justwatch.com${jwTitleBR.poster.replace('{profile}', 's592')}`;
-                embedPlotValue = jwTitleBR.short_description || 'Not Found'
-
-                // Genre
-                embedGenreValue = jwTitleBR.genre_ids.map(genreArray => {
-                    return jwGenresBR.find(genre => genreArray === genre.id).translation
-                }).join(' | ') || 'Not Found';
-
-                // Where to watch
-                embedWhereToWatchValue = jwTitleBR.offers ? jwTitleBR.offers.map(offer => {
-                    let offerRtn = jwProvidersBR.find(provider => provider.id === offer.provider_id);
-                    return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
-                }).join(' | ') || 'Not Found' : 'Not Found';
-
-                // Director
-                embedDirectorValue = jwTitleBR.credits.map(credit => {
-                    if (credit.role === 'DIRECTOR') return credit.name
-                }) || 'Not Found';
-
-                // Runtime
-                if (jwTitleBR.runtime) {
-                    let hours = (jwTitleBR.runtime / 60);
-                    let rhours = Math.floor(hours);
-                    let minutes = (hours - rhours) * 60;
-                    let rminutes = Math.round(minutes);
-                    embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
-                }
-
-                // Rating
-                jwTitleBR.scoring.map(score => {
-                    if (score.provider_type === 'imdb:score')
-                        embedRatingValue.imdb = `|| ${score.value} ||` || 'Not Found';
-                    else if (score.provider_type === 'tmdb:score')
-                        embedRatingValue.tmdb = `|| ${score.value} ||` || 'Not Found';
-                    else null
-                });
-            }
-
-            // Send Embed
-            await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                data: {
-                    embeds: [
-                        new Discord.MessageEmbed()
-                            // Original title + (release year) - The Lodge (2020)
-                            .setTitle(embedTitleValue)
-                            // JustWatch URL
-                            .setURL(embedURLValue)
-                            .setColor(0x3498DB)
-                            // Movie poster
-                            .setImage(embedImageValue)
-                            .addFields(
-                                {
-                                    // Synopse
-                                    name: 'Plot',
-                                    value: embedPlotValue
-                                },
-                                {
-                                    // Genres
-                                    name: 'Genre',
-                                    value: embedGenreValue
-                                },
-                                {
-                                    name: 'Directed by',
-                                    value: embedDirectorValue,
-                                    inline: true
-                                },
-                                {
-                                    name: 'Runtime',
-                                    value: embedRuntimeValue,
-                                    inline: true
-                                },
-                                {
-                                    name: 'Where to watch',
-                                    value: embedWhereToWatchValue
-                                },
-                                {
-                                    name: 'IMDB',
-                                    value: embedRatingValue.imdb,
-                                    inline: true
-                                },
-                                {
-                                    name: 'TMDB',
-                                    value: embedRatingValue.tmdb,
-                                    inline: true
-                                },
-                                {
-                                    name: 'Torrent',
-                                    value: jwTorrentField
-                                },
-                            )
-                    ]
-                }
-            });
+            slashMovie.handler(interaction);
             break;
         case 'donato':
             await client.api.interactions(interaction.id, interaction.token).callback.post({
@@ -1023,38 +789,6 @@ client.on('ready', async () => {
     //         {
     //             name: 'toma',
     //             description: `...toma...`
-    //         }
-    //     });
-
-    //     // movie <movie title> [language]
-    //     client.api.applications(configObj.appId).commands.post({
-    //         data:
-    //         {
-    //             name: 'movie',
-    //             description: `Show info about a movie`,
-    //             options: [
-    //                 {
-    //                     type: 3,
-    //                     name: 'title',
-    //                     required: true,
-    //                     description: `What's the name of the movie?`
-    //                 },
-    //                 {
-    //                     type: 3,
-    //                     name: 'language',
-    //                     description: 'Specify the database search language',
-    //                     choices: [
-    //                         {
-    //                             name: 'English',
-    //                             value: 'en'
-    //                         },
-    //                         {
-    //                             name: 'Portuguese',
-    //                             value: 'pt'
-    //                         }
-    //                     ]
-    //                 }
-    //             ]
     //         }
     //     });
 
@@ -1689,227 +1423,8 @@ client.on('message', async message => {
             dispatcher.end();
             break;
         case 'movie':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/movie` ⚠**');
-            // FIXME: Messy AF - Maybe let default be EN
-            // If no movie was passed
-            if (!messageText) {
-                message.channel.send(`No movie title.\nUsage: \`!movie <movie title> [en]\``);
-                logMessage = `No movie was typed`;
-                break;
-            };
-
-            // Sends to-be-edited "Checking..." message
-            const jwMessage = await message.channel.send(`Checking...`);
-
-            let jwLocale = cleanArgs.pop();
-            const jwEN = new JustWatch();
-            const jwBR = new JustWatch({ locale: 'pt_BR' });
-            // Gets movie Just Watch's ID
-            // Primary locale for search is pt_BR but optionally can be en_US
-            let jwSearch;
-            if (jwLocale === 'en' || jwLocale === 'eng' || jwLocale === 'en-us' || jwLocale === 'us' || jwLocale === 'enus' || jwLocale === 'english' || jwLocale === 'ingles' || jwLocale === 'inglês') {
-                jwLocale = 'en';
-                jwSearch = await jwEN.search({ query: messageText });
-            }
-            else {
-                jwLocale = 'pt';
-                jwSearch = await jwBR.search({ query: messageText });
-            };
-
-            // Filter by movies
-            jwSearch.items = jwSearch.items.filter(item => item.object_type === 'movie');
-            // If no movie was found
-            if (jwSearch.items.length <= 0) {
-                jwMessage.edit(`Movie not found 😞`);
-                break;
-            }
-            // Gets full movie detail
-            const jwTitleBR = await jwBR.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
-            // Searchs movie in english - need to get the english title for torrent finding
-            const jwTitleEN = await jwEN.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
-
-            // Creates provider list so I can ignore duplicate versions (sd, hd, 4k - doesn't matter for this use case)
-            const providerIdsBR = [];
-            const providerIdsEN = [];
-            // Removes duplicates
-            jwTitleBR.offers ? jwTitleBR.offers = jwTitleBR.offers.filter(offer => {
-                if (offer.monetization_type === 'flatrate' && providerIdsBR.indexOf(offer.provider_id) < 0) {
-                    providerIdsBR.push(offer.provider_id)
-                    return offer;
-                }
-            }) : null;
-            jwTitleEN.offers ? jwTitleEN.offers = jwTitleEN.offers.filter(offer => {
-                if (offer.monetization_type === 'flatrate' && providerIdsEN.indexOf(offer.provider_id) < 0) {
-                    providerIdsEN.push(offer.provider_id)
-                    return offer;
-                }
-            }) : null;
-            // We just need IMDB and TMDB score
-            jwTitleBR.scoring = jwTitleBR.scoring.filter(score => score.provider_type === 'imdb:score' || score.provider_type === 'tmdb:score');
-
-            // Searchs torrent and subtitle
-            let jwTorrentField = 'No torrent found';
-            let jwSubtitle;
-            let jwTorrent = await torrentSearch.search(['Rarbg'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
-
-            // If Rarbg breaks, try again
-            if (jwTorrent.length === 0 || !jwTorrent) {
-                // Little hack to force second execution - without this the code was being skipped - something to do with async stuff
-                await new Promise(resolve => setTimeout(resolve, 0));
-                // Searches in other trackers
-                jwTorrent = await torrentSearch.search(['Rarbg', 'ThePirateBay', '1337x'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
-            }
-
-            if (jwTorrent && jwTorrent.length !== 0 && jwTorrent[0].title !== "No results returned") {
-                if (jwLocale === 'en')
-                    jwSubtitle = await searchSubtitle(jwTorrent[0].title, 'eng').catch((e) => reportError(e));
-                else
-                    jwSubtitle = await searchSubtitle(jwTorrent[0].title, 'pob').catch((e) => reportError(e));
-                jwTorrentField = `[${jwTorrent[0].title}](${jwTorrent[0].magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(jwTorrent[0].magnet) : jwTorrent[0].desc})\n${jwTorrent[0].size} | ${jwTorrent[0].seeds} seeders | ${jwTorrent[0].provider} | ${jwSubtitle ? `[Subtitle](${jwLocale === 'en' ? jwSubtitle['en'].url : jwSubtitle['pb'].url})` : `No subtitle found`}` || 'No torrent found';
-            }
-
-            let embedTitleValue;
-            let embedURLValue;
-            let embedImageValue;
-
-            let embedPlotValue;
-            let embedGenreValue;
-            let embedWhereToWatchValue;
-            let embedDirectorValue;
-            let embedRuntimeValue = 'Not Found';
-            let embedRatingValue = {};
-
-            if (jwLocale === 'en') {
-                embedTitleValue = `${jwTitleEN.title} (${jwTitleEN.original_release_year})`;
-                embedURLValue = `https://justwatch.com${jwTitleEN.full_path}`;
-                embedImageValue = `https://images.justwatch.com${jwTitleEN.poster.replace('{profile}', 's592')}`
-                embedPlotValue = jwTitleEN.short_description || 'Not Found';
-
-                // Genre
-                embedGenreValue = jwTitleEN.genre_ids.map(genreArray => {
-                    return jwGenresEN.find(genre => genreArray === genre.id).translation
-                }).join(' | ') || 'Not Found';
-
-                // Where to watch
-                embedWhereToWatchValue = jwTitleEN.offers ? jwTitleEN.offers.map(offer => {
-                    let offerRtn = jwProvidersEN.find(provider => provider.id === offer.provider_id);
-                    return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
-                }).join(' | ') || 'Not Found' : 'Not Found';
-
-                // Director
-                embedDirectorValue = jwTitleEN.credits.map(credit => {
-                    if (credit.role === 'DIRECTOR') return credit.name
-                }) || 'Not Found';
-
-                // Runtime
-                if (jwTitleEN.runtime) {
-                    let hours = (jwTitleEN.runtime / 60);
-                    let rhours = Math.floor(hours);
-                    let minutes = (hours - rhours) * 60;
-                    let rminutes = Math.round(minutes);
-                    embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
-                }
-
-                // Rating
-                jwTitleEN.scoring.map(score => {
-                    if (score.provider_type === 'imdb:score')
-                        embedRatingValue.imdb = `|| ${score.value} ||` || 'Not Found';
-                    else if (score.provider_type === 'tmdb:score')
-                        embedRatingValue.tmdb = `|| ${score.value} ||` || 'Not Found';
-                    else null
-                });
-            }
-            else {
-                embedTitleValue = `${jwTitleBR.title} (${jwTitleBR.original_release_year})`;
-                embedURLValue = `https://justwatch.com${jwTitleBR.full_path}`;
-                embedImageValue = `https://images.justwatch.com${jwTitleBR.poster.replace('{profile}', 's592')}`;
-                embedPlotValue = jwTitleBR.short_description || 'Not Found'
-
-                // Genre
-                embedGenreValue = jwTitleBR.genre_ids.map(genreArray => {
-                    return jwGenresBR.find(genre => genreArray === genre.id).translation
-                }).join(' | ') || 'Not Found';
-
-                // Where to watch
-                embedWhereToWatchValue = jwTitleBR.offers ? jwTitleBR.offers.map(offer => {
-                    let offerRtn = jwProvidersBR.find(provider => provider.id === offer.provider_id);
-                    return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
-                }).join(' | ') || 'Not Found' : 'Not Found';
-
-                // Director
-                embedDirectorValue = jwTitleBR.credits.map(credit => {
-                    if (credit.role === 'DIRECTOR') return credit.name
-                }) || 'Not Found';
-
-                // Runtime
-                if (jwTitleBR.runtime) {
-                    let hours = (jwTitleBR.runtime / 60);
-                    let rhours = Math.floor(hours);
-                    let minutes = (hours - rhours) * 60;
-                    let rminutes = Math.round(minutes);
-                    embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
-                }
-
-                // Rating
-                jwTitleBR.scoring.map(score => {
-                    if (score.provider_type === 'imdb:score')
-                        embedRatingValue.imdb = `|| ${score.value} ||` || 'Not Found';
-                    else if (score.provider_type === 'tmdb:score')
-                        embedRatingValue.tmdb = `|| ${score.value} ||` || 'Not Found';
-                    else null
-                });
-            }
-
-            // Send Embed
-            await jwMessage.edit('', new Discord.MessageEmbed()
-                // Original title + (release year) - The Lodge (2020)
-                .setTitle(embedTitleValue)
-                // JustWatch URL
-                .setURL(embedURLValue)
-                .setColor(0x3498DB)
-                // Movie poster
-                .setImage(embedImageValue)
-                .addFields(
-                    {
-                        // Synopse
-                        name: 'Plot',
-                        value: embedPlotValue
-                    },
-                    {
-                        // Genres
-                        name: 'Genre',
-                        value: embedGenreValue
-                    },
-                    {
-                        name: 'Directed by',
-                        value: embedDirectorValue,
-                        inline: true
-                    },
-                    {
-                        name: 'Runtime',
-                        value: embedRuntimeValue,
-                        inline: true
-                    },
-                    {
-                        name: 'Where to watch',
-                        value: embedWhereToWatchValue
-                    },
-                    {
-                        name: 'IMDB',
-                        value: embedRatingValue.imdb,
-                        inline: true
-                    },
-                    {
-                        name: 'TMDB',
-                        value: embedRatingValue.tmdb,
-                        inline: true
-                    },
-                    {
-                        name: 'Torrent',
-                        value: jwTorrentField
-                    },
-                )
-            );
+            // No longer supported, use /movie
+            message.channel.send(`This command is no longer supported. Use \`/movie\` instead.`);
             break;
         case 'donato':
             await message.channel.send('**⚠ This command will soon be completely replaced with `/donato` ⚠**');
