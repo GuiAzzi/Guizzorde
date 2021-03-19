@@ -92,7 +92,7 @@ export async function generateMovieEmbed(title, jwLocale) {
         }
     }) : null;
     // We just need IMDB and TMDB score
-    jwTitleBR.scoring = jwTitleBR.scoring.filter(score => score.provider_type === 'imdb:score' || score.provider_type === 'tmdb:score');
+    jwTitleBR.scoring = jwTitleBR.scoring?.filter(score => score.provider_type === 'imdb:score' || score.provider_type === 'tmdb:score');
 
     // Searchs torrent and subtitle
     let jwTorrentField = 'No torrent found';
@@ -127,24 +127,24 @@ export async function generateMovieEmbed(title, jwLocale) {
     let embedRatingValue = {};
 
     if (jwLocale === 'en') {
-        embedTitleValue = `${jwTitleEN.title} (${jwTitleEN.original_release_year})`;
+        embedTitleValue = `${jwTitleEN.title} ${jwTitleEN.original_release_year ? `(${jwTitleEN.original_release_year})` : null}`;
         embedURLValue = `https://justwatch.com${jwTitleEN.full_path}`;
-        embedImageValue = `https://images.justwatch.com${jwTitleEN.poster.replace('{profile}', 's592')}`
+        embedImageValue = jwTitleEN.poster ? `https://images.justwatch.com${jwTitleEN.poster.replace('{profile}', 's592')}` : null;
         embedPlotValue = jwTitleEN.short_description || 'Not Found';
 
         // Genre
-        embedGenreValue = jwTitleEN.genre_ids.map(genreArray => {
+        embedGenreValue = jwTitleEN.genre_ids?.map(genreArray => {
             return jwGenresEN.find(genre => genreArray === genre.id).translation
         }).join(' | ') || 'Not Found';
 
         // Where to watch
-        embedWhereToWatchValue = jwTitleEN.offers ? jwTitleEN.offers.map(offer => {
+        embedWhereToWatchValue = jwTitleEN.offers?.map(offer => {
             let offerRtn = jwProvidersEN.find(provider => provider.id === offer.provider_id);
             return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
-        }).join(' | ') || 'Not Found' : 'Not Found';
+        }).join(' | ') || 'Not Found';
 
         // Director
-        embedDirectorValue = jwTitleEN.credits.map(credit => {
+        embedDirectorValue = jwTitleEN.credits?.map(credit => {
             if (credit.role === 'DIRECTOR') return credit.name
         }) || 'Not Found';
 
@@ -167,24 +167,24 @@ export async function generateMovieEmbed(title, jwLocale) {
         });
     }
     else {
-        embedTitleValue = `${jwTitleBR.title} (${jwTitleBR.original_release_year})`;
+        embedTitleValue = `${jwTitleBR.title} ${jwTitleBR.original_release_year ? `(${jwTitleBR.original_release_year})` : null}`;
         embedURLValue = `https://justwatch.com${jwTitleBR.full_path}`;
-        embedImageValue = `https://images.justwatch.com${jwTitleBR.poster.replace('{profile}', 's592')}`;
+        embedImageValue = jwTitleBR.poster ? `https://images.justwatch.com${jwTitleBR.poster.replace('{profile}', 's592')}` : null;
         embedPlotValue = jwTitleBR.short_description || 'Not Found'
 
         // Genre
-        embedGenreValue = jwTitleBR.genre_ids.map(genreArray => {
+        embedGenreValue = jwTitleBR.genre_ids?.map(genreArray => {
             return jwGenresBR.find(genre => genreArray === genre.id).translation
         }).join(' | ') || 'Not Found';
 
         // Where to watch
-        embedWhereToWatchValue = jwTitleBR.offers ? jwTitleBR.offers.map(offer => {
+        embedWhereToWatchValue = jwTitleBR.offers?.map(offer => {
             let offerRtn = jwProvidersBR.find(provider => provider.id === offer.provider_id);
             return `[${offerRtn.clear_name}](${offer.urls.standard_web})`;
-        }).join(' | ') || 'Not Found' : 'Not Found';
+        }).join(' | ') || 'Not Found';
 
         // Director
-        embedDirectorValue = jwTitleBR.credits.map(credit => {
+        embedDirectorValue = jwTitleBR.credits?.map(credit => {
             if (credit.role === 'DIRECTOR') return credit.name
         }) || 'Not Found';
 
