@@ -160,9 +160,9 @@ export async function generateMovieEmbed(title, jwLocale) {
         // Rating
         jwTitleEN.scoring.map(score => {
             if (score.provider_type === 'imdb:score')
-                embedRatingValue.imdb = `|| ${score.value} ||` || 'Not Found';
+                embedRatingValue.imdb = `|| ${score.value} ||`;
             else if (score.provider_type === 'tmdb:score')
-                embedRatingValue.tmdb = `|| ${score.value} ||` || 'Not Found';
+                embedRatingValue.tmdb = `|| ${score.value} ||`;
             else null
         });
     }
@@ -200,9 +200,9 @@ export async function generateMovieEmbed(title, jwLocale) {
         // Rating
         jwTitleBR.scoring.map(score => {
             if (score.provider_type === 'imdb:score')
-                embedRatingValue.imdb = `|| ${score.value} ||` || 'Not Found';
+                embedRatingValue.imdb = `|| ${score.value} ||`;
             else if (score.provider_type === 'tmdb:score')
-                embedRatingValue.tmdb = `|| ${score.value} ||` || 'Not Found';
+                embedRatingValue.tmdb = `|| ${score.value} ||`;
             else null
         });
     }
@@ -243,12 +243,12 @@ export async function generateMovieEmbed(title, jwLocale) {
             },
             {
                 name: 'IMDB',
-                value: embedRatingValue.imdb,
+                value: embedRatingValue.imdb || 'Not Found',
                 inline: true
             },
             {
                 name: 'TMDB',
-                value: embedRatingValue.tmdb,
+                value: embedRatingValue.tmdb || 'Not Found',
                 inline: true
             },
             {
