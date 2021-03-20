@@ -1091,7 +1091,7 @@ export const snmCommands = {
                     });
                 }
 
-                const userObject = lastSNM.users.find((user) => user.userId === interaction.member.user.id);
+                let userObject = lastSNM.users.find((user) => user.userId === interaction.member.user.id);
 
                 // If new user
                 if (!userObject)
