@@ -37,7 +37,7 @@ let torrentMessage;
 // Sets to local config channel else sets to #Top Server BR's snm channel
 // const SNMCHANNEL = config ? config.testSNMChannel : '556546153689120793';
 // FIXME: Hardcoded TOP Server Channel
-const SNMCHANNEL = '766563200313196556';
+const SNMCHANNEL = '556546153689120793';
 
 // Base Memes Array
 const memes = [
