@@ -1086,7 +1086,7 @@ export const snmCommands = {
                 else if (lastSNM.status !== 'finished') {
                     return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
-                            content: `\`Can't rate week ${lastSNM.week}\` as it is still \`${lastSNM.status}\``
+                            content: `Can't rate week \`${lastSNM.week}\` as it is still \`${lastSNM.status}\``
                         }
                     });
                 }
