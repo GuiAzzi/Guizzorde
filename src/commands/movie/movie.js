@@ -97,14 +97,14 @@ export async function generateMovieEmbed(title, jwLocale) {
     // Searchs torrent and subtitle
     let jwTorrentField = 'No torrent found';
     let jwSubtitle;
-    let jwTorrent = await torrentSearch.search(['Rarbg'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
+    let jwTorrent = await torrentSearch.search(['Rarbg'], `${jwTitleEN.title} ${jwTitleEN.original_release_year || null} 1080p`, 'Movies', 1).catch((e) => reportError(e));
 
     // If Rarbg breaks, try again
     if (jwTorrent.length === 0 || !jwTorrent) {
         // Little hack to force second execution - without this the code was being skipped - something to do with async stuff
         await new Promise(resolve => setTimeout(resolve, 0));
         // Searches in other trackers
-        jwTorrent = await torrentSearch.search(['Rarbg', 'ThePirateBay', '1337x'], `${jwTitleEN.title} ${jwTitleEN.original_release_year} 1080`, 'Movies', 1).catch((e) => reportError(e));
+        jwTorrent = await torrentSearch.search(['Rarbg', 'ThePirateBay', '1337x'], `${jwTitleEN.title} ${jwTitleEN.original_release_year || null} 1080p`, 'Movies', 1).catch((e) => reportError(e));
     }
 
     if (jwTorrent && jwTorrent.length !== 0 && jwTorrent[0].title !== "No results returned") {
