@@ -1046,25 +1046,25 @@ client.on('message', async message => {
                 break;
             }
             if (args.length === 0) {
-                message.channel.send(`Usage: \`!changeSub <torrent message id> <new sub download link>\``);
+                message.channel.send(`Usage: \`!changeSub <channel id> <torrent message id> <new sub download link>\``);
                 logMessage = "Wrong usage"
                 break;
             }
-            let torrentMsgGet = await client.channels.cache.get(SNMCHANNEL).messages.fetch(args[0]);
+            let torrentMsgGet = await client.channels.cache.get(args[0]).messages.fetch(args[1]);
             // If message is the old torrent format (only torrent and sub)
             if (torrentMsgGet.embeds[0].description) {
                 torrentMsgGet.edit(torrentMsgGet.embeds[0].setDescription(
-                    torrentMsgGet.embeds[0].description.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[1]})`)
+                    torrentMsgGet.embeds[0].description.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[2]})`)
                 ));
             }
             // Else, if new format (full /movie details)
             else {
                 const torrentFieldIndex = torrentMsgGet.embeds[0].fields.findIndex(field => field.name === 'Torrent');
-                torrentMsgGet.embeds[0].fields[torrentFieldIndex].value = torrentMsgGet.embeds[0].fields[torrentFieldIndex].value.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[1]})`);
+                torrentMsgGet.embeds[0].fields[torrentFieldIndex].value = torrentMsgGet.embeds[0].fields[torrentFieldIndex].value.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[2]})`);
                 torrentMsgGet.edit(torrentMsgGet.embeds[0]);
             }
 
-            logMessage = `Changed sub from ${args[0]} with ${args[1]}`;
+            logMessage = `Changed sub from ${args[0]} of channel ${args[1]} with ${args[2]}`;
             break;
         case 'snmpause':
             // No longer supported, use /snmConfig
