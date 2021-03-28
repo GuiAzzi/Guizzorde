@@ -498,7 +498,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             const pollTitle = args[0].value;
             const pollOptions = args[1].value.split(/,+/g);
             // Get server custom emojis
-            const serverEmojis = client.guilds.cache.get(interaction.guild_id).emojis.cache;
+            const serverEmojis = client.guilds.cache.get(interaction.guild_id)?.emojis.cache || { size: 0 };
             // Each arg will be assigned an emoji. Chosen emojis will be stored here.
             const pickedEmojis = [];
 
