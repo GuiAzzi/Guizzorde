@@ -1103,7 +1103,7 @@ export const snmCommands = {
 
                 return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                     data: {
-                        content: `Your rating was updated.`
+                        content: `Your rating was updated to:\n\n${rating}`
                     }
                 });
             }
