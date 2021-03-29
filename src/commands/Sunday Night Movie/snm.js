@@ -1103,7 +1103,14 @@ export const snmCommands = {
 
                 return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                     data: {
-                        content: `Your rating was updated to:\n\n${rating}`
+                        content: `Saved!`,
+                        embeds: [
+                            new Discord.MessageEmbed()
+                                .setColor(0x3498DB)
+                                .setAuthor(interaction.member.user.username, `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}` || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png')
+                                .setDescription(rating)
+                                .setFooter(`SNM ${lastSNM.week} | ${new Date().toLocaleDateString('pt-BR')}`)
+                        ]
                     }
                 });
             }
