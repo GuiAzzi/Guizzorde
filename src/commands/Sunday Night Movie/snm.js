@@ -21,7 +21,7 @@ import {
     GuizzordeCommand,
     register,
 } from '../index.js';
-import { generateMovieEmbed } from '../movie/index.js';
+import { generateCompactMovieEmbed, generateMovieEmbed } from '../movie/index.js';
 import {
     SNMSchedulesArray,
     SNMServer,
@@ -710,12 +710,25 @@ export const snmCommands = {
 
                         await upsertSNMWeek(lastSNM);
 
-                        return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                             data: {
                                 content: `Added \`${titleName}\` to the list`
                             }
                         });
-                        // TODO: Followup with /movie
+
+                        //Followup with /movie
+                        if (!silent) {
+                            const compactMovieEmbed = await generateCompactMovieEmbed(titleName, snmServer.locale = 'pt_BR');
+                            compactMovieEmbed.setAuthor(interaction.member.user.username, `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}` || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png')
+                            if (compactMovieEmbed)
+                                return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        embeds: [compactMovieEmbed]
+                                    }
+                                });
+                        }
+
+                        break;
                     }
                     case 'remove': {
                         // Interaction first contact (to be edited)
@@ -1109,7 +1122,8 @@ export const snmCommands = {
                                 .setColor(0x3498DB)
                                 .setAuthor(interaction.member.user.username, `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}` || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png')
                                 .setDescription(rating)
-                                .setFooter(`SNM ${lastSNM.week} | ${new Date().toLocaleDateString('pt-BR')}`)
+                                .setTimestamp(new Date().toJSON())
+                                .setFooter(`SNM ${lastSNM.week}`)
                         ]
                     }
                 });

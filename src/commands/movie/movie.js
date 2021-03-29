@@ -44,8 +44,9 @@ const searchSubtitle = async (title, lang = 'eng') => {
     }
 }
 
+// FIXME: Merge these two methods, maybe?
 /**
- * 
+ * Generates full movie embed with torrent and subtitle
  * @param {string} title Movie title
  * @param {string} jwLocale JustWatch locale
  * @returns {Promise<Discord.MessageEmbed>} The movie embed
@@ -145,7 +146,7 @@ export async function generateMovieEmbed(title, jwLocale) {
 
         // Director
         embedDirectorValue = jwTitleEN.credits?.map(credit => {
-            if (credit.role === 'DIRECTOR') return credit.name
+            if (credit.role === 'DIRECTOR') return credit.name;
         }) || 'Not Found';
 
         // Runtime
@@ -185,7 +186,7 @@ export async function generateMovieEmbed(title, jwLocale) {
 
         // Director
         embedDirectorValue = jwTitleBR.credits?.map(credit => {
-            if (credit.role === 'DIRECTOR') return credit.name
+            if (credit.role === 'DIRECTOR') return credit.name;
         }) || 'Not Found';
 
         // Runtime
@@ -256,6 +257,89 @@ export async function generateMovieEmbed(title, jwLocale) {
                 value: jwTorrentField
             },
         )
+}
+
+/**
+ * Generates compact movie embed
+ * @param {string} title Movie title
+ * @param {string} jwLocale JustWatch locale
+ * @returns {Promise<Discord.MessageEmbed>} The movie embed
+ */
+export async function generateCompactMovieEmbed(title, jwLocale) {
+    const jw = new JustWatch({ locale: jwLocale });
+
+    const jwSearch = await jw.search({ query: title });
+
+    // Filter by movies
+    jwSearch.items = jwSearch.items.filter(item => item.object_type === 'movie');
+    if (jwSearch.items.length <= 0)
+        return null;
+
+    const jwTitle = await jw.getTitle('movie', jwSearch.items[0].jw_entity_id.replace('tm', ''));
+    jwTitle.scoring = jwTitle.scoring?.filter(score => score.provider_type === 'imdb:score' || score.provider_type === 'tmdb:score');
+
+    const embedTitleValue = `${jwTitle.title} ${jwTitle.original_release_year ? `(${jwTitle.original_release_year})` : null}`;
+    const embedURLValue = `https://justwatch.com${jwTitle.full_path}`;
+    const embedImageValue = jwTitle.poster ? `https://images.justwatch.com${jwTitle.poster.replace('{profile}', 's592')}` : null;
+    const embedPlotValue = jwTitle.short_description || 'Not Found';
+    const embedGenreValue = jwTitle.genre_ids?.map(genreArray => {
+        return jwGenresEN.find(genre => genreArray === genre.id).translation
+    }).join(' | ') || 'Not Found';
+    const embedDirectorValue = jwTitle.credits?.map(credit => {
+        if (credit.role === 'DIRECTOR') return credit.name;
+    }) || 'Not Found';
+    let embedRuntimeValue = 'Not Found';
+    if (jwTitle.runtime) {
+        let hours = (jwTitle.runtime / 60);
+        let rhours = Math.floor(hours);
+        let minutes = (hours - rhours) * 60;
+        let rminutes = Math.round(minutes);
+        embedRuntimeValue = `${rhours}:${rminutes < 10 ? `0${rminutes}` : rminutes}`;
+    }
+    let embedRatingValue = {};
+    jwTitle.scoring.map(score => {
+        if (score.provider_type === 'imdb:score')
+            embedRatingValue.imdb = `|| ${score.value} ||`;
+        else if (score.provider_type === 'tmdb:score')
+            embedRatingValue.tmdb = `|| ${score.value} ||`;
+        else null
+    });
+    return new Discord.MessageEmbed()
+        .setTitle(embedTitleValue)
+        .setURL(embedURLValue)
+        .setColor(0x3498DB)
+        .setThumbnail(embedImageValue)
+        .addFields(
+            {
+                name: 'Plot',
+                value: embedPlotValue
+            },
+            {
+                name: 'Directed by',
+                value: embedDirectorValue,
+                inline: true
+            },
+            {
+                name: 'Runtime',
+                value: embedRuntimeValue,
+                inline: true
+            },
+            {
+                name: 'Genre',
+                value: embedGenreValue
+            },
+            {
+                name: 'IMDB',
+                value: embedRatingValue.imdb || 'Not Found',
+                inline: true
+            },
+            {
+                name: 'TMDB',
+                value: embedRatingValue.tmdb || 'Not Found',
+                inline: true
+            },
+        )
+        .setTimestamp(new Date().toJSON());
 }
 
 export const slashMovie = new GuizzordeCommand({

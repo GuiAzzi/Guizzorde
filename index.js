@@ -585,7 +585,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 .setColor(0x3498DB)
                 .setDescription(`Como você está se sentindo sobre <@!${args[0].value}> hoje?`)
                 .setImage(ratingUser.avatarURL() || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png')
-                .setTimestamp(new Date().toLocaleDateString('pt-BR'));
+                .setTimestamp(new Date().toJSON());
 
             // Send message and react accordingly
             let queridometroMsg = await client.channels.cache.get(interaction.channel_id).send(queridometroEmbed);
