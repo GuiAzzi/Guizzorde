@@ -1350,7 +1350,7 @@ function snmEmbed(snmWeek) {
         for (const userIndex in snmWeek.users) {
             // If user only voted - no entries or ratings = skip user on summary
             if (!snmWeek.users[userIndex].movies.length > 0 && !snmWeek.users[userIndex].rating) continue;
-            printArray[userIndex] = `${snmWeek.users[userIndex].username} - \n`;
+            printArray[userIndex] = `**${snmWeek.users[userIndex].username}**\n`;
             // checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
             if (snmWeek.users[userIndex].movies) {
                 for (const movieIndex in snmWeek.users[userIndex].movies) {
@@ -1360,7 +1360,7 @@ function snmEmbed(snmWeek) {
                     tempMovies.push(`\`${snmWeek.users[userIndex].movies[movieIndex].title}\``);
                 }
             }
-            printArray[userIndex] += `${tempMovies.length > 0 ? `Entries: ${tempMovies.join(" | ")}\n` : ""}${snmWeek.users[userIndex].rating ? `Rating: ${snmWeek.users[userIndex].rating}\n\n` : "\n"}`;
+            printArray[userIndex] += `${tempMovies.length > 0 ? `- Entries: ${tempMovies.join(" | ")}\n` : ""}${snmWeek.users[userIndex].rating ? `- Rating: ${snmWeek.users[userIndex].rating}\n\n` : "\n"}`;
             tempMovies = [];
         }
 
