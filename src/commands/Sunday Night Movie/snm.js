@@ -210,7 +210,7 @@ export const snmCommands = {
                         const SNMRole = await getSNMRole(interaction.guild_id);
                         newSNMEmbed
                             .setTitle(`🎬 Sunday Night Movie ${newSNM.week} 🎬`)
-                            .setDescription(`Requests are now open!\n\`/snmTitle add title: <movie name>\` to request a movie.`);
+                            .setDescription(`Requests are now open!\n\`/snmTitle add\` to request a movie.`);
                         if (!interaction.fromScheduler) {
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                 data: {

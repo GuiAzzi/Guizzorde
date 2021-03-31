@@ -21,7 +21,7 @@ import {
     client,
     configObj,
 } from './src/config/index.js';
-// import { donato } from './src/stock/donato.js';
+import { donato } from './src/stock/donato.js';
 import {
     randomEmoji,
     reportError,
@@ -138,22 +138,24 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
     switch (interaction.data.name.toLowerCase()) {
         case 'help':
             const description = `/ping - Pings the API
-/say <message> - Make the bot say something
-/snm [week number] [export number] - Show or export SNM
-/snmAdmin <new|start|end|pause> - Manage current SNM
-/snmTitle add <title> - Add a movie to current SNM
-/snmTitle remove [title] - Remove a movie from current SNM
-/snmRate <text> - Add or change your current SNM rating
-/snmVotes <Show | Clear> - Manage your current SNM votes
-/torrent <query> - Search for torrents on public trackers
-/subtitle <title> [language] - Search for a subtitle file
-/meme [meme name | list] - 👀 ||do it||
-/rato [message] - Send a random tenista™ in chat, or make it say something!
-/emoji <message> - Convert your message into Discord's regional indicator emojis :abc:
-/random <option1, option2, option3, ...> - Randomly pick from one of the options
-/poll <poll title>, <Apple, Orange, Pineapple, ...> - Start a poll that people can vote on
-/movie <movie title> [language] - Display info about a movie
-**<> means a parameter is mandatory and [] is optional**`;
+/say - Make the bot say something
+/snm - Show or export data from a SNM week
+/snmEnable - Enables or disables SNM system for the server
+/snmAdmin - Manage current SNM period
+/snmConfig - Configure SNM options for the server
+/snmTitle add - Add a movie to current SNM
+/snmTitle remove - Remove a movie from current SNM
+/snmRate - Add or change your current SNM rating
+/snmVotes - Manage your current SNM votes
+/torrent - Search for torrents on public trackers
+/subtitle - Search for a subtitle file
+/meme - 👀 ||do it||
+/rato - Send a random tenista™ in chat, or make it say something!
+/emoji - Convert your message into Discord's regional indicator emojis :abc:
+/random - Randomly pick from one of the typed options
+/poll - Start a poll that people can vote on typed options
+/movie - Display info about a movie
+/queridometro - Start a public rating on a server member`;
 
             // const embed = new Discord.MessageEmbed()
             //     // Set the title of the field
@@ -368,7 +370,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                         data: {
                             type: 4,
                             data: {
-                                content: 'No meme found.\nCheck out the `/meme name:list` command.',
+                                content: 'No meme found.\nCheck out the `/meme` command.',
                                 flags: 64
                             }
                         }
