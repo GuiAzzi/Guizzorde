@@ -18,7 +18,7 @@ export class SNMWeek {
         this.paused = params.paused
         /** @type {[{userId: string, username: string, votes: Array, movies: Array}]} Array of user objects */
         this.users = params.users;
-        /** @type {{titleKey: number, voteCount: number}} Object containing the key of the winner title and its vote count */
+        /** @type {{titleKey: number, voteCount: number, userId: string}} Object containing the key of the winner title, its vote count and entry's userId */
         this.winner = params.winner;
         /** @type {{channelId: string, messageId: string}} Object containing the channel and vote message ID */
         this.voteMessage = params.voteMessage;

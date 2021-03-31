@@ -167,7 +167,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
 
             await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
-                    type: 3,
+                    type: 4,
                     data: {
                         content: description,
                         // embeds: [new Discord.MessageEmbed().setTitle('Test').setDescription('Dae')],
@@ -189,7 +189,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
         case 'say':
             await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
-                    type: 3,
+                    type: 4,
                     data: {
                         content: args[0].value
                     }
@@ -341,7 +341,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             if (memeName.value.trim().toLowerCase() === 'list') {
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
-                        type: 3,
+                        type: 4,
                         data: {
                             content: `**Available Memes**\n\`\`\`${memes.map((meme) => meme.name).join('\n')}\`\`\``,
                             flags: 64
@@ -366,7 +366,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 else {
                     await client.api.interactions(interaction.id, interaction.token).callback.post({
                         data: {
-                            type: 3,
+                            type: 4,
                             data: {
                                 content: 'No meme found.\nCheck out the `/meme name:list` command.',
                                 flags: 64

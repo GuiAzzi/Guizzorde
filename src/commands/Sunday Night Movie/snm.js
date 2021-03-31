@@ -145,7 +145,7 @@ export const snmCommands = {
                             if (!interaction.fromScheduler) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
-                                        type: 3,
+                                        type: 4,
                                         data: {
                                             content: `Insufficient permissions.`,
                                             flags: 64
@@ -161,7 +161,7 @@ export const snmCommands = {
                         if (!interaction.fromScheduler) {
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
-                                    type: 5,
+                                    type: 4,
                                     data: {
                                         embeds: [newSNMEmbed],
                                     }
@@ -240,7 +240,7 @@ export const snmCommands = {
                             if (!interaction.fromScheduler) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
-                                        type: 3,
+                                        type: 4,
                                         data: {
                                             content: `Can't use this command in DMs`,
                                             flags: 64
@@ -255,7 +255,7 @@ export const snmCommands = {
                             if (!interaction.fromScheduler) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
-                                        type: 3,
+                                        type: 4,
                                         data: {
                                             content: `Insufficient permissions.`,
                                             flags: 64
@@ -271,7 +271,7 @@ export const snmCommands = {
                         if (!interaction.fromScheduler) {
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
-                                    type: 5,
+                                    type: 4,
                                     data: {
                                         embeds: [startSNMEmbed],
                                     }
@@ -404,7 +404,7 @@ export const snmCommands = {
                             if (!interaction.fromScheduler) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
-                                        type: 3,
+                                        type: 4,
                                         data: {
                                             content: `Can't use this command in DMs`,
                                             flags: 64
@@ -419,7 +419,7 @@ export const snmCommands = {
                             if (!interaction.fromScheduler) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
-                                        type: 3,
+                                        type: 4,
                                         data: {
                                             content: `Insufficient permissions.`,
                                             flags: 64
@@ -435,7 +435,7 @@ export const snmCommands = {
                         if (!interaction.fromScheduler) {
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
-                                    type: 5,
+                                    type: 4,
                                     data: {
                                         embeds: [endSNMEmbed],
                                     }
@@ -470,8 +470,9 @@ export const snmCommands = {
                         }
 
                         // TODO: If a movie was passed - select it as winner
-                        // <logic>
+                        // <logic (check github, I have this code on v1)>
 
+                        // FIXME: Doodoo code. Old and bad.
                         // creates array with titleKey and voteCount (movie:votes)
                         let allVotes = [];
 
@@ -516,6 +517,7 @@ export const snmCommands = {
                                 await scheduleMsg.edit(endSNMEmbed);
                             const rndWinnerPos = Math.floor(Math.random() * winners.length);
                             lastSNM.winner = winners[rndWinnerPos];
+                            lastSNM.winner.userId = lastSNM.users.find(user => user.movies.find(movie => movie.titleKey === lastSNM.winner.titleKey)).userId;
                             winnerMovie = { title: tiedWinnersTitle[rndWinnerPos].substr(1, tiedWinnersTitle[rndWinnerPos].length - 2) };
                         }
                         else {
@@ -533,12 +535,14 @@ export const snmCommands = {
                             else
                                 await scheduleMsg.edit(endSNMEmbed);
                             lastSNM.winner = winners[0];
+                            lastSNM.winner.userId = lastSNM.users.find(user => user.movies.find(movie => movie.titleKey === lastSNM.winner.titleKey)).userId;
                             winnerMovie = { title: lastSNM.users.find(user => user.movies.find(movie => movie.titleKey === lastSNM.winner.titleKey)).movies.find(movie => movie.titleKey === lastSNM.winner.titleKey).title };
                         }
 
                         lastSNM.status = 'finished';
                         await upsertSNMWeek(lastSNM);
-                        endSNMEmbed.setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`);
+                        endSNMEmbed.setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`)
+
                         if (!interaction.fromScheduler) {
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                 data: {
@@ -551,8 +555,17 @@ export const snmCommands = {
 
                         // TODO: Add SNMServer defaultRegion
                         // /movie followup message
-                        const movieEmbed = await client.channels.cache.get(interaction.channel_id).send(new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB));
-                        movieEmbed.edit(await generateMovieEmbed(winnerMovie.title, 'pt'));
+                        const movieEmbedMsg = await client.channels.cache.get(interaction.channel_id).send(new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB));
+                        const movieEmbed = await generateMovieEmbed(winnerMovie.title, 'pt');
+                        movieEmbed.setTimestamp(new Date().toJSON());
+
+                        if (lastSNM.winner.userId && movieEmbed.description != 'Movie not found 😞') {
+                            // Gets user that added the winner movie
+                            const winnerUser = await client.users.fetch(lastSNM.winner.userId);
+                            if (winnerUser) movieEmbed.setAuthor(winnerUser.username, winnerUser.avatarURL() || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png');
+                        }
+
+                        movieEmbedMsg.edit(movieEmbed);
                     }
                     catch (e) {
                         reportError(e);
@@ -633,7 +646,7 @@ export const snmCommands = {
                 if (!lastSNM.week) {
                     return await client.api.interactions(interaction.id, interaction.token).callback.post({
                         data: {
-                            type: 3,
+                            type: 4,
                             data: {
                                 content: `No week to interact with`,
                                 flags: 64
@@ -649,7 +662,7 @@ export const snmCommands = {
                         if (silent) {
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
-                                    type: 3,
+                                    type: 4,
                                     data: {
                                         content: `Adding title...`,
                                         flags: 64
@@ -660,7 +673,7 @@ export const snmCommands = {
                         else if (!silent) {
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
-                                    type: 5,
+                                    type: 4,
                                     data: {
                                         content: `Adding title...`,
                                     }
@@ -736,7 +749,7 @@ export const snmCommands = {
                         if (silent) {
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
-                                    type: 3,
+                                    type: 4,
                                     data: {
                                         content: `Removing title...`,
                                         flags: 64
@@ -747,7 +760,7 @@ export const snmCommands = {
                         else if (!silent) {
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
-                                    type: 5,
+                                    type: 4,
                                     data: {
                                         content: `Removing title...`,
                                     }
@@ -912,7 +925,7 @@ export const snmCommands = {
                 else if (!interaction.data.options) {
                     return await client.api.interactions(interaction.id, interaction.token).callback.post({
                         data: {
-                            type: 3,
+                            type: 4,
                             data: {
                                 content: `No option was passed`,
                                 flags: 64
@@ -929,7 +942,7 @@ export const snmCommands = {
                 if (!memberPerformed.hasPermission('ADMINISTRATOR') || !interaction.member.user.id === client.user.id) {
                     return await client.api.interactions(interaction.id, interaction.token).callback.post({
                         data: {
-                            type: 3,
+                            type: 4,
                             data: {
                                 content: `Insufficient permissions.`,
                                 flags: 64
@@ -941,7 +954,7 @@ export const snmCommands = {
                 // First contact
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
-                        type: 3,
+                        type: 4,
                         data: {
                             content: `Saving...`,
                             flags: 64
@@ -1078,7 +1091,7 @@ export const snmCommands = {
                 // Sends to-be-edited message
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
-                        type: 5,
+                        type: 4,
                         data: {
                             content: `Saving...`
                         }
@@ -1120,7 +1133,7 @@ export const snmCommands = {
                         embeds: [
                             new Discord.MessageEmbed()
                                 .setColor(0x3498DB)
-                                .setAuthor(interaction.member.user.username, `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}` || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png')
+                                .setAuthor(interaction.member.user.username, interaction.member.user.avatar ? `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}` : 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png')
                                 .setDescription(rating)
                                 .setTimestamp(new Date().toJSON())
                                 .setFooter(`SNM ${lastSNM.week}`)
@@ -1166,7 +1179,7 @@ export const snmCommands = {
                 // Sends to-be-edited message
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
-                        type: 3,
+                        type: 4,
                         data: {
                             content: `Working...`,
                             flags: 64
@@ -1286,7 +1299,7 @@ export const snmEnable = new GuizzordeCommand({
             if (!memberPerformed.hasPermission('ADMINISTRATOR')) {
                 return await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
-                        type: 3,
+                        type: 4,
                         data: {
                             content: `Insufficient permissions.`,
                             flags: 64
@@ -1300,7 +1313,7 @@ export const snmEnable = new GuizzordeCommand({
             if (option) {
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
-                        type: 3,
+                        type: 4,
                         data: {
                             content: `SNM should be enabled shortly for this server! 🌵`,
                             flags: 64
@@ -1311,7 +1324,7 @@ export const snmEnable = new GuizzordeCommand({
             else if (!option) {
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
-                        type: 3,
+                        type: 4,
                         data: {
                             content: `SNM should be disabled shortly for this server. ✌`,
                             flags: 64
