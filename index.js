@@ -133,7 +133,7 @@ const aprillFoolsSeekMap = new Map();
 client.on('voiceStateUpdate', async (oldMember, newMember) => {
     if (oldMember.member.user.bot) return;
     try {
-        if (!oldMember.channelID && newMember.channelID) {
+        if (!oldMember.channelID && newMember.channelID && newMember.channelID !== newMember.guild.afkChannelID) {
             let aprillFoolsSeek = aprillFoolsSeekMap.get(oldMember.guild.id) || { time: 0, playing: false };
             if (!aprillFoolsSeek.playing) {
                 aprillFoolsSeekMap.set(oldMember.guild.id, { playing: true });
