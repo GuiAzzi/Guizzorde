@@ -135,7 +135,11 @@ client.on('voiceStateUpdate', async (oldMember, newMember) => {
     try {
         if (oldMember.channelID != newMember.channelID && newMember.channelID && newMember.channelID !== newMember.guild.afkChannelID) {
             let aprillFoolsSeek = aprillFoolsSeekMap.get(oldMember.guild.id) || { time: 0, playing: false };
+            if (aprillFoolsSeek.playing && newMember.member.voice.channel.joinable) {
+                return await newMember.member.voice.channel.join();
+            }
             if (!aprillFoolsSeek.playing) {
+                if (!newMember.member.voice.channel.joinable) return;
                 aprillFoolsSeekMap.set(oldMember.guild.id, { playing: true });
                 let connection = await oldMember.member.voice.channel.join();
                 let dispatcher;
