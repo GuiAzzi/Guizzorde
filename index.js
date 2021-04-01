@@ -133,12 +133,15 @@ const aprillFoolsSeekMap = new Map();
 client.on('voiceStateUpdate', async (oldMember, newMember) => {
     if (oldMember.member.user.bot) return;
     try {
-        if (!oldMember.channelID && newMember.channelID && newMember.channelID !== newMember.guild.afkChannelID) {
+        if (oldMember.channelID != newMember.channelID && newMember.channelID && newMember.channelID !== newMember.guild.afkChannelID) {
             let aprillFoolsSeek = aprillFoolsSeekMap.get(oldMember.guild.id) || { time: 0, playing: false };
             if (!aprillFoolsSeek.playing) {
                 aprillFoolsSeekMap.set(oldMember.guild.id, { playing: true });
                 let connection = await oldMember.member.voice.channel.join();
-                let dispatcher = connection.play(`src/april-fools/rick.mp3`, { volume: 0.5, seek: aprillFoolsSeek.time < 203 ? aprillFoolsSeek.time : 0 });
+                let dispatcher;
+                setTimeout(() => {
+                    dispatcher = connection.play(`src/april-fools/rick.mp3`, { volume: 0.4, seek: aprillFoolsSeek.time < 203 ? aprillFoolsSeek.time : 0 });
+                }, 1000)
                 setTimeout(() => {
                     dispatcher.pause();
                     dispatcher.destroy();
