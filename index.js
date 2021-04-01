@@ -129,6 +129,30 @@ const searchSubtitle = async (title, lang = 'eng') => {
     else return false;
 }
 
+const aprillFoolsSeekMap = new Map();
+client.on('voiceStateUpdate', async (oldMember, newMember) => {
+    if (oldMember.member.user.bot) return;
+    try {
+        if (!oldMember.channelID && newMember.channelID) {
+            let aprillFoolsSeek = aprillFoolsSeekMap.get(oldMember.guild.id) || { time: 0, playing: false };
+            if (!aprillFoolsSeek.playing) {
+                aprillFoolsSeekMap.set(oldMember.guild.id, { playing: true });
+                let connection = await oldMember.member.voice.channel.join();
+                let dispatcher = connection.play(`src/april-fools/rick.mp3`, { volume: 0.5, seek: aprillFoolsSeek.time < 203 ? aprillFoolsSeek.time : 0 });
+                setTimeout(() => {
+                    dispatcher.pause();
+                    dispatcher.destroy();
+                    connection.disconnect();
+                    aprillFoolsSeekMap.set(oldMember.guild.id, { time: aprillFoolsSeek.time += dispatcher.totalStreamTime / 1000, playing: false });
+                }, 7000);
+            }
+        }
+    }
+    catch (e) {
+        console.error(e);
+    }
+});
+
 // Receive Slash Interaction
 client.ws.on('INTERACTION_CREATE', async interaction => {
 
@@ -609,6 +633,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
 })
 
 client.on('ready', async () => {
+    // client.user.setAvatar(`src/config/avatar.jpeg`);
     console.log(`${client.user.username} has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.user.setActivity(`Beep boop`);
 
