@@ -129,36 +129,36 @@ const searchSubtitle = async (title, lang = 'eng') => {
     else return false;
 }
 
-const aprillFoolsSeekMap = new Map();
-client.on('voiceStateUpdate', async (oldMember, newMember) => {
-    if (oldMember.member.user.bot) return;
-    try {
-        if (oldMember.channelID != newMember.channelID && newMember.channelID && newMember.channelID !== newMember.guild.afkChannelID) {
-            let aprillFoolsSeek = aprillFoolsSeekMap.get(oldMember.guild.id) || { time: 0, playing: false };
-            if (aprillFoolsSeek.playing && newMember.member.voice.channel.joinable) {
-                return await newMember.member.voice.channel.join();
-            }
-            if (!aprillFoolsSeek.playing) {
-                if (!newMember.member.voice.channel.joinable) return;
-                aprillFoolsSeekMap.set(oldMember.guild.id, { playing: true });
-                let connection = await oldMember.member.voice.channel.join();
-                let dispatcher;
-                setTimeout(() => {
-                    dispatcher = connection.play(`src/april-fools/rick.mp3`, { volume: 0.4, seek: aprillFoolsSeek.time < 203 ? aprillFoolsSeek.time : 0 });
-                }, 1000)
-                setTimeout(() => {
-                    dispatcher.pause();
-                    dispatcher.destroy();
-                    connection.disconnect();
-                    aprillFoolsSeekMap.set(oldMember.guild.id, { time: aprillFoolsSeek.time += dispatcher.totalStreamTime / 1000, playing: false });
-                }, 7000);
-            }
-        }
-    }
-    catch (e) {
-        console.error(e);
-    }
-});
+// const aprillFoolsSeekMap = new Map();
+// client.on('voiceStateUpdate', async (oldMember, newMember) => {
+//     if (oldMember.member.user.bot) return;
+//     try {
+//         if (oldMember.channelID != newMember.channelID && newMember.channelID && newMember.channelID !== newMember.guild.afkChannelID) {
+//             let aprillFoolsSeek = aprillFoolsSeekMap.get(oldMember.guild.id) || { time: 0, playing: false };
+//             if (aprillFoolsSeek.playing && newMember.member.voice.channel.joinable) {
+//                 return await newMember.member.voice.channel.join();
+//             }
+//             if (!aprillFoolsSeek.playing) {
+//                 if (!newMember.member.voice.channel.joinable) return;
+//                 aprillFoolsSeekMap.set(oldMember.guild.id, { playing: true });
+//                 let connection = await oldMember.member.voice.channel.join();
+//                 let dispatcher;
+//                 setTimeout(() => {
+//                     dispatcher = connection.play(`src/april-fools/rick.mp3`, { volume: 0.4, seek: aprillFoolsSeek.time < 203 ? aprillFoolsSeek.time : 0 });
+//                 }, 1000)
+//                 setTimeout(() => {
+//                     dispatcher.pause();
+//                     dispatcher.destroy();
+//                     connection.disconnect();
+//                     aprillFoolsSeekMap.set(oldMember.guild.id, { time: aprillFoolsSeek.time += dispatcher.totalStreamTime / 1000, playing: false });
+//                 }, 7000);
+//             }
+//         }
+//     }
+//     catch (e) {
+//         console.error(e);
+//     }
+// });
 
 // Receive Slash Interaction
 client.ws.on('INTERACTION_CREATE', async interaction => {
