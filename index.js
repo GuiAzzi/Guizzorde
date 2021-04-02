@@ -640,7 +640,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
 })
 
 client.on('ready', async () => {
-    // client.user.setAvatar(`src/config/avatar.jpeg`);
+    client.user.setAvatar(`src/config/avatar.jpg`);
     console.log(`${client.user.username} has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.user.setActivity(`Beep boop`);
 
