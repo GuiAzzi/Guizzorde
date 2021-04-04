@@ -29,16 +29,6 @@ import {
 
 torrentSearch.enablePublicProviders();
 
-// torrentMessage id - short lived, should not be saved to database - used to swap to second option
-let torrentMessage;
-
-// SNM CONFIGS
-// TODO: These should maybe be on a separate collection, containing these server-scoped settings
-// Sets to local config channel else sets to #Top Server BR's snm channel
-// const SNMCHANNEL = config ? config.testSNMChannel : '556546153689120793';
-// FIXME: Hardcoded TOP Server Channel
-const SNMCHANNEL = '556546153689120793';
-
 // Base Memes Array
 const memes = [
     {
@@ -1088,13 +1078,13 @@ client.on('message', async message => {
             // If message is the old torrent format (only torrent and sub)
             if (torrentMsgGet.embeds[0].description) {
                 torrentMsgGet.edit(torrentMsgGet.embeds[0].setDescription(
-                    torrentMsgGet.embeds[0].description.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[2]})`)
+                    torrentMsgGet.embeds[0].description.replace(/\[Subtitle]\(.+\)|No subtitle found/g, `[Subtitle](${args[2]})`)
                 ));
             }
             // Else, if new format (full /movie details)
             else {
                 const torrentFieldIndex = torrentMsgGet.embeds[0].fields.findIndex(field => field.name === 'Torrent');
-                torrentMsgGet.embeds[0].fields[torrentFieldIndex].value = torrentMsgGet.embeds[0].fields[torrentFieldIndex].value.replace(/\[Subtitle](.+)/g, `[Subtitle](${args[2]})`);
+                torrentMsgGet.embeds[0].fields[torrentFieldIndex].value = torrentMsgGet.embeds[0].fields[torrentFieldIndex].value.replace(/\[Subtitle]\(.+\)|No subtitle found/g, `[Subtitle](${args[2]})`);
                 torrentMsgGet.edit(torrentMsgGet.embeds[0]);
             }
 
