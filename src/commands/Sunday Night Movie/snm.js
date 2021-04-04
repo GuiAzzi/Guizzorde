@@ -732,7 +732,9 @@ export const snmCommands = {
                         //Followup with /movie
                         if (!silent) {
                             const compactMovieEmbed = await generateCompactMovieEmbed(titleName, snmServer.locale = 'pt_BR');
-                            compactMovieEmbed.setAuthor(interaction.member.user.username, `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}` || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png')
+                            compactMovieEmbed
+                                .setAuthor(interaction.member.user.username, `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}` || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png')
+                                .setFooter(`SNM ${lastSNM.week}`);
                             if (compactMovieEmbed)
                                 return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                     data: {
