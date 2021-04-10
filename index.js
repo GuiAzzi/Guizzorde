@@ -630,7 +630,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
 })
 
 client.on('ready', async () => {
-    client.user.setAvatar(`src/config/avatar.jpg`);
+    // client.user.setAvatar(`src/config/avatar.jpg`);
     console.log(`${client.user.username} has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.user.setActivity(`Beep boop`);
 
@@ -906,7 +906,14 @@ client.on('messageReactionAdd', async (reaction, user) => {
                 let movieTitle = snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
                 userObject = snmWeek.users[snmWeek.users.push({ userId: user.id, username: user.username, movies: [], votes: [movieTitleKey] }) - 1];
                 await upsertSNMWeek(snmWeek);
-                client.users.cache.get(user.id).send(`You voted on \`${movieTitle}\``);
+                const voteGuild = client.guilds.cache.get(snmServer.guildId)
+                const voteEmbed = new Discord.MessageEmbed()
+                    .setTitle(`Vote Registered ✅`)
+                    .setDescription(`${movieTitle}`)
+                    .setFooter(`${voteGuild.name} | SNM ${snmWeek.week}`, voteGuild.iconURL())
+                    .setColor(0x3498DB)
+                    .setTimestamp(new Date().toJSON());
+                client.users.cache.get(user.id).send(voteEmbed);
                 console.log(`Added user ${user.username} with his/her vote`);
             }
             // user already voted on that movie
@@ -918,8 +925,15 @@ client.on('messageReactionAdd', async (reaction, user) => {
             else if (userObject.votes.length < snmServer.maxVotes) {
                 let movieTitle = snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
                 userObject.votes.push(movieTitleKey);
-                client.users.cache.get(user.id).send(`You voted on \`${movieTitle}\``);
                 await upsertSNMWeek(snmWeek);
+                const voteGuild = client.guilds.cache.get(snmServer.guildId)
+                const voteEmbed = new Discord.MessageEmbed()
+                    .setTitle(`Vote Registered ✅`)
+                    .setDescription(`${movieTitle}`)
+                    .setFooter(`${voteGuild.name} | SNM ${snmWeek.week}`, voteGuild.iconURL())
+                    .setColor(0x3498DB)
+                    .setTimestamp(new Date().toJSON());
+                client.users.cache.get(user.id).send(voteEmbed);
                 console.log(`${user.username} voted. ${userObject.votes.length}/${snmServer.maxVotes}`);
             }
             // no votes left
