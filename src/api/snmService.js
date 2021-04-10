@@ -19,16 +19,23 @@ async function dbConnect() {
  * Gets a SNMWeek from the server
  * @param {string} guildId - The Server Id
  * @param {number} [week] - The specified week
+ * @param {boolean} [status] - The status of the week
  * @returns {Promise<SNMWeek>} - The latest SNM week for the specified server
  */
-export async function getSNMWeek(guildId, week) {
+export async function getSNMWeek(guildId, week, status) {
     try {
-        let snmWeek = null;
+        const query = {
+            guildId,
+            ...week && { week: week },
+            ...status && { status: status }
+        }
         const mongoClient = await dbConnect();
-        if (week)
-            snmWeek = new SNMWeek(await mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ guildId, week }) || {});
-        else
-            snmWeek = new SNMWeek(await mongoClient.db(configObj.mongodbName).collection(configObj.mongodbCollections[1]).findOne({ guildId }, { sort: { week: -1 }, limit: 1 }) || {});
+        const snmWeek = new SNMWeek(
+            await mongoClient.db(configObj.mongodbName)
+                .collection(configObj.mongodbCollections[1])
+                .findOne(query, { sort: { week: -1 } }) || {}
+        );
+
         await mongoClient.close();
 
         // if there is a vote going on, add voting message to cache
@@ -39,7 +46,7 @@ export async function getSNMWeek(guildId, week) {
                     await channel.messages.fetch(snmWeek.voteMessage.messageId);
             }
             catch (e) {
-                console.log(`Couldn't retrieve voteMessage channel or message, maybe it was deleted?`);
+                console.log(`Couldn't retrieve voteMessage of week ${snmWeek.week} from guild ${snmWeek.guildId}, maybe it was deleted?`);
             }
 
         }

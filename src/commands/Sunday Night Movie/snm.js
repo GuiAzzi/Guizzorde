@@ -78,7 +78,7 @@ export const snmCommands = {
                     });
                 }
                 else {
-                    snmWeekEmbed.setTitle(`👨‍💻 Sunday Night Movie ${snmWeek.week} Data 👨‍💻`).setDescription(`\`\`\`JSON\n${JSON.stringify(snmWeek, null, 2)}\`\`\``);
+                    snmWeekEmbed.setTitle(`👨‍💻 Sunday Night Movie ${snmWeek.week} 👨‍💻`).setDescription(`\`\`\`JSON\n${JSON.stringify(snmWeek, null, 2)}\`\`\``);
                     await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [_export ? snmWeekEmbed : snmEmbed(snmWeek)]
@@ -1100,10 +1100,10 @@ export const snmCommands = {
                     }
                 });
 
-                const lastSNM = await getSNMWeek(interaction.guild_id);
+                const lastFinishedSNM = await getSNMWeek(interaction.guild_id, null, 'finished');
 
                 // Week doesn't exist
-                if (!lastSNM.week) {
+                if (!lastFinishedSNM.week) {
                     return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
                             content: `No week to interact with.`
@@ -1111,23 +1111,23 @@ export const snmCommands = {
                     });
                 }
                 // Can only be done if week's SNM is finished
-                else if (lastSNM.status !== 'finished') {
+                else if (lastFinishedSNM.status !== 'finished') {
                     return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
-                            content: `Can't rate week \`${lastSNM.week}\` as it is still \`${lastSNM.status}\``
+                            content: `Can't rate week \`${lastFinishedSNM.week}\` as it is still \`${lastFinishedSNM.status}\``
                         }
                     });
                 }
 
-                let userObject = lastSNM.users.find((user) => user.userId === interaction.member.user.id);
+                let userObject = lastFinishedSNM.users.find((user) => user.userId === interaction.member.user.id);
 
                 // If new user
                 if (!userObject)
-                    userObject = lastSNM.users[lastSNM.users.push({ userId: interaction.member.user.id, username: interaction.member.user.username, movies: [], votes: [] }) - 1];
+                    userObject = lastFinishedSNM.users[lastFinishedSNM.users.push({ userId: interaction.member.user.id, username: interaction.member.user.username, movies: [], votes: [] }) - 1];
 
                 userObject.rating = rating;
 
-                await upsertSNMWeek(lastSNM);
+                await upsertSNMWeek(lastFinishedSNM);
 
                 return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                     data: {
@@ -1138,7 +1138,7 @@ export const snmCommands = {
                                 .setAuthor(interaction.member.user.username, interaction.member.user.avatar ? `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}` : 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png')
                                 .setDescription(rating)
                                 .setTimestamp(new Date().toJSON())
-                                .setFooter(`SNM ${lastSNM.week}`)
+                                .setFooter(`SNM ${lastFinishedSNM.week}`)
                         ]
                     }
                 });
