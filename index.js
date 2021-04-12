@@ -1007,6 +1007,17 @@ client.on('message', async message => {
     let logMessage = "";
 
     switch (command) {
+        case 'setavatar': {
+            if (message.author.id !== configObj.ownerId) return;
+            const avatarSrc = message.attachments.array()[0].url;
+            client.user.setAvatar(avatarSrc);
+            break;
+        }
+        case 'setactivity': {
+            if (message.author.id !== configObj.ownerId) return;
+            client.user.setActivity(cleanMessageText);
+            break;
+        }
         case 'help':
             let description = `!ping - Pings the API
             \n!say <message> - Make the bot say something
