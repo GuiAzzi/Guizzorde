@@ -846,23 +846,20 @@ client.on('ready', async () => {
     //     reportError(e)
     // }
 
-    // Gets SNMServer objects
     try {
+        // Gets SNMServer objects
         for (const guild of client.guilds.cache) {
             const server = await getSNMServer(guild[0]);
-            // Register CRON
+            // Register CronJob's
             if (server.schedule?.running)
-                server.toggleSchedule(true);
+                await server.toggleSchedule(true);
             else
-                server.toggleSchedule(false);
+                await server.toggleSchedule(false);
         }
 
+        // Gets latest SNMWeek's
         for (const server of SNMServerArray) {
-            const week = await getSNMWeek(server[0]);
-            // Fetch voteMessage (so we can capture reactions)
-            if (week?.voteMessage) {
-                await (await client.channels.fetch(week.voteMessage.channelId)).messages.fetch(week.voteMessage.messageId);
-            }
+            await getSNMWeek(server[0]);
         }
 
         console.log('Got SNM files');
