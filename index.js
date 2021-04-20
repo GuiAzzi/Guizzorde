@@ -1455,11 +1455,13 @@ client.on('message', async message => {
             connection = await message.member.voice.channel.join();
 
             if (messageText === 'countdown')
-                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown${Math.floor(Math.random() * 2) + 1}.mp3`, { volume: 0.7 });
+                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown${Math.floor(Math.random() * 3) + 1}.mp3`, { volume: 0.7 });
             else if (messageText === 'countdown1')
                 dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown1.mp3`, { volume: 0.7 });
             else if (messageText === 'countdown2')
                 dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown2.mp3`, { volume: 0.7 });
+            else if (messageText === 'countdown3')
+                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown3.mp3`, { volume: 0.7 });
             else
                 dispatcher = connection.play(ytdl(messageText, { filter: 'audioonly' }), { volume: 0.15 });
 
