@@ -1015,47 +1015,35 @@ export const snmCommands = {
                     client.channels.fetch(defaultChannel, true, true);
                 }
 
-                running ? snmServer.schedule.running = running : null;
+                if (running === true || running === false){
+                    snmServer.schedule.running = running;
+                    await snmServer.toggleSchedule(running);
+                }
 
                 const SNMSchedule = SNMSchedulesArray.get(interaction.guild_id);
                 if (cronNew) {
                     cronNew === 'default' ? snmServer.schedule.new = '0 8 * * 1' : snmServer.schedule.new = cronNew;
                     // Update cronJob if it exists
                     SNMSchedule?.cronNew.setTime(new CronTime(snmServer.schedule.new, 'America/Sao_Paulo'));
+                    // Cron is stopped after setTime, need to start again if needed
                     snmServer.schedule.running ? SNMSchedule?.cronNew.start() : null;
                 }
                 if (cronStart) {
                     cronStart === 'default' ? snmServer.schedule.start = '0 20 * * 5' : snmServer.schedule.start = cronStart;
                     // Update cronJob if it exists
                     SNMSchedule?.cronStart.setTime(new CronTime(snmServer.schedule.start, 'America/Sao_Paulo'));
+                    // Cron is stopped after setTime, need to start again if needed
                     snmServer.schedule.running ? SNMSchedule?.cronStart.start() : null;
                 }
                 if (cronEnd) {
                     cronEnd === 'default' ? snmServer.schedule.end = '0 20 * * 6' : snmServer.schedule.end = cronEnd;
                     // Update cronJob if it exists
                     SNMSchedule?.cronEnd.setTime(new CronTime(snmServer.schedule.end, 'America/Sao_Paulo'));
+                    // Cron is stopped after setTime, need to start again if needed
                     snmServer.schedule.running ? SNMSchedule?.cronEnd.start() : null;
                 }
 
-                // Doesn't work because undefined props were being set
-                // snmServer = {
-                //     ...snmServer,
-                //     maxEntries: maxEntries,
-                //     maxVotes: maxVotes,
-                //     defaultChannel: defaultChannel,
-                //     schedule: {
-                //         running: running,
-                //         new: cronNew,
-                //         start: cronStart,
-                //         end: cronEnd
-                //     }
-                // }
-
                 snmServer = await upsertSNMServer(snmServer);
-
-                if (running !== undefined) {
-                    snmServer.toggleSchedule(running);
-                }
 
                 return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                     data: {
@@ -1312,7 +1300,7 @@ export const snmEnable = new GuizzordeCommand({
 
             const option = interaction.data.options?.find((arg => arg.name === 'option')).value;
 
-            if (option) {
+            if (option === true) {
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
                         type: 4,
@@ -1323,7 +1311,7 @@ export const snmEnable = new GuizzordeCommand({
                     }
                 })
             }
-            else if (!option) {
+            else if (option === false) {
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
                         type: 4,
@@ -1352,6 +1340,11 @@ export const snmEnable = new GuizzordeCommand({
                         end: '0 20 * * 6'
                     }
                 })
+            }
+            // Server exists in the Database and is being disabled -> Stop any CronJob's
+            else if (option === false) {
+                snmServer.schedule.running = option;
+                await snmServer.toggleSchedule(option);
             }
             snmServer.enabled = option;
             await upsertSNMServer(snmServer);

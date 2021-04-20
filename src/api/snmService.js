@@ -51,6 +51,7 @@ export async function getSNMWeek(guildId, week, status) {
 
         }
 
+        // Caches SNMWeek
         SNMWeekArray.set(snmWeek.guildId, snmWeek);
         return Promise.resolve(snmWeek);
 
@@ -80,7 +81,7 @@ export async function upsertSNMWeek(snmWeek) {
             });
         mongodb.close();
         const week = new SNMWeek(res.value);
-        // Updates local memory
+        // Updates SNMWeek Cache
         SNMWeekArray.set(week.guildId, week);
         return Promise.resolve(week);
     }
@@ -103,6 +104,7 @@ export async function getSNMServer(guildId) {
             .collection(configObj.mongodbCollections[0])
             .findOne({ guildId }) || {});
         await mongodb.close();
+        // Caches SNMServer
         SNMServerArray.set(snmServer.guildId, snmServer);
         return Promise.resolve(snmServer);
     }
@@ -131,6 +133,7 @@ export async function upsertSNMServer(snmServer) {
             });
         mongodb.close();
         const server = new SNMServer(res.value);
+        // Updates SNMServer Cache
         SNMServerArray.set(server.guildId, server);
         return Promise.resolve(server);
     }

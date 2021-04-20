@@ -73,6 +73,7 @@ export class SNMServer {
                             },
                             null,
                             true,
+                            // TODO: Update to SNMServer.timeZone whem implemented
                             'America/Sao_Paulo'
                         ),
                         cronStart: new cron.CronJob(
