@@ -10,6 +10,7 @@ import {
     upsertSNMWeek,
 } from './src/api/index.js';
 import {
+    remindMeCommands,
     setReminders,
     slashMovie,
     snmCommands,
@@ -616,6 +617,9 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             for (let i = 0; i < queridometroEmojis.length; i++) {
                 await queridometroMsg.react(queridometroEmojis[i]);
             };
+            break;
+        case 'remindme':
+            remindMeCommands.remindMe.handler(interaction);
             break;
     }
 
