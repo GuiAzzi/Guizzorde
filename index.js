@@ -10,6 +10,7 @@ import {
     upsertSNMWeek,
 } from './src/api/index.js';
 import {
+    setReminders,
     slashMovie,
     snmCommands,
     snmEnable,
@@ -847,6 +848,10 @@ client.on('ready', async () => {
     // }
 
     try {
+        // Setups Reminders
+        await setReminders()
+        console.log('Finished setting up Reminders');
+
         // Gets SNMServer objects
         for (const guild of client.guilds.cache) {
             const server = await getSNMServer(guild[0]);

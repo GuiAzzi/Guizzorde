@@ -24,6 +24,8 @@ export class Config {
         this.mongodbCollections = params.mongodbCollections;
         /** @type {string} OSCredentials - Open Subtitle Credentials */
         this.OSCredentials = params.OSCredentials;
+        /** @type {string} RemindMeCollection - Reminders Collection */
+        this.RemindMeCollection = params.RemindMeCollection;
     }
 }
 
@@ -37,6 +39,7 @@ const configJSON = existsSync('./src/config/config.json') ? JSON.parse(readFileS
     mongodbName: process.env.MONGODB_NAME,
     mongodbCollections: process.env.MONGODB_COLLECTIONS?.split(','),
     OSCredentials: process.env.OSCREDENTIALS?.split(','),
+    RemindMeCollection: process.env.REMINDME_COLLECTION
 };
 export const configObj = new Config(configJSON);
 export const client = new Discord.Client({ partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'] });
