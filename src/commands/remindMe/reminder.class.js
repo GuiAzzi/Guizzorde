@@ -19,16 +19,18 @@ export class GuizzordeReminder {
     constructor(params) {
         /** @type {number} The Reminder's ID - Incremental number */
         this.reminderId = params.reminderId;
-        /** @type {string} The Reminder's Message's ID - For editing later */
-        this.messageId = params.messageId;
+        /** @type {{channelId: string, messageId: string}}} The Reminder's Message's ID - For editing later */
+        this.message = params.message;
         /** @type {[{userId: string, username: string}]} Array of users to be reminded */
         this.users = params.users;
         /** @type {string} The Reminder's text */
         this.text = params.text;
         /** @type {number} The Reminder's due date in UNIX time */
         this.date = params.date;
-        /** @type {boolean} Whether the reminder has been fired or not */
+        /** @type {boolean} Whether the Reminder has been fired or not */
         this.fired = params.fired;
+        /** @type {boolean} Whether the Reminder is private or not */
+        this.private = params.private;
     }
 }
 
@@ -46,7 +48,8 @@ export async function fireReminder(reminder) {
                         .setDescription(reminder.text)
                         .setColor(0x3498DB)
                         .setTimestamp(new Date().toJSON())
-                ));
+                ))
+                .catch(e => reportError(e));
         }
 
         reminder.fired = true;
@@ -63,7 +66,7 @@ export async function fireReminder(reminder) {
 
 // In-Memory Stuff
 /** @type {{nextReminder: GuizzordeReminder, lastReminder: GuizzordeReminder, reminderJob: CronJob|null} */
-const reminders = {
+export const reminders = {
     nextReminder: null,
     lastReminder: null,
     reminderJob: null,
