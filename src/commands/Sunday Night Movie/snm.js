@@ -4,6 +4,7 @@ import Discord from 'discord.js';
 import {
     getSNMServer,
     getSNMWeek,
+    getWinnersList,
     upsertSNMServer,
     upsertSNMWeek,
 } from '../../api/index.js';
@@ -18,10 +19,11 @@ import {
 import {
     _slashCommand,
     deregister,
+    generateCompactMovieEmbed,
+    generateMovieEmbed,
     GuizzordeCommand,
     register,
 } from '../index.js';
-import { generateCompactMovieEmbed, generateMovieEmbed } from '../movie/index.js';
 import {
     SNMSchedulesArray,
     SNMServer,
@@ -67,23 +69,36 @@ export const snmCommands = {
             });
 
             try {
-                const snmWeek = await getSNMWeek(interaction.guild_id, week);
-
-                // Week doesn't exist
-                if (!snmWeek.week) {
-                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                // If week <= 0 gets list of winners
+                if (week <= 0) {
+                    return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
-                            embeds: [snmWeekEmbed.setTitle('Error').setDescription('No week found').setColor('RED')]
+                            embeds: [
+                                snmWeekEmbed.setTitle(`🥇 List of SNM Winners 🥇`)
+                                    .setDescription(await getWinnersList(interaction.guild_id))
+                            ]
                         }
                     });
                 }
                 else {
-                    snmWeekEmbed.setTitle(`👨‍💻 Sunday Night Movie ${snmWeek.week} 👨‍💻`).setDescription(`\`\`\`JSON\n${JSON.stringify(snmWeek, null, 2)}\`\`\``);
-                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                        data: {
-                            embeds: [_export ? snmWeekEmbed : snmEmbed(snmWeek)]
-                        }
-                    });
+                    const snmWeek = await getSNMWeek(interaction.guild_id, week);
+
+                    // Week doesn't exist
+                    if (!snmWeek.week) {
+                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                embeds: [snmWeekEmbed.setTitle('Error').setDescription('No week found').setColor('RED')]
+                            }
+                        });
+                    }
+                    else {
+                        snmWeekEmbed.setTitle(`👨‍💻 Sunday Night Movie ${snmWeek.week} 👨‍💻`).setDescription(`\`\`\`JSON\n${JSON.stringify(snmWeek, null, 2)}\`\`\``);
+                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                embeds: [_export ? snmWeekEmbed : snmEmbed(snmWeek)]
+                            }
+                        });
+                    }
                 }
             }
             catch (e) {
@@ -1015,7 +1030,7 @@ export const snmCommands = {
                     client.channels.fetch(defaultChannel, true, true);
                 }
 
-                if (running === true || running === false){
+                if (running === true || running === false) {
                     snmServer.schedule.running = running;
                     await snmServer.toggleSchedule(running);
                 }

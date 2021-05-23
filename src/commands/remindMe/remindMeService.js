@@ -1,12 +1,38 @@
+import { User } from 'discord.js';
 import mongodb from 'mongodb';
 
 import { configObj } from '../../config/index.js';
 import { reportError } from '../../util/index.js';
-import { GuizzordeReminder } from '../index.js';
-import { fireReminder } from './reminder.class.js';
+import {
+    fireReminder,
+    GuizzordeReminder,
+} from '../index.js';
 
 async function dbConnect() {
     return await mongodb.MongoClient.connect(configObj.mongodbURI, { useNewUrlParser: true })
+}
+
+/**
+ * 
+ * @param {number} reminderId The Reminder Id
+ * @returns {Promise<[{userId: string, username: string}]>} The current subscribed users list
+ */
+export async function getSubscribedUsers(reminderId) {
+    try {
+        const mongodb = await dbConnect();
+        const users = await mongodb.db(configObj.mongodbName)
+            .collection(configObj.RemindMeCollection)
+            .findOne(
+                { reminderId: reminderId },
+                { projection: { users: 1 } }
+            );
+        await mongodb.close();
+        return Promise.resolve(users.users);
+    }
+    catch (e) {
+        reportError(e);
+        return Promise.reject(e);
+    }
 }
 
 /**
@@ -34,6 +60,7 @@ export async function upsertReminder(reminder) {
     }
     catch (e) {
         reportError(e);
+        return Promise.reject(e);
     }
 }
 
@@ -51,7 +78,7 @@ export async function getNextReminder() {
         );
         await mongodb.close();
 
-        // If nextReminder is PAST due -> fire reminder and gets next
+        // If nextReminder is PAST due -> fire Reminder and gets next
         if (new Date().getTime() / 1000 > reminder?.date) {
             await fireReminder(reminder);
             return Promise.resolve(await getNextReminder());
@@ -61,6 +88,7 @@ export async function getNextReminder() {
     }
     catch (e) {
         reportError(e);
+        return Promise.reject(e);
     }
 }
 
@@ -82,5 +110,76 @@ export async function getLastReminder() {
     }
     catch (e) {
         reportError(e);
+        return Promise.reject(e);
+    }
+}
+
+/**
+ * Retrieves a list with *not fired* Reminders
+ * @returns {Promise<string[{reminderId: number, messageId: string}]>} Set of *not fired* reminderId's
+*/
+export async function getReminderList() {
+    try {
+        /**
+         * Maps to message.messageId
+         * @param {Partial<GuizzordeReminder>} item 
+        */
+        const mapFunc = (item) => {
+            return { reminderId: item.reminderId, messageId: item.message.messageId };
+        }
+
+        const mongodb = await dbConnect();
+        const reminderList = await mongodb.db(configObj.mongodbName)
+            .collection(configObj.RemindMeCollection)
+            .find(
+                { fired: false, "message.messageId": { $ne: null } },
+                {
+                    sort: { reminderId: 1 },
+                    projection: { reminderId: 1, "message.messageId": 1 }
+                }
+            )
+            .map(mapFunc)
+            .toArray();
+        mongodb.close();
+        return Promise.resolve(reminderList);
+    }
+    catch (e) {
+        reportError(e);
+        return Promise.reject(e);
+    }
+}
+
+/**
+ * Toggles a User from GuizzordeReminder.users array
+ * @param {number} reminderId The Reminder Id
+ * @param {User} user The User to subscribe or unsubscribe
+ * @param {"add"|"remove"} operation The toggle operation
+ */
+export async function toggleUserSubscription(reminderId, user, operation) {
+    try {
+        const mongodb = await dbConnect();
+        if (operation === "add") {
+            await mongodb.db(configObj.mongodbName)
+                .collection(configObj.RemindMeCollection)
+                .updateOne(
+                    { reminderId: reminderId },
+                    { $addToSet: { users: { userId: user.id, username: user.username } } }
+                )
+            user.send('Subscribed! You will be notified via DM.');
+        }
+        else if (operation === "remove") {
+            await mongodb.db(configObj.mongodbName)
+                .collection(configObj.RemindMeCollection)
+                .updateOne(
+                    { reminderId: reminderId },
+                    { $pull: { users: { userId: user.id, username: user.username } } }
+                )
+            user.send('You have been unsubscribed');
+        }
+        mongodb.close();
+
+    }
+    catch (e) {
+        reportError(`Failed to toggle ${user.username}'s Subscription of Reminder: ${reminderId}\n${e}`);
     }
 }

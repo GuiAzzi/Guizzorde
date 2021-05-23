@@ -10,6 +10,7 @@ import {
     upsertSNMWeek,
 } from './src/api/index.js';
 import {
+    Reminders,
     remindMeCommands,
     setReminders,
     slashMovie,
@@ -17,6 +18,7 @@ import {
     snmEnable,
     SNMServerArray,
     SNMWeekArray,
+    toggleUserSubscription,
 } from './src/commands/index.js';
 // Guizzorde config object
 import {
@@ -886,7 +888,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
     // Reactions from self, do nothing
     if (user.id === client.user.id) return;
     // Reaction on a SNMWeek voteMessage
-    else if (SNMWeekArray.get(reaction.message.guild.id)?.voteMessage?.messageId === reaction.message.id) {
+    else if (SNMWeekArray.get(reaction.message.guild?.id)?.voteMessage?.messageId === reaction.message.id) {
         const snmWeek = SNMWeekArray.get(reaction.message.guild.id);
         const snmServer = SNMServerArray.get(reaction.message.guild.id);
 
@@ -965,7 +967,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
     //         });
     //     console.log('Swapped torrent');
     // }
-    // reaction on queridometro
+    // Reaction on queridometro
     else if (reaction.message.embeds && reaction.message.embeds[0]?.title === 'Queridometro') {
         console.log(`${user.username} reacted on queridometro`)
         // checks if user has a reaction on any other emoji
@@ -981,6 +983,25 @@ client.on('messageReactionAdd', async (reaction, user) => {
                 }
             }
         })
+    }
+    // Reaction on a *not fired* Reminder inside Reminders.idList
+    else if (Reminders.idList.has(reaction.message.id)) {
+        if (reaction.emoji.name === '🔔') {
+            // Subscribe User
+            toggleUserSubscription(Reminders.idList.get(reaction.message.id), user, "add");
+        }
+    }
+});
+
+client.on('messageReactionRemove', async (reaction, user) => {
+    // Reactions from self, do nothing
+    if (user.id === client.user.id) return;
+    // Reaction on a *not fired* Reminder inside Reminders.idList
+    else if (Reminders.idList.has(reaction.message.id)) {
+        if (reaction.emoji.name === '🔔') {
+            // Unsubscribe User
+            toggleUserSubscription(Reminders.idList.get(reaction.message.id), user, "remove");
+        }
     }
 });
 
