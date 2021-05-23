@@ -112,14 +112,11 @@ export const remindMeCommands = {
                         channelId: interaction.channel_id,
                         messageId: _private ? null : originalMsg.id
                     },
-                    // Only auto-add invoking user to list if reminder is private
-                    // This is so you can create events for others, not necessarly means
-                    // invoking user wants to be notified
                     // If invoked via DM (.user present); if on guild (.member present)
-                    users: _private ? [{
+                    users: [{
                         userId: interaction.user?.id || interaction.member.user.id,
                         username: interaction.user?.username || interaction.member.user.username
-                    }] : [],
+                    }],
                     text: note,
                     date: parsedDate.getTime() / 1000,
                     fired: false,
