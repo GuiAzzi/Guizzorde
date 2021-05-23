@@ -57,7 +57,7 @@ export async function getSNMWeek(guildId, week, status) {
 
     }
     catch (e) {
-        Promise.reject(e);
+        return Promise.reject(e);
     }
 }
 
@@ -136,6 +136,44 @@ export async function upsertSNMServer(snmServer) {
         // Updates SNMServer Cache
         SNMServerArray.set(server.guildId, server);
         return Promise.resolve(server);
+    }
+    catch (e) {
+        return Promise.reject(e);
+    }
+}
+
+/**
+ * Retrieves a list with all the past winner's titles from a guild
+ * @param {string} guildId The guild Id
+ * @returns {string[]} Array containing all winner's titles
+*/
+export async function getWinnersList(guildId) {
+    try {
+        /**
+         * Maps results and gets the winner's title
+         * @param {Partial<SNMWeek>} item 
+        */
+        const mapFunc = (item) => {
+            return `${item.week} - ${item.users.find(user => user.movies.find(movie => movie.titleKey === item.winner.titleKey)).movies.find(movie => movie.titleKey === item.winner.titleKey).title}`;
+        }
+
+        const mongodb = await dbConnect();
+        const winnerList = await mongodb.db(configObj.mongodbName)
+            .collection(configObj.mongodbCollections[1])
+            .find(
+                {
+                    guildId: guildId,
+                    status: 'finished'
+                },
+                {
+                    sort: { week: 1 },
+                    projection: { winner: 1, users: 1, week: 1 }
+                }
+            )
+            .map(mapFunc)
+            .toArray();
+        mongodb.close();
+        return Promise.resolve(winnerList);
     }
     catch (e) {
         return Promise.reject(e);
