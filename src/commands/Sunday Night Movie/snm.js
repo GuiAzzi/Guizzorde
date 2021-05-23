@@ -71,14 +71,31 @@ export const snmCommands = {
             try {
                 // If week <= 0 gets list of winners
                 if (week <= 0) {
-                    return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                        data: {
-                            embeds: [
-                                snmWeekEmbed.setTitle(`🥇 List of SNM Winners 🥇`)
-                                    .setDescription(await getWinnersList(interaction.guild_id))
-                            ]
+
+                    const arr = (await getWinnersList(interaction.guild_id)).match(/.{1,2048}$/gms);
+                    
+                    for (let i = 0; i < arr.length; i++) {
+                        if (i === 0) {
+                            await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                data: {
+                                    embeds: [
+                                        snmWeekEmbed.setTitle(`🥇 List of SNM Winners 🥇`)
+                                            .setDescription(arr[i])
+                                    ]
+                                }
+                            });
                         }
-                    });
+                        else {
+                            await client.api.webhooks(configObj.appId, interaction.token).post({
+                                data: {
+                                    embeds: [
+                                        snmWeekEmbed.setTitle('')
+                                            .setDescription(arr[i])
+                                    ]
+                                }
+                            });
+                        }
+                    }
                 }
                 else {
                     const snmWeek = await getSNMWeek(interaction.guild_id, week);
