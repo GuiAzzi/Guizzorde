@@ -145,16 +145,33 @@ export async function upsertSNMServer(snmServer) {
 /**
  * Retrieves a list with all the past winner's titles from a guild
  * @param {string} guildId The guild Id
- * @returns {string[]} Array containing all winner's titles
+ * @returns {Promise<string>} Array containing all winner's titles
 */
 export async function getWinnersList(guildId) {
     try {
+        // Holds the score data
+        /** @type {{userId: {username: string, wins: number}}} */
+        const scoreBoard = {};
+
         /**
          * Maps results and gets the winner's title
          * @param {Partial<SNMWeek>} item 
         */
         const mapFunc = (item) => {
-            return `${item.week} - ${item.users.find(user => user.movies.find(movie => movie.titleKey === item.winner.titleKey)).movies.find(movie => movie.titleKey === item.winner.titleKey).title}`;
+            const winnerUser = item.users.find(user => user.movies.find(movie => movie.titleKey === item.winner.titleKey));
+            if (scoreBoard[winnerUser.userId]) {
+                scoreBoard[winnerUser.userId] = {
+                    username: winnerUser.username,
+                    wins: scoreBoard[winnerUser.userId].wins += 1
+                };
+            }
+            else {
+                scoreBoard[winnerUser.userId] = {
+                    username: winnerUser.username,
+                    wins: 0
+                };
+            }
+            return `${item.week} - ${winnerUser.movies.find(movie => movie.titleKey === item.winner.titleKey).title} | ${winnerUser.username}`;
         }
 
         const mongodb = await dbConnect();
@@ -173,7 +190,38 @@ export async function getWinnersList(guildId) {
             .map(mapFunc)
             .toArray();
         mongodb.close();
-        return Promise.resolve(winnerList);
+
+        // FIXME: Move this logic to command
+        // TODO: Better formatting
+        let parsedScoreBoard = []
+        for (const [key, value] of Object.entries(scoreBoard))
+            parsedScoreBoard.push([value.username, value.wins]);
+        parsedScoreBoard.sort((a, b) => {
+            // Sort by votes
+            // If the first item has a higher number, move it down
+            // If the first item has a lower number, move it up
+            if (a[1] < b[1]) return 1;
+            if (a[1] > b[1]) return -1;
+
+            // If the votes number is the same between both items, sort alphabetically
+            // If the first item comes first in the alphabet, move it up
+            // Otherwise move it down
+            if (a[0] > b[0]) return 1;
+            if (a[0] < b[0]) return -1;
+        });
+        for (let i = 0; i < parsedScoreBoard.length; i++) {
+            if (i === 0)
+                parsedScoreBoard[i] = `${parsedScoreBoard[i][1] ? `🥇 ` : ''}${parsedScoreBoard[i].join(': ')}\n`;
+            else if (i === 1)
+                parsedScoreBoard[i] = `${parsedScoreBoard[i][1] ? `🥈 ` : ''}${parsedScoreBoard[i].join(': ')}\n`;
+            else if (i === 2)
+                parsedScoreBoard[i] = `${parsedScoreBoard[i][1] ? `🥉 ` : ''}${parsedScoreBoard[i].join(': ')}\n`;
+            else
+                parsedScoreBoard[i] = `${parsedScoreBoard[i].join(': ')}\n`;
+        }
+
+        const res = `${winnerList.join('\n')}\n\n${parsedScoreBoard.join('')}`;
+        return Promise.resolve(res);
     }
     catch (e) {
         return Promise.reject(e);
