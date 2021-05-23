@@ -159,18 +159,16 @@ export async function getWinnersList(guildId) {
         */
         const mapFunc = (item) => {
             const winnerUser = item.users.find(user => user.movies.find(movie => movie.titleKey === item.winner.titleKey));
-            if (scoreBoard[winnerUser.userId]) {
-                scoreBoard[winnerUser.userId] = {
-                    username: winnerUser.username,
-                    wins: scoreBoard[winnerUser.userId].wins += 1
-                };
-            }
-            else {
+            if (!scoreBoard[winnerUser.userId]) {
                 scoreBoard[winnerUser.userId] = {
                     username: winnerUser.username,
                     wins: 0
                 };
             }
+            scoreBoard[winnerUser.userId] = {
+                username: winnerUser.username,
+                wins: scoreBoard[winnerUser.userId].wins += 1
+            };
             return `${item.week} - ${winnerUser.movies.find(movie => movie.titleKey === item.winner.titleKey).title} | ${winnerUser.username}`;
         }
 
