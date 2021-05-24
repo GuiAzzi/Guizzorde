@@ -1142,6 +1142,9 @@ client.on('message', async message => {
 
             logMessage = `Changed sub from ${args[0]} of channel ${args[1]} with ${args[2]}`;
             break;
+        // case 'changetorrent':
+        //     // TODO:
+        //     break;
         case 'snmpause':
             // No longer supported, use /snmConfig
             message.channel.send(`This command is no longer supported. Use \`/snmConfig\` instead.`);

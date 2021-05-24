@@ -50,7 +50,27 @@ export const remindMeCommands = {
                     type: 5,
                     name: 'private',
                     description: 'Whether other people can see and subscribe to this reminder'
-                }
+                },
+                // TODO:
+                // {
+                //     type: 4,
+                //     name: 'timezone',
+                //     description: 'Your timezone | Default is Brazil',
+                //     choices: [
+                //         {
+                //             name: 'Germany',
+                //             value: 
+                //         },
+                //         {
+                //             name: 'Canada',
+                //             value: 180
+                //         },
+                //         {
+                //             name: 'Brazil',
+                //             value: -180
+                //         }
+                //     ]
+                // }
             ]
         }),
         register: register,
@@ -60,6 +80,7 @@ export const remindMeCommands = {
                 const note = interaction.data.options?.find((arg => arg.name === 'note'))?.value;
                 const date = interaction.data.options?.find((arg => arg.name === 'date'))?.value;
                 const _private = interaction.data.options?.find((arg => arg.name === 'private'))?.value || interaction.user?.id ? true : false
+                const timeZone = interaction.data.options?.find((arg => arg.name === 'timezone'))?.value || -180
 
                 // deferred response | type 5
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
@@ -74,11 +95,24 @@ export const remindMeCommands = {
                 // Gets original msg
                 const originalMsg = _private ? null : await client.api.webhooks(configObj.appId, interaction.token).messages('@original').get();
 
+                // Creates a custom Chrono Refiner so we can set the expected utcOffset
+                const custom = new chrono.Chrono();
+                custom.refiners.push({
+                    refine: (text, results, opt) => {
+                        results.forEach(r => {
+                            r.start.imply('timezoneOffset', timeZone);
+                            r.end && r.end.imply('timezoneOffset', timeZone)
+                        })
+                        return results;
+                    }
+                });
+
                 // Try to parse date in english first then in pt
-                const parsedDate = chrono.parseDate(date) || chrono.pt.parseDate(date);
+                const parsedDate = custom.parseDate(date) || chrono.pt.parse(date);
 
                 // If failed to parse
                 if (!parsedDate) {
+                    console.log(`Couldn't understand "${date}" input`);
                     return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [
@@ -92,6 +126,7 @@ export const remindMeCommands = {
                     });
                 }
                 else if (Date.now() > parsedDate.getTime()) {
+                    console.log(`Date is past. Now: ${Date.now()} | Input: ${parsedDate.getTime()}`);
                     return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
                             embeds: [
@@ -183,6 +218,7 @@ export const remindMeCommands = {
                     //     djsOriginalMsg.reactions.removeAll();
                     // });
                 }
+                console.log(`Reminder ${newReminder.reminderId} created for ${parsedDate.toJSON()}`);
             }
             catch (e) {
                 reportError(e)
