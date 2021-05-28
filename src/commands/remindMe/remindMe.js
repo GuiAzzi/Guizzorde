@@ -255,11 +255,18 @@ export async function fireReminder(reminder) {
         if (reminder.message.messageId) {
             // Removes from idList, works if present or not
             Reminders.idList.delete(reminder.message.messageId);
-            /** @type {Message} */
-            const reminderMsg = await (await client.channels.fetch(reminder.message.channelId)).messages.fetch(reminder.message.messageId);
-            // Removes 🔔 from Reminder's message
-            reminderMsg.reactions.cache.get('🔔').remove();
-            reminderMsg.edit(reminderMsg.embeds[0].setFooter(''));
+
+            // See if channel and message exists
+            try {
+                /** @type {Message} */
+                const reminderMsg = await (await client.channels.fetch(reminder.message.channelId)).messages.fetch(reminder.message.messageId);
+                // Removes 🔔 from Reminder's message
+                reminderMsg.reactions.cache.get('🔔').remove();
+                reminderMsg.edit(reminderMsg.embeds[0].setFooter(''));
+            }
+            catch (e) {
+                console.log(`Couldn't retrieve Reminder ${reminder.reminderId} message, maybe it was deleted?`);
+            }
         }
 
         console.log(`Fired Reminder with ID ${reminder.reminderId} to ${reminder.users.length} user(s)`);
