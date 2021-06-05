@@ -248,45 +248,73 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             break;
         case 'torrent':
             // Search for a torrent on a list of providers
+            try {
+                // Array containing command-specific tips
+                const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)', 'Looking for a movie? Try the /movie command'];
 
-            // Array containing command-specific tips
-            const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)', 'Looking for a movie? Try the /movie command'];
-
-            // Sends to-be-edited message
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
+                // Sends to-be-edited message
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
-                        embeds: [new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB)]
+                        type: 4,
+                        data: {
+                            embeds: [new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB)]
+                        }
                     }
-                }
-            });
+                });
 
-            // Searchs torrents
-            await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], args[0].value, null, 3).then(async (result) => {
-                if (result.length === 0 || result[0].title === "No results returned")
-                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                        data: {
-                            embeds: [new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(`No torrent found 😔`).setColor(0x3498DB)]
+                // Searchs torrents
+                await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], args[0].value, null, 3).then(async (result) => {
+                    if (result.length === 0 || result[0].title === "No results returned")
+                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                embeds: [new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(`No torrent found 😔`).setColor(0x3498DB)]
+                            }
+                        });
+                    else {
+                        let torrentList = [];
+                        for (let torrent of result) {
+                            torrentList.push(`\n\n[${torrent.title.replace(/\[|\]/g, '')}]( ${torrent.magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrent.magnet) : torrent.desc} )\n${torrent.size} | ${torrent.seeds} seeders | ${torrent.provider}`);
                         }
-                    });
-                else {
-                    let torrentList = "";
-                    for (let torrent of result) {
-                        torrentList += `\n\n[${torrent.title}](${torrent.magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrent.magnet) : torrent.desc})\n${torrent.size} | ${torrent.seeds} seeders | ${torrent.provider}`;
+                        let torrentEmbed = new Discord.MessageEmbed().setColor(0x3498DB);
+
+                        // Check if message exceeds Discord's Max Characters (2048)
+                        const arr = torrentList.join('').match(/.{1,2048}$/gms);
+
+                        for (let i = 0; i < arr.length; i++) {
+                            // If first pass - embed with title
+                            if (i === 0) {
+                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                                    data: {
+                                        embeds: [torrentEmbed.setTitle('Torrents Found: ').setDescription(arr[i])]
+                                    }
+                                });
+                            }
+                            else {
+                                // If last pass - add footer
+                                if (i === arr.length - 1) {
+                                    if (interaction.guild_id)
+                                        torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
+                                    else
+                                        torrentEmbed.setFooter(`Tip: ${tips[1]}`);
+                                }
+                                await client.api.webhooks(configObj.appId, interaction.token).post({
+                                    data: {
+                                        embeds: [torrentEmbed.setTitle('').setDescription(arr[i])]
+                                    }
+                                });
+                            }
+                        }
                     }
-                    let torrentEmbed = new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0x3498DB);
-                    if (interaction.guild_id)
-                        torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
-                    else
-                        torrentEmbed.setFooter(`Tip: ${tips[1]}`);
-                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                        data: {
-                            embeds: [torrentEmbed]
-                        }
-                    });
-                }
-            });
+                });
+            }
+            catch (e) {
+                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                    data: {
+                        embeds: [new Discord.MessageEmbed().setTitle('Error').setDescription('An error has occured. Pelase report this bug.').setColor("RED")]
+                    }
+                });
+                reportError(e);
+            }
             break;
         case 'subtitle':
             let sub;
@@ -1514,7 +1542,6 @@ client.on('message', async message => {
             message.channel.send(donato[Math.floor(Math.random() * donato.length)]);
             break;
         default:
-            message.channel.send('Invalid command. See \`!help\` for the list of commands.');
             break;
     }
 
