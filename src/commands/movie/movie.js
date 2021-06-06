@@ -141,7 +141,7 @@ export async function generateMovieEmbed(title, jwLocale) {
         // Where to watch
         embedWhereToWatchValue = jwTitleEN.offers?.map(offer => {
             let offerRtn = jwProvidersEN.find(provider => provider.id === offer.provider_id);
-            return `[${offerRtn.clear_name || offerRtn.technical_name}](${offer.urls.standard_web})`;
+            return `[${offerRtn?.clear_name || offerRtn?.technical_name}](${offer.urls.standard_web})`;
         }).join(' | ') || 'Not Found';
 
         // Director
@@ -181,7 +181,7 @@ export async function generateMovieEmbed(title, jwLocale) {
         // Where to watch
         embedWhereToWatchValue = jwTitleBR.offers?.map(offer => {
             let offerRtn = jwProvidersBR.find(provider => provider.id === offer.provider_id);
-            return `[${offerRtn.clear_name || offerRtn.technical_name}](${offer.urls.standard_web})`;
+            return `[${offerRtn?.clear_name || offerRtn?.technical_name}](${offer.urls.standard_web})`;
         }).join(' | ') || 'Not Found';
 
         // Director
