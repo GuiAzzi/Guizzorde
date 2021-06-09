@@ -18,8 +18,10 @@ import {
     deregister,
     getLastReminder,
     getNextReminder,
+    getReminder,
     getReminderList,
     getSubscribedUsers,
+    getUserSubscriptionList,
     GuizzordeCommand,
     GuizzordeReminder,
     register,
@@ -143,6 +145,7 @@ export const remindMeCommands = {
                 // Creates new Reminder
                 let newReminder = new GuizzordeReminder({
                     reminderId: Reminders.lastReminder?.reminderId + 1 || 1,
+                    ownerId: interaction.user?.id || interaction.member.user.id,
                     message: {
                         channelId: interaction.channel_id,
                         messageId: _private ? null : originalMsg.id
@@ -219,6 +222,114 @@ export const remindMeCommands = {
                     // });
                 }
                 console.log(`Reminder ${newReminder.reminderId} created for ${parsedDate.toJSON()}`);
+            }
+            catch (e) {
+                reportError(e)
+            }
+        }
+    }),
+    remindMeList: new GuizzordeCommand({
+        command: new _slashCommand({
+            name: 'remindme_list',
+            description: `See your subscribed Reminders or send an existing Reminder so people can subscribe to it`,
+            options: [
+                {
+                    type: 4,
+                    name: 'id',
+                    required: false,
+                    description: 'Specify a Reminder ID to display on this channel | Atention: This makes the Reminder public!'
+                }
+            ]
+        }),
+        register: register,
+        deregister: deregister,
+        handler: async function (interaction) {
+            try {
+                const id = interaction.data.options?.find((arg => arg.name === 'id'))?.value;
+                const requestingUserId = interaction.user?.id || interaction.member.user.id;
+
+                // deferred response | type 5
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 5,
+                        data: {
+                            flags: id ? null : 64
+                        }
+                    }
+                });
+
+                // Show all subscribed reminders
+                if (!id) {
+                    const userSubList = await getUserSubscriptionList(requestingUserId);
+                    const userSubListEmbed = new MessageEmbed().setTitle('Subscribed Reminders').setColor(0x3498DB);
+                    // If array is empty - user is not subscribed to any Reminder
+                    if (userSubList.length === 0) {
+                        userSubListEmbed.setDescription('No subscribed Reminders');
+                    }
+                    else {
+                        // Makes Embed Description Array containing subscribed Reminders data
+                        const subscribedArray = [];
+                        for (const item of userSubList) {
+                            subscribedArray.push(`📅 ID: ${item.reminderId}\n📝 ${item.text}\n⏰ ${new Date(item.date * 1000).toUTCString()}${item.ownerId === requestingUserId ? `\n🙂 ${item.users.map(e => e.username).join(', ')}` : ''}${item.private ? '\n🔒 Private' : '\n🔓 Public'}\n`);
+                        }
+                        userSubListEmbed.setDescription(subscribedArray);
+                    }
+
+                    return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                        data: {
+                            embeds: [userSubListEmbed],
+                            flags: 64
+                        }
+                    });
+                }
+                else {
+                    // Get Reminder
+                    let reminder = await getReminder(id);
+                    const oldMessageId = reminder.message.messageId;
+
+                    // If Reminder is private and requestingUser is not the owner
+                    if (reminder.private && requestingUserId != reminder.ownerId) {
+                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').delete();
+                        return await client.api.webhooks(configObj.appId, interaction.token).post({
+                            data: {
+                                content: `This Reminder is private and only the owner can display it`,
+                                flags: 64
+                            }
+                        });
+                    }
+                    // If Reminder is public or requestingUser ir owner - send Reminder Invitation and updates properties
+                    else {
+                        // Get new Reminder MessageId and ChannelId
+                        const newReminderMsg = await client.api.webhooks(configObj.appId, interaction.token).messages('@original').get();
+                        reminder.message = {
+                            messageId: interaction.channel_id,
+                            messageId: newReminderMsg.id
+                        }
+                        reminder.private = false;
+                        reminder = await upsertReminder(reminder);
+
+                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
+                            data: {
+                                embeds: [
+                                    new MessageEmbed()
+                                        .setTitle(`📅 Reminder Invitation 📅`)
+                                        .setDescription(reminder.text)
+                                        .setColor(0x3498DB)
+                                        .setFooter(`Click the bell to subscribe`)
+                                        .setTimestamp(new Date(reminder.date * 1000).toJSON())
+                                ]
+                            }
+                        });
+
+                        // Creates discord.js Message object from @original
+                        const djsNewReminderMsg = new Message(client, newReminderMsg, client.channels.cache.get(newReminderMsg.channel_id));
+                        await djsNewReminderMsg.react('🔔');
+
+                        Reminders.idList.delete(oldMessageId);
+                        Reminders.idList.set(reminder.message.messageId, reminder.reminderId);
+                    }
+                }
+
             }
             catch (e) {
                 reportError(e)

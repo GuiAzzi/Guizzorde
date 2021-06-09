@@ -18,6 +18,8 @@ export class GuizzordeReminder {
     constructor(params) {
         /** @type {number} The Reminder's ID - Incremental number */
         this.reminderId = params.reminderId;
+        /** @type {string} The Owner's ID - User who created this reminder */
+        this.ownerId = params.ownerId;
         /** @type {{channelId: string, messageId: string}}} The Reminder's Message's ID - For editing later */
         this.message = params.message;
         /** @type {[{userId: string, username: string}]} Array of users to be reminded */

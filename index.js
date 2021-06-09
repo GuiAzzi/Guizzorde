@@ -651,6 +651,9 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
         case 'remindme':
             remindMeCommands.remindMe.handler(interaction);
             break;
+        case 'remindme_list':
+            remindMeCommands.remindMeList.handler(interaction);
+            break;
     }
 
     // Logs stuff

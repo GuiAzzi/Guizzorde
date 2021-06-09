@@ -36,6 +36,28 @@ export async function getSubscribedUsers(reminderId) {
 }
 
 /**
+ * Gets a single Reminder from the server
+ * @param {number} reminderId The Reminder Id
+ * @returns {Promise<GuizzordeReminder>} The requested Reminder
+ */
+ export async function getReminder(reminderId) {
+    try {
+        const mongodb = await dbConnect();
+        const reminder = new GuizzordeReminder(await mongodb.db(configObj.mongodbName)
+            .collection(configObj.RemindMeCollection)
+            .findOne(
+                { reminderId }
+            ));
+        await mongodb.close();
+        return Promise.resolve(reminder);
+    }
+    catch (e) {
+        reportError(e);
+        return Promise.reject(e);
+    }
+}
+
+/**
  * Upserts a Reminder into the server
  * @param {GuizzordeReminder} reminder - The Reminder to be upserted
  * @returns {Promise<GuizzordeReminder>} - The upserted Reminder
@@ -181,5 +203,28 @@ export async function toggleUserSubscription(reminderId, user, operation) {
     }
     catch (e) {
         reportError(`Failed to toggle ${user.username}'s Subscription of Reminder: ${reminderId}\n${e}`);
+    }
+}
+
+/**
+ * Returns a list with all the User's current subscribed reminders
+ * @param {number} userId The User to get subscribed reminders
+ * @returns {Promise<Partial<GuizzordeReminder>[]>} The current subscribed users list
+ */
+export async function getUserSubscriptionList(userId) {
+    try {
+        const mongodb = await dbConnect();
+        const userSubList = await mongodb.db(configObj.mongodbName)
+            .collection(configObj.RemindMeCollection)
+            .find(
+                { fired: false, "users.userId": userId },
+                { projection: { message: 0, "users.userId": 0 } }
+            ).toArray();
+        await mongodb.close();
+        return Promise.resolve(userSubList);
+    }
+    catch (e) {
+        reportError(e);
+        return Promise.reject(e);
     }
 }
