@@ -270,7 +270,7 @@ export const remindMeCommands = {
                         // Makes Embed Description Array containing subscribed Reminders data
                         const subscribedArray = [];
                         for (const item of userSubList) {
-                            subscribedArray.push(`📅 ID: ${item.reminderId}\n📝 ${item.text}\n⏰ ${new Date(item.date * 1000).toUTCString()}${item.ownerId === requestingUserId ? `\n🙂 ${item.users.map(e => e.username).join(', ')}` : ''}${item.private ? '\n🔒 Private' : '\n🔓 Public'}\n`);
+                            subscribedArray.push(`📅 ID: ${item.reminderId}\n📝 ${item.text}\n⏰ ${new Date(item.date * 1000).toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})} BRT${item.ownerId === requestingUserId ? `\n🙂 ${item.users.map(e => e.username).join(', ')}` : ''}${item.private ? '\n🔒 Private' : '\n🔓 Public'}\n`);
                         }
                         userSubListEmbed.setDescription(subscribedArray);
                     }
@@ -302,7 +302,7 @@ export const remindMeCommands = {
                         // Get new Reminder MessageId and ChannelId
                         const newReminderMsg = await client.api.webhooks(configObj.appId, interaction.token).messages('@original').get();
                         reminder.message = {
-                            messageId: interaction.channel_id,
+                            channelId: interaction.channel_id,
                             messageId: newReminderMsg.id
                         }
                         reminder.private = false;
