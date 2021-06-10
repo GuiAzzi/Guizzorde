@@ -113,7 +113,7 @@ export const remindMeCommands = {
                 const parsedDate = custom.parseDate(date) || chrono.pt.parse(date);
 
                 // If failed to parse
-                if (!parsedDate) {
+                if (!parsedDate || parsedDate.length === 0) {
                     console.log(`Couldn't understand "${date}" input`);
                     return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
