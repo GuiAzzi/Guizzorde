@@ -953,7 +953,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
                     .setColor(0x3498DB)
                     .setTimestamp(new Date().toJSON());
                 client.users.cache.get(user.id).send(voteEmbed);
-                console.log(`Added user ${user.username} with his/her vote`);
+                console.log(`Added user ${user.username} with their vote`);
             }
             // user already voted on that movie
             else if (userObject.votes.includes(movieTitleKey)) {
