@@ -20,6 +20,7 @@
   "homepage": "https://github.com/GuiAzzi/Guizzorde#readme",
   "dependencies": {
     "@discordjs/opus": "^0.3.3",
+    "@notionhq/client": "^0.2.3",
     "chrono-node": "^2.2.6",
     "cron": "^1.8.2",
     "discord.js": "^12.4.1",

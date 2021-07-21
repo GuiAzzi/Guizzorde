@@ -18,6 +18,7 @@ import {
     snmEnable,
     SNMServerArray,
     SNMWeekArray,
+    suggestion,
     toggleUserSubscription,
 } from './src/commands/index.js';
 // Guizzorde config object
@@ -654,6 +655,9 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
         case 'remindme_list':
             remindMeCommands.remindMeList.handler(interaction);
             break;
+        case 'suggestion':
+            suggestion.handler(interaction);
+            break;
     }
 
     // Logs stuff
@@ -1174,7 +1178,32 @@ client.on('message', async message => {
             logMessage = `Changed sub from ${args[0]} of channel ${args[1]} with ${args[2]}`;
             break;
         // case 'changetorrent':
-        //     // TODO:
+        //     // TODO: below is a copy-paste of changeSub for reference
+        //     // can only be done by owner
+        //     if (message.author.id != configObj.ownerId) {
+        //         logMessage = "Author is not owner"
+        //         break;
+        //     }
+        //     if (args.length === 0) {
+        //         message.channel.send(`Usage: \`!changeSub <channel id> <torrent message id> <new sub download link>\``);
+        //         logMessage = "Wrong usage"
+        //         break;
+        //     }
+        //     let torrentMsgGet = await client.channels.cache.get(args[0]).messages.fetch(args[1]);
+        //     // If message is the old torrent format (only torrent and sub)
+        //     if (torrentMsgGet.embeds[0].description) {
+        //         torrentMsgGet.edit(torrentMsgGet.embeds[0].setDescription(
+        //             torrentMsgGet.embeds[0].description.replace(/\[Subtitle]\(.+\)|No subtitle found/g, `[Subtitle](${args[2]})`)
+        //         ));
+        //     }
+        //     // Else, if new format (full /movie details)
+        //     else {
+        //         const torrentFieldIndex = torrentMsgGet.embeds[0].fields.findIndex(field => field.name === 'Torrent');
+        //         torrentMsgGet.embeds[0].fields[torrentFieldIndex].value = torrentMsgGet.embeds[0].fields[torrentFieldIndex].value.replace(/\[Subtitle]\(.+\)|No subtitle found/g, `[Subtitle](${args[2]})`);
+        //         torrentMsgGet.edit(torrentMsgGet.embeds[0]);
+        //     }
+
+        //     logMessage = `Changed sub from ${args[0]} of channel ${args[1]} with ${args[2]}`;
         //     break;
         case 'snmpause':
             // No longer supported, use /snmConfig

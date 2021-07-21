@@ -26,6 +26,10 @@ export class Config {
         this.OSCredentials = params.OSCredentials;
         /** @type {string} RemindMeCollection - Reminders Collection */
         this.RemindMeCollection = params.RemindMeCollection;
+        /** @type {notionToken} Auth token for Notion integration */
+        this.notionToken = params.notionToken;
+        /** @type {notionDatabaseId} The database for Notion to interact with */
+        this.notionDatabaseId = params.notionDatabaseId;
     }
 }
 
@@ -39,7 +43,10 @@ const configJSON = existsSync('./src/config/config.json') ? JSON.parse(readFileS
     mongodbName: process.env.MONGODB_NAME,
     mongodbCollections: process.env.MONGODB_COLLECTIONS?.split(','),
     OSCredentials: process.env.OSCREDENTIALS?.split(','),
-    RemindMeCollection: process.env.REMINDME_COLLECTION
+    RemindMeCollection: process.env.REMINDME_COLLECTION,
+    notionToken: process.env.NOTION_KEY,
+    notionDatabaseId: process.env.NOTION_DATABASE_ID
+
 };
 export const configObj = new Config(configJSON);
 export const client = new Discord.Client({ partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'] });
