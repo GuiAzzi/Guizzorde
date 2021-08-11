@@ -30,6 +30,6 @@
     "mongodb": "^3.1.13",
     "opensubtitles-api": "^5.1.2",
     "torrent-search-api": "^2.1.4",
-    "ytdl-core": "^4.9.0"
+    "ytdl-core": "^4.9.1"
   }
 }
