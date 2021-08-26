@@ -1,5 +1,6 @@
 import Discord from 'discord.js';
-import { Client } from "@notionhq/client";
+
+import { Client } from '@notionhq/client';
 
 import {
     client,
@@ -63,8 +64,6 @@ export const suggestion = new GuizzordeCommand({
                     }
                 }]
             })
-
-            console.log(response);
 
             if (response) {
                 return await client.api.webhooks(configObj.appId, interaction.token).post({

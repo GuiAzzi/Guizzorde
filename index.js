@@ -5,6 +5,15 @@ import torrentSearch from 'torrent-search-api';
 import ytdl from 'ytdl-core';
 
 import {
+    createAudioPlayer,
+    createAudioResource,
+    entersState,
+    joinVoiceChannel,
+    StreamType,
+    VoiceConnectionStatus,
+} from '@discordjs/voice';
+
+import {
     getSNMServer,
     getSNMWeek,
     upsertSNMWeek,
@@ -102,9 +111,9 @@ const memes = [
 // This exists so we can remove rolled used memes, then recreate the array when all memes have been used
 let usableMemes = [...memes];
 
-// Channel connection var
-let connection = null;
-let dispatcher = null;
+// d.js Audio Player
+const player = createAudioPlayer();
+let connection;
 
 // OpenSub Auth
 const OpenSubtitles = new OS({
@@ -584,11 +593,15 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 }
             });
             const msg = await client.channels.cache.get(interaction.channel_id).send(
-                new Discord.MessageEmbed()
-                    .setTitle(pollTitle)
-                    .setColor(0x3498DB)
-                    .setDescription(pollOptions.join(`\n\n`))
-                    .setFooter('Vote by reacting with the corresponding emoji')
+                {
+                    embeds: [
+                        new Discord.MessageEmbed()
+                            .setTitle(pollTitle)
+                            .setColor(0x3498DB)
+                            .setDescription(pollOptions.join(`\n\n`))
+                            .setFooter('Vote by reacting with the corresponding emoji')
+                    ]
+                }
             );
 
             // Reacts to embed accordingly
@@ -644,7 +657,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 .setTimestamp(new Date().toJSON());
 
             // Send message and react accordingly
-            let queridometroMsg = await client.channels.cache.get(interaction.channel_id).send(queridometroEmbed);
+            let queridometroMsg = await client.channels.cache.get(interaction.channel_id).send({ embeds: [queridometroEmbed] });
             for (let i = 0; i < queridometroEmojis.length; i++) {
                 await queridometroMsg.react(queridometroEmojis[i]);
             };
@@ -938,7 +951,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
             else if (snmWeek.status !== "voting") {
                 await reaction.users.remove(user);
                 console.log(`${user.username} - Voting has ended`);
-                return client.users.cache.get(user.id).send(`Voting has ended`);
+                return client.users.cache.get(user.id).send({ content: `Voting has ended` });
             }
 
             let userObject = snmWeek.users.find(userIndex => userIndex.userId === user.id);
@@ -956,12 +969,12 @@ client.on('messageReactionAdd', async (reaction, user) => {
                     .setFooter(`${voteGuild.name} | SNM ${snmWeek.week}`, voteGuild.iconURL())
                     .setColor(0x3498DB)
                     .setTimestamp(new Date().toJSON());
-                client.users.cache.get(user.id).send(voteEmbed);
+                client.users.cache.get(user.id).send({ embeds: [voteEmbed] });
                 console.log(`Added user ${user.username} with their vote`);
             }
             // user already voted on that movie
             else if (userObject.votes.includes(movieTitleKey)) {
-                client.users.cache.get(user.id).send(`You already voted on that movie.`);
+                client.users.cache.get(user.id).send({ content: `You already voted on that movie.` });
                 console.log(`Duplicate vote`);
             }
             // valid vote
@@ -976,12 +989,12 @@ client.on('messageReactionAdd', async (reaction, user) => {
                     .setFooter(`${voteGuild.name} | SNM ${snmWeek.week}`, voteGuild.iconURL())
                     .setColor(0x3498DB)
                     .setTimestamp(new Date().toJSON());
-                client.users.cache.get(user.id).send(voteEmbed);
+                client.users.cache.get(user.id).send({ embeds: [voteEmbed] });
                 console.log(`${user.username} voted. ${userObject.votes.length}/${snmServer.maxVotes}`);
             }
             // no votes left
             else {
-                client.users.cache.get(user.id).send(`You have no votes left.\n\`/snmVotes clear\` to clear your votes.`);
+                client.users.cache.get(user.id).send({ content: `You have no votes left.\n\`/snmVotes clear\` to clear your votes.` });
                 console.log(`No votes left`);
             }
 
@@ -1040,8 +1053,7 @@ client.on('messageReactionRemove', async (reaction, user) => {
     }
 });
 
-client.on('message', async message => {
-
+client.on('messageCreate', async message => {
     // If message is from another bot, ignore
     if (message.author.bot && message.author.id !== client.user.id) return;
 
@@ -1071,7 +1083,7 @@ client.on('message', async message => {
     switch (command) {
         case 'setavatar': {
             if (message.author.id !== configObj.ownerId) return;
-            const avatarSrc = message.attachments.array()[0].url;
+            const avatarSrc = [...message.attachments.values()][0].url;
             client.user.setAvatar(avatarSrc);
             break;
         }
@@ -1080,75 +1092,15 @@ client.on('message', async message => {
             client.user.setActivity(cleanMessageText);
             break;
         }
-        case 'help':
-            let description = `!ping - Pings the API
-            \n!say <message> - Make the bot say something
-            \n!snm [week number] - Show this week movies or specified week summary
-            \n!snmNew - Start a new week of SNM™
-            \n!snmStart - Initiate voting
-            \n!snmVotes [clear] - See your votes or clear them
-            \n!snmEnd [winner title or position] - Count votes or manually select a winner
-            \n!snmPause - Pauses/Unpauses this week SNM - stop command scheduling
-            \n!snmAdd <movie title> - Add a movie to this week pool
-            \n!snmRemove <movie title or number> - Remove a movie from the week pool
-            \n!snmRate <text> - Leave a rating note for this week's movie
-            \n!snmExport [week number] - Create a text file with all SNM™ data
-            \n!torrent <query> - Search for torrents on public trackers
-            \n!subtitle <title> [language] - Search for a subtitle file
-            \n!meme [meme name | list] - 👀 ||do it||
-            \n!rato - Gets a random tenista™
-            \n!ratoTenista <message> - Make rato tenista say something
-            \n!emoji <message> - Convert your message into Discord's regional indicator emojis :abc:
-            \n!random <option1, option2, option3, ...> - Randomly pick from one of the options
-            \n!poll <poll title>, <Apple, Orange, Pineapple, ...> - Start a poll that people can vote on
-            \n!movie <movie title> [language] - Display info about a movie - Can force english search with 'en'
-                
-                **<> means a parameter is mandatory and [] is optional**`;
-
-            const embed = new Discord.MessageEmbed()
-                // Set the title of the field
-                .setTitle(`My Commands`)
-                // Set the color of the embed
-                .setColor('#4286f4')
-                // Set the main content of the embed
-                .setDescription(description);
-            message.author.send('**⚠ This command will soon be completely replaced with `/help` ⚠**\n', { embed: embed });
-            break;
-        case 'ping':
-            // Calculates ping between sending a message and editing it, giving a nice round-trip latency.
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/ping` ⚠**');
-            const m = await message.channel.send('Ping?');
-            m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms`);
-            break;
         case 'say':
-            await message.author.send('**⚠ This command will soon be completely replaced with `/say` ⚠**');
+            await message.author.send({ content: '**⚠ This command will soon be completely replaced with `/say` ⚠**' });
             message.delete().catch(O_o => { });
             // Removes any command from the text, so the bot doesn't execute !snmStart or loops !say for example
             const sendMessage = messageText.replace(/!\w+/gim, '');
             if (sendMessage)
-                message.channel.send(sendMessage);
+                message.channel.send({ embeds: [sendMessage] });
             else
-                message.author.send(`You forgot to tell me what to say.\nUsage: \`!say <something>\``);
-            break;
-        case 'snm':
-            // No longer supported, use /snm
-            message.channel.send(`This command is no longer supported. Use \`/snm\` instead.`);
-            break;
-        case 'snmnew':
-            // No longer supported, use /snmAdmin command: new
-            message.channel.send(`This command is no longer supported. Use \`/snmAdmin command: new\` instead.`);
-            break;
-        case 'snmstart':
-            // No longer supported, use /snmAdmin command: start
-            message.channel.send(`This command is no longer supported. Use \`/snmAdmin command: start\` instead.`);
-            break;
-        case 'snmend':
-            // No longer supported, use /snmAdmin command: end
-            message.channel.send(`This command is no longer supported. Use \`/snmAdmin command: end\` instead.`);
-            break;
-        case 'snmvotes':
-            // No longer supported, use /snmVotes
-            message.channel.send(`This command is no longer supported. Use \`/snmVotes\` instead.`);
+                message.author.send({ content: `You forgot to tell me what to say.\nUsage: \`!say <something>\`` });
             break;
         case 'changesub':
             // can only be done by owner
@@ -1157,7 +1109,7 @@ client.on('message', async message => {
                 break;
             }
             if (args.length === 0) {
-                message.channel.send(`Usage: \`!changeSub <channel id> <torrent message id> <new sub download link>\``);
+                message.channel.send({ content: `Usage: \`!changeSub <channel id> <torrent message id> <new sub download link>\`` });
                 logMessage = "Wrong usage"
                 break;
             }
@@ -1205,373 +1157,67 @@ client.on('message', async message => {
 
         //     logMessage = `Changed sub from ${args[0]} of channel ${args[1]} with ${args[2]}`;
         //     break;
-        case 'snmpause':
-            // No longer supported, use /snmConfig
-            message.channel.send(`This command is no longer supported. Use \`/snmConfig\` instead.`);
-            break;
-        case 'snmadd':
-            // No longer supported, use /snmTitle add
-            message.channel.send(`This command is no longer supported. Use \`/snmTitle add\` instead.`);
-            break;
-        case 'snmremove':
-            // No longer supported, use /snmTitle remove
-            message.channel.send(`This command is no longer supported. Use \`/snmTitle remove\` instead.`);
-            break;
-        case 'snmrate':
-            // No longer supported, use /snmRate
-            message.channel.send(`This command is no longer supported. Use \`/snmRate\` instead.`);
-            break;
-        case 'snmexport':
-            // No longer supported, use /snm
-            message.channel.send(`This command is no longer supported. Use \`/snm\` instead.`);
-            break;
-        case 'torrent':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/torrent` ⚠**');
-            // Search for a torrent on a list of providers
-            const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)', 'Looking for a movie? Try the /movie command']
-
-            // Value cannot be empty
-            if (!messageText) {
-                message.channel.send(`No search parameter was entered.\nUsage: \`!torrent <thing>\``);
-                logMessage = "No search parameter";
-                break;
-            }
-
-            // Sends to-be-edited "Checking..." message
-            let torrentMsg = await message.channel.send(`Checking...`);
-
-            // Searchs torrents
-            await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], messageText, null, 3).then((result) => {
-                if (result.length === 0 || result[0].title === "No results returned")
-                    torrentMsg.edit('', new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(`No torrent found 😔`).setColor(0x3498DB));
-                else {
-                    let torrentList = "";
-                    for (let torrent of result) {
-                        torrentList += `\n\n[${torrent.title}](${torrent.magnet ? 'https://magnet.guiler.me?uri=' + encodeURIComponent(torrent.magnet) : torrent.desc})\n${torrent.size} | ${torrent.seeds} seeders | ${torrent.provider}`;
-                    }
-                    let torrentEmbed = new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(torrentList).setColor(0x3498DB);
-                    if (message.channel.guild)
-                        torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
-                    else
-                        torrentEmbed.setFooter(`Tip: ${tips[1]}`);
-                    torrentMsg.edit('', torrentEmbed);
-                }
-            });
-            break;
-        case 'subtitle':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/subtitle` ⚠**');
-            // If empty message
-            if (!messageText) {
-                message.channel.send(`No search parameter was entered.\nUsage: \`!subtitle <title> [lang]\`\nAccepted lang: \`en\`|\`pt\``);
-                break;
-            }
-
-            let sub;
-            let lang = cleanArgs.pop();
-            // Open Subtitle returns pt-br in an 'pb' object even with the pt-br code being pob.
-            // We need this to search the object
-            let objLang = 'en';
-
-            if (lang === 'en' || lang === 'eng' || lang === 'en-us' || lang === 'us' || lang === 'enus' || lang === 'english' || lang === 'ingles' || lang === 'inglês') {
-                sub = await searchSubtitle(cleanArgs.join(' '), lang).catch(e => reportError(e));
-            }
-            else if (lang === 'pt' || lang === 'pob' || lang === 'pb' || lang === 'pt-br' || lang === 'br' || lang === 'ptbr' || lang === 'portugues' || lang === 'português' || lang === 'portuguese' || lang === 'por') {
-                lang = 'pob';
-                objLang = 'pb';
-                sub = await searchSubtitle(cleanArgs.join(' '), lang).catch(e => reportError(e));
-            }
-            // if no lang was passed -> default eng
-            else {
-                sub = await searchSubtitle(cleanMessageText).catch(e => reportError(e));
-            }
-
-            const subEmbed = new Discord.MessageEmbed()
-                .setTitle(`Subtitle`)
-                .setColor(0x3498DB)
-                .setFooter(`Tip: You can paste the file name to try a perfect match!`)
-
-            try {
-                if (sub) {
-                    logMessage = `Found ${sub[objLang].filename}`;
-                    message.channel.send(subEmbed
-                        .setDescription(`[${sub[objLang].filename}](${sub[objLang].url})\n${sub[objLang].lang} | ${sub[objLang].downloads} downloads | .${sub[objLang].format}`)
-                    );
-                }
-                else {
-                    logMessage = `No sub found`;
-                    message.channel.send(subEmbed
-                        .setDescription(`No subtitle found 😔`)
-                    );
-                }
-            }
-            catch (e) {
-                reportError(e);
-                message.channel.send(subEmbed.setDescription(`An error has occured. Tell my master about it.`));
-            }
-            break;
-        case 'meme':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/meme` ⚠**');
-            if (messageText) {
-                // If list is requested
-                if (messageText === 'list') {
-                    message.channel.send(
-                        new Discord.MessageEmbed()
-                            .setTitle('Available Memes')
-                            .setDescription(memes.map((meme) => meme.name))
-                            .setColor(0x3498DB)
-                    );
-                    break;
-                };
-
-                // If a specific meme is requested
-                const selectedMeme = memes.find((meme) => {
-                    if (meme.name === messageText) {
-                        return meme;
-                    };
-                });
-                message.channel.send(selectedMeme ? selectedMeme.meme : 'No meme found\nType !meme list to see all available memes')
-                break;
-            }
-            if (usableMemes.length === 0)
-                usableMemes = [...memes];
-            let randomMemeIndex = Math.floor(Math.random() * usableMemes.length);
-            message.channel.send(usableMemes.splice(randomMemeIndex, 1)[0].meme);
-            break;
-        case 'ratotenista':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/rato` ⚠**');
-            // Uses rato_plaquista as templete for text
-
-            // Value cannot be empty
-            if (!cleanMessageText) {
-                message.channel.send(`You must write something after the command.`);
-                logMessage = "No text parameter";
-                break;
-            }
-
-            // message.delete().catch(O_o => { });
-
-            Jimp.read('src/rato/rato_plaquista4x.png').then(image => {
-                Jimp.loadFont('src/rato/font/rato_fontista.fnt').then(font => {
-                    image.print(font, 240, 40, cleanMessageText, 530);
-                    image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(result => {
-                        message.channel.send("", { files: ["src/rato/rato_plaquistaEditado.jpg"] });
-                    })
-                });
-            });
-            break;
-        case 'rato':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/rato` ⚠**');
-            // Generates a message with a random 'rato tenista' image
-            message.channel.send(`ei!! por favor pare!\nisto me deixa`, { files: [`src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`] });
-            break;
-        case 'emoji':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/emoji` ⚠**');
-            // Converts the inputed message to discord's regional emojis
-            let sentence = "";
-            for (let letter of cleanMessageText) {
-                switch (letter) {
-                    case " ":
-                        sentence += "  ";
-                        break;
-                    case "0":
-                        sentence += ":zero: ";
-                        break;
-                    case "1":
-                        sentence += ":one: ";
-                        break;
-                    case "2":
-                        sentence += ":two: ";
-                        break;
-                    case "3":
-                        sentence += ":three: ";
-                        break;
-                    case "4":
-                        sentence += ":four: ";
-                        break;
-                    case "5":
-                        sentence += ":five: ";
-                        break;
-                    case "6":
-                        sentence += ":six: ";
-                        break;
-                    case "7":
-                        sentence += ":seven: ";
-                        break;
-                    case "8":
-                        sentence += ":eight: ";
-                        break;
-                    case "9":
-                        sentence += ":nine: ";
-                        break;
-                    case "!":
-                        sentence += ":exclamation:";
-                        break;
-                    default:
-                        let char = letter.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
-                        if (/[$-/:-?{-~!@#"^_`\[\]]/.test(char)) {
-                            sentence += char + " ";
-                        }
-                        else {
-                            sentence += ":regional_indicator_" + char + ": ";
-                        }
-                        break;
-                }
-            }
-            message.channel.send(sentence);
-            break;
-        case 'random':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/random` ⚠**');
-            // Without animation
-            // TODO: Append 1), 2), 3) at the star of each option?
-
-            if (!messageText) {
-                message.channel.send(`Separate each option with a comma ","\nUsage: \`!random Apple, Orange, Pineapple, ...\``)
-                logMessage = 'No options';
-                break;
-            }
-            let commaArgs = messageText.split(/,+/g);
-            let winner = Math.floor(Math.random() * commaArgs.length)
-            let embedColors = [0xFF0000, 0x00FF00, 0x0000FF, 0x808080, 0xFFFF00, 0x3498DB];
-            let embedEmojis = ['🍀', '🤞', '🎲', '🎰', '🌠']
-            commaArgs[winner] = `\\> ${commaArgs[winner]} <`
-            message.channel.send(
-                new Discord.MessageEmbed()
-                    .setTitle(`${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]} Random Picker ${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]}`)
-                    .setColor(embedColors[Math.floor(Math.random() * embedColors.length)])
-                    .setDescription(commaArgs.join(`\n\n`))
-            );
-
-            // With animation - wip, im scared because rate limiter
-            // TODO: Enter channel and play casino sound?
-
-            // if (!messageText)
-            //     return message.channel.send(`Separate each option with a comma ","\nUsage: \`!random Apple, Orange, Pineapple, ...\``);
-            // let embedColors = [0xFF0000, 0x00FF00, 0x0000FF, 0x808080, 0xFFFF00];
-            // let winner = Math.floor(Math.random() * messageText.split(/,+/g).length);
-            // let randomEmbed = new Discord.MessageEmbed()
-            //     .setTitle(`🎲 Random Picker 🎲`)
-            //     .setColor(embedColors[0])
-            //     .setDescription(messageText.split(/,+/g).join(`\n`));
-            // let sentEmbed = await message.channel.send(randomEmbed);
-            // for (let i = 0; i < 5; i++) {
-            //     let commaArgs = messageText.split(/,+/g)
-            //     if (i === 4) {
-            //         commaArgs[winner] = `\\> ${commaArgs[winner]} <`;
-            //         sentEmbed.edit(randomEmbed.setDescription(commaArgs.join(`\n`)))
-            //     }
-            //     else {
-            //         let randPosition = Math.floor(Math.random() * commaArgs.length)
-            //         let randColor = Math.floor(Math.random() * embedColors.length)
-            //         commaArgs[randPosition] = `\\> ${commaArgs[randPosition]} <`
-            //         await sentEmbed.edit(randomEmbed
-            //             .setColor(embedColors[randColor])
-            //             .setDescription(commaArgs.join(`\n`))
-            //         )
-            //     }
-            // }
-            break;
-        case 'poll':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/poll` ⚠**');
-            if (!messageText) {
-                message.channel.send(`Separate each option with a comma ","\nUsage: \`!poll <Poll Title>, Apple, Orange, Pineapple, ...\`\nThe first parameter is always the title`);
-                logMessage = 'No options';
-                break;
-            }
-            // Get options
-            const pollOptions = messageText.split(/,+/g);
-            const pollTitle = pollOptions.splice(0, 1);
-            // If no args beside title
-            if (pollOptions.length === 0) {
-                message.channel.send(`Separate each option with a comma ","\nUsage: \`!poll <Poll Title>, Apple, Orange, Pineapple, ...\`\nThe first parameter is always the title`);
-                logMessage = 'No options';
-                break;
-            };
-            // Get server custom emojis
-            const serverEmojis = message.channel.guild ? message.guild.emojis.cache : { size: 0 };
-            // Each arg will be assigned an emoji. Chosen emojis will be stored here.
-            const pickedEmojis = [];
-
-            for (let i = 0; i < pollOptions.length; i++) {
-                if (serverEmojis.size !== 0) {
-                    let rndEmoji = serverEmojis.random()
-                    pickedEmojis.push(rndEmoji);
-                    serverEmojis.delete(rndEmoji.id);
-                    pollOptions[i] = `<:${pickedEmojis[i].name}:${pickedEmojis[i].id}> - ${pollOptions[i]}`;
-                }
-                else {
-                    let rndEmoji = randomEmoji();
-                    while (pickedEmojis.includes(rndEmoji))
-                        rndEmoji = randomEmoji();
-                    pickedEmojis.push(rndEmoji);
-                    pollOptions[i] = `${pickedEmojis[i]} - ${pollOptions[i]}`;
-                }
-            }
-
-            // Sends poll embed
-            const msg = await message.channel.send(
-                new Discord.MessageEmbed()
-                    .setTitle(pollTitle)
-                    .setColor(0x3498DB)
-                    .setDescription(pollOptions.join(`\n\n`))
-                    .setFooter('Vote by reacting with the corresponding emoji')
-            );
-
-            // Reacts to embed accordingly
-            for (let i = 0; i < pollOptions.length; i++) {
-                await msg.react(pickedEmojis[i]);
-            };
-            break;
-        case 'toma':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/toma` ⚠**');
-            message.channel.send('https://cdn.discordapp.com/emojis/487347201706819584.png');
-            break;
         case 'play':
-            if (message.author.id !== configObj.ownerId && message.author.id !== "132410788722769920") {
-                message.channel.send('Função bloqueada pra você. Desbloqueie com 20 dola na mão do pai.');
+            if (message.author.id !== configObj.ownerId) {
+                message.channel.send({ content: 'Função bloqueada pra você. Desbloqueie com 20 dola na mão do pai.' });
                 logMessage = "not owner";
                 break;
             }
             if (!message.member) {
-                message.author.send('You must send this in a server :(');
+                message.author.send({ content: 'You must send this in a server :(' });
                 logMessage = 'message not sent in server';
                 break;
             }
             if (!message.member.voice.channel) {
-                message.channel.send('You must be connected to a channel');
+                message.channel.send({ content: 'You must be connected to a channel' });
                 logMessage = 'not connected to a channel';
                 break;
             }
 
-            connection = await message.member.voice.channel.join();
+            const channel = message.member.voice.channel;
+            connection = joinVoiceChannel({
+                channelId: channel.id,
+                guildId: channel.guildId,
+                adapterCreator: channel.guild.voiceAdapterCreator
+            })
+
+            // Make sure the connection is ready before processing the user's request
+            try {
+                await entersState(connection, VoiceConnectionStatus.Ready, 20e3);
+            } catch (error) {
+                console.warn(error);
+                message.channel.send({ content: 'Failed to join voice channel within 20 seconds, please try again later!' });
+                return;
+            }
+
+            connection.subscribe(player);
+
+            let resource;
 
             if (messageText === 'countdown')
-                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown${Math.floor(Math.random() * 4) + 1}.mp3`, { volume: 0.7 });
+                resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown${Math.floor(Math.random() * 4) + 1}.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else if (messageText === 'countdown1')
-                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown1.mp3`, { volume: 0.7 });
+                resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown1.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else if (messageText === 'countdown2')
-                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown2.mp3`, { volume: 0.7 });
+                resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown2.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else if (messageText === 'countdown3')
-                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown3.mp3`, { volume: 0.7 });
+                resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown3.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else if (messageText === 'countdown4')
-                dispatcher = connection.play(`src/commands/Sunday Night Movie/sounds/countdown4.mp3`, { volume: 0.7 });
+                resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown4.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else
-                dispatcher = connection.play(ytdl(messageText, { filter: 'audioonly' }), { volume: 0.15 });
+                resource = createAudioResource(ytdl(messageText, { filter: 'audioonly' }), { inputType: StreamType.Arbitrary, inlineVolume: 0.15 });
 
-            dispatcher.on('finish', () => {
+            player.play(resource);
+
+            // entersState(player, AudioPlayerStatus.Playing, 5e3);
+
+            player.on('finish', () => {
                 connection.disconnect();
-                dispatcher.destroy();
             });
             break;
         case 'stop':
-            dispatcher.end();
-            break;
-        case 'movie':
-            // No longer supported, use /movie
-            message.channel.send(`This command is no longer supported. Use \`/movie\` instead.`);
-            break;
-        case 'donato':
-            await message.channel.send('**⚠ This command will soon be completely replaced with `/donato` ⚠**');
-            message.channel.send(donato[Math.floor(Math.random() * donato.length)]);
+            player.stop();
+            connection.destroy();
             break;
         default:
             break;

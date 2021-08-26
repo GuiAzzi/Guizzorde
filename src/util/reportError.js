@@ -10,5 +10,5 @@ import {
 export function reportError(err) {
     console.error('APP Error', err);
     client.users.fetch(configObj.ownerId)
-        .then((owner) => owner.send(err));
+        .then((owner) => owner.send({ content: err }));
 }

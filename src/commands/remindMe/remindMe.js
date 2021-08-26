@@ -270,9 +270,9 @@ export const remindMeCommands = {
                         // Makes Embed Description Array containing subscribed Reminders data
                         const subscribedArray = [];
                         for (const item of userSubList) {
-                            subscribedArray.push(`📅 ID: ${item.reminderId}\n📝 ${item.text}\n⏰ ${new Date(item.date * 1000).toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})} BRT${item.ownerId === requestingUserId ? `\n🙂 ${item.users.map(e => e.username).join(', ')}` : ''}${item.private ? '\n🔒 Private' : '\n🔓 Public'}\n`);
+                            subscribedArray.push(`📅 ID: ${item.reminderId}\n📝 ${item.text}\n⏰ ${new Date(item.date * 1000).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })} BRT${item.ownerId === requestingUserId ? `\n🙂 ${item.users.map(e => e.username).join(', ')}` : ''}${item.private ? '\n🔒 Private' : '\n🔓 Public'}\n`);
                         }
-                        userSubListEmbed.setDescription(subscribedArray);
+                        userSubListEmbed.setDescription(String(subscribedArray));
                     }
 
                     return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
@@ -348,13 +348,15 @@ export async function fireReminder(reminder) {
         reminder.users = await getSubscribedUsers(reminder.reminderId);
         for (const user of reminder.users) {
             await client.users.fetch(user.userId)
-                .then(user => user.send(
-                    new MessageEmbed()
-                        .setTitle(`⏰ RemindMe Notification! ⏰`)
-                        .setDescription(reminder.text)
-                        .setColor(0x3498DB)
-                        .setTimestamp(new Date().toJSON())
-                ))
+                .then(user => user.send({
+                    embeds: [
+                        new MessageEmbed()
+                            .setTitle(`⏰ RemindMe Notification! ⏰`)
+                            .setDescription(reminder.text)
+                            .setColor(0x3498DB)
+                            .setTimestamp(new Date().toJSON())
+                    ]
+                }))
                 .catch(e => reportError(e));
         }
 

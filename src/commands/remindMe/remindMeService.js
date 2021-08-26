@@ -40,7 +40,7 @@ export async function getSubscribedUsers(reminderId) {
  * @param {number} reminderId The Reminder Id
  * @returns {Promise<GuizzordeReminder>} The requested Reminder
  */
- export async function getReminder(reminderId) {
+export async function getReminder(reminderId) {
     try {
         const mongodb = await dbConnect();
         const reminder = new GuizzordeReminder(await mongodb.db(configObj.mongodbName)
@@ -187,7 +187,7 @@ export async function toggleUserSubscription(reminderId, user, operation) {
                     { reminderId: reminderId },
                     { $addToSet: { users: { userId: user.id, username: user.username } } }
                 )
-            user.send('Subscribed! You will be notified via DM.');
+            user.send({ content: 'Subscribed! You will be notified via DM.' });
         }
         else if (operation === "remove") {
             await mongodb.db(configObj.mongodbName)
@@ -196,7 +196,7 @@ export async function toggleUserSubscription(reminderId, user, operation) {
                     { reminderId: reminderId },
                     { $pull: { users: { userId: user.id, username: user.username } } }
                 )
-            user.send('You have been unsubscribed');
+            user.send({ content: 'You have been unsubscribed' });
         }
         mongodb.close();
 
