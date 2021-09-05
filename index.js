@@ -173,67 +173,35 @@ client.on('interactionCreate', async interaction => {
 
     switch (interaction.commandName) {
         case 'help':
-            const description = `/ping - Pings the API
-/say - Make the bot say something
-/snm - Show or export data from a SNM week
-/snmEnable - Enables or disables SNM system for the server
-/snmAdmin - Manage current SNM period
-/snmConfig - Configure SNM options for the server
-/snmTitle add - Add a movie to current SNM
-/snmTitle remove - Remove a movie from current SNM
-/snmRate - Add or change your current SNM rating
-/snmVotes - Manage your current SNM votes
-/torrent - Search for torrents on public trackers
-/subtitle - Search for a subtitle file
-/meme - 👀 ||do it||
-/rato - Send a random tenista™ in chat, or make it say something!
-/emoji - Convert your message into Discord's regional indicator emojis :abc:
-/random - Randomly pick from one of the typed options
-/poll - Start a poll that people can vote on typed options
-/movie - Display info about a movie
-/queridometro - Start a public rating on a server member`;
+            const embed = new Discord.MessageEmbed()
+                .setTitle(`Available Commands`)
+                .setColor('#4286f4')
+                .setDescription(`/ping - Pings the API
+                /say - Make the bot say something
+                /snm - Show or export data from a SNM week
+                /snmEnable - Enables or disables SNM system for the server
+                /snmAdmin - Manage current SNM period
+                /snmConfig - Configure SNM options for the server
+                /snmTitle add - Add a movie to current SNM
+                /snmTitle remove - Remove a movie from current SNM
+                /snmRate - Add or change your current SNM rating
+                /snmVotes - Manage your current SNM votes
+                /torrent - Search for torrents on public trackers
+                /subtitle - Search for a subtitle file
+                /meme - 👀 ||do it||
+                /rato - Send a random tenista™ in chat, or make it say something!
+                /emoji - Convert your message into Discord's regional indicator emojis :abc:
+                /random - Randomly pick from one of the typed options
+                /poll - Start a poll that people can vote on typed options
+                /movie - Display info about a movie
+                /queridometro - Start a public rating on a server member`);
 
-            // const embed = new Discord.MessageEmbed()
-            //     // Set the title of the field
-            //     .setTitle(`My Commands`)
-            //     // Set the color of the embed
-            //     .setColor('#4286f4')
-            //     // Set the main content of the embed
-            //     .setDescription(description);
-            // let user = await client.users.fetch(interaction.member.user.id);
-            // user.send(embed);
-
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        content: description,
-                        // embeds: [new Discord.MessageEmbed().setTitle('Test').setDescription('Dae')],
-                        flags: 64
-                    }
-                }
-            });
-            break;
+            return interaction.reply({ embeds: [embed], ephemeral: true })
         case 'ping':
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        content: `Pong! API Latency is ${Math.round(client.ws.ping)}ms`
-                    }
-                }
-            });
-            break;
+            return interaction.reply({ content: `Pong! API Latency is ${Math.round(client.ws.ping)}ms` })
         case 'say':
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        content: args[0].value
-                    }
-                }
-            });
-            break;
+            const message = interaction.options.getString('message');
+            return interaction.reply({ content: message });
         case 'snmenable':
             // Register SNM commands for this guild
             snmEnable.handler(interaction);
@@ -260,27 +228,17 @@ client.on('interactionCreate', async interaction => {
         case 'torrent':
             // Search for a torrent on a list of providers
             try {
+                const query = interaction.options.getString('query');
                 // Array containing command-specific tips
                 const tips = ['You can use this command via DM!', 'Specifying a year usually helps - Movie Name (2019)', 'Looking for a movie? Try the /movie command'];
 
                 // Sends to-be-edited message
-                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                    data: {
-                        type: 4,
-                        data: {
-                            embeds: [new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB)]
-                        }
-                    }
-                });
+                interaction.deferReply();
 
                 // Searchs torrents
-                await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], args[0].value, null, 3).then(async (result) => {
+                await torrentSearch.search(['ThePirateBay', '1337x', 'Rarbg'], query, null, 3).then(async (result) => {
                     if (result.length === 0 || result[0].title === "No results returned")
-                        await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                            data: {
-                                embeds: [new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(`No torrent found 😔`).setColor(0x3498DB)]
-                            }
-                        });
+                        return interaction.editReply({ embeds: [new Discord.MessageEmbed().setTitle(`Torrents Found: `).setDescription(`No torrent found 😔`).setColor(0x3498DB)] });
                     else {
                         let torrentList = [];
                         for (let torrent of result) {
@@ -294,62 +252,42 @@ client.on('interactionCreate', async interaction => {
                         for (let i = 0; i < arr.length; i++) {
                             // If first pass - embed with title
                             if (i === 0) {
-                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                                    data: {
-                                        embeds: [torrentEmbed.setTitle('Torrents Found: ').setDescription(arr[i])]
-                                    }
-                                });
+                                if (interaction.guildId)
+                                    torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
+                                else
+                                    torrentEmbed.setFooter(`Tip: ${tips[1]}`);
+                                await interaction.editReply({ embeds: [torrentEmbed.setTitle('Torrents Found: ').setDescription(arr[i])] });
                             }
-                            else {
-                                // If last pass - add footer
-                                if (i === arr.length - 1) {
-                                    if (interaction.guildId)
-                                        torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
-                                    else
-                                        torrentEmbed.setFooter(`Tip: ${tips[1]}`);
-                                }
-                                await client.api.webhooks(configObj.appId, interaction.token).post({
-                                    data: {
-                                        embeds: [torrentEmbed.setTitle('').setDescription(arr[i])]
-                                    }
-                                });
-                            }
+                            // If torrents are too long -> Send followups with rest of data (pagination)
+                            else
+                                return interaction.followUp({ embeds: [torrentEmbed.setTitle('').setDescription(arr[i])] });
                         }
                     }
                 });
             }
             catch (e) {
-                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                    data: {
-                        embeds: [new Discord.MessageEmbed().setTitle('Error').setDescription('An error has occured. Pelase report this bug.').setColor("RED")]
-                    }
-                });
+                await interaction.editReply({ embeds: [new Discord.MessageEmbed().setTitle('Error').setDescription('An error has occured. Pelase report this bug.').setColor("RED")] });
                 reportError(e);
             }
             break;
         case 'subtitle':
+            const title = interaction.options.getString('title');
+            const language = interaction.options.getString('language') || 'eng';
+
             let sub;
-            let lang = args[1] ? args[1].value : 'eng';
             // Open Subtitle returns pt-br in an 'pb' object even with the pt-br code being pob.
             // We need this to search the object
             let objLang = 'en';
 
             // Sends to-be-edited message
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        embeds: [new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB)]
-                    }
-                }
-            });
+            interaction.deferReply();
 
-            if (lang === 'eng') {
-                sub = await searchSubtitle(args[0].value, lang).catch(e => reportError(e));
+            if (language === 'eng') {
+                sub = await searchSubtitle(title, language).catch(e => reportError(e));
             }
-            else if (lang === 'pob') {
+            else if (language === 'pob') {
                 objLang = 'pb';
-                sub = await searchSubtitle(args[0].value, lang).catch(e => reportError(e));
+                sub = await searchSubtitle(title, language).catch(e => reportError(e));
             }
 
             const subEmbed = new Discord.MessageEmbed()
@@ -360,128 +298,68 @@ client.on('interactionCreate', async interaction => {
             try {
                 if (sub) {
                     logMessage = `Found ${sub[objLang].filename}`;
-                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                        data: {
-                            embeds: [subEmbed.setDescription(`[${sub[objLang].filename}](${sub[objLang].url})\n${sub[objLang].lang} | ${sub[objLang].downloads} downloads | .${sub[objLang].format}`)]
-                        }
-                    });
+                    return interaction.editReply({ embeds: [subEmbed.setDescription(`[${sub[objLang].filename}](${sub[objLang].url})\n${sub[objLang].lang} | ${sub[objLang].downloads} downloads | .${sub[objLang].format}`)] });
                 }
                 else {
                     logMessage = `No sub found`;
-                    await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                        data: {
-                            embeds: [subEmbed.setDescription(`No subtitle found 😔`)]
-                        }
-                    });
+                    return interaction.editReply({ embeds: [subEmbed.setDescription(`No subtitle found 😔`)] });
                 }
             }
             catch (e) {
                 reportError(e);
-                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                    data: {
-                        embeds: [subEmbed.setDescription(`An error has occured. Tell my master about it.`)]
-                    }
-                });
+                return interaction.editReply({ embeds: [subEmbed.setDescription(`An error has occured. Tell my master about it.`)] });
             }
-            break;
         case 'meme':
-            const memeName = args ? args[0] : null;
+            const name = interaction.options.getString('name');
 
-            // If no args = send random meme
-            if (!args || memeName.name === '') {
+            // If no name was passed = send random meme
+            if (!name || name.name === '') {
                 if (usableMemes.length === 0)
                     usableMemes = [...memes];
                 let randomMemeIndex = Math.floor(Math.random() * usableMemes.length);
-                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                    data: {
-                        type: 4,
-                        data: {
-                            content: usableMemes.splice(randomMemeIndex, 1)[0].meme
-                        }
-                    }
-                });
-                break;
+                return interaction.reply({ content: usableMemes.splice(randomMemeIndex, 1)[0].meme });
             }
 
             // If list is requested
-            if (memeName.value.trim().toLowerCase() === 'list') {
-                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                    data: {
-                        type: 4,
-                        data: {
-                            content: `**Available Memes**\n\`\`\`${memes.map((meme) => meme.name).join('\n')}\`\`\``,
-                            flags: 64
-                        }
-                    }
-                })
+            if (name.trim().toLowerCase() === 'list') {
+                return interaction.reply({ content: `**Available Memes**\n\`\`\`${memes.map((meme) => meme.name).join('\n')}\`\`\``, ephemeral: true })
             }
 
-            else if (memeName) {
-                // If a specific meme is requested
-                const selectedMeme = memes.find((meme) => meme.name === memeName.value);
-                if (selectedMeme) {
-                    await client.api.interactions(interaction.id, interaction.token).callback.post({
-                        data: {
-                            type: 4,
-                            data: {
-                                content: selectedMeme.meme
-                            }
-                        }
-                    })
-                }
-                else {
-                    await client.api.interactions(interaction.id, interaction.token).callback.post({
-                        data: {
-                            type: 4,
-                            data: {
-                                content: 'No meme found.\nCheck out the `/meme` command.',
-                                flags: 64
-                            }
-                        }
-                    });
-                }
+            // If a specific meme is requested
+            else if (name) {
+                const selectedMeme = memes.find((meme) => meme.name === name);
+                if (selectedMeme)
+                    return interaction.reply({ content: selectedMeme.meme });
+                else
+                    return interaction.reply({ content: 'No meme found.\nCheck out the `/meme` command.', ephemeral: true })
             }
             break;
         case 'rato':
+            const ratoMessage = interaction.options.getString('message');
+
             // If theres a message
-            if (args && args[0].value) {
-                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                    data: {
-                        type: 4,
-                        data: {
-                            content: '🐀🎾...:'
-                        }
-                    }
-                });
+            if (ratoMessage) {
+                interaction.deferReply();
                 // Uses rato_plaquista as templete for text
                 Jimp.read('src/rato/rato_plaquista4x.png').then(image => {
                     Jimp.loadFont('src/rato/font/rato_fontista.fnt').then(font => {
                         image.print(font, 240, 40, args[0].value, 530);
                         image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(async result => {
-                            await client.api.webhooks(configObj.appId, interaction.token).messages('@original').delete();
-                            client.channels.cache.get(interaction.channelId).send({ files: ["src/rato/rato_plaquistaEditado.jpg"] });
+                            interaction.editReply({ files: ["src/rato/rato_plaquistaEditado.jpg"] });
                         });
                     });
                 });
             }
-            else {
-                // Generates a message with a random 'rato tenista' image
-                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                    data: {
-                        type: 4,
-                        data: {
-                            content: `ei!! por favor pare!\nisto me deixa`
-                        }
-                    }
-                });
-                client.channels.cache.get(interaction.channelId).send({ files: [`src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`] });
-            }
-
+            // Generates a message with a random 'rato tenista' image
+            else
+                return interaction.reply({ content: `ei!! por favor pare!\nisto me deixa`, files: [`src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`] });
             break;
         case 'emoji':
+            const emojiMessage = interaction.options.getString('message');
+
             // Converts the inputed message to discord's regional emojis
             let sentence = "";
-            for (let letter of args[0].value) {
+            for (let letter of emojiMessage) {
                 switch (letter) {
                     case " ":
                         sentence += "  ";
@@ -530,41 +408,33 @@ client.on('interactionCreate', async interaction => {
                         break;
                 }
             }
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        content: sentence
-                    }
-                }
-            });
-            break;
+
+            return interaction.reply({ content: sentence });
         case 'random':
+            const options = interaction.options.getString('options');
             // TODO: Append 1), 2), 3) at the star of each option?
 
-            let commaArgs = args[0].value.split(/,+/g);
+            let commaArgs = options.split(/,+/g);
             let winner = Math.floor(Math.random() * commaArgs.length);
             let embedColors = [0xFF0000, 0x00FF00, 0x0000FF, 0x808080, 0xFFFF00, 0x3498DB];
             let embedEmojis = ['🍀', '🤞', '🎲', '🎰', '🌠'];
             commaArgs[winner] = `\\> ${commaArgs[winner]} <`;
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        embeds: [new Discord.MessageEmbed()
-                            .setTitle(`${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]} Random Picker ${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]}`)
-                            .setColor(embedColors[Math.floor(Math.random() * embedColors.length)])
-                            .setDescription(commaArgs.join(`\n\n`))]
-                    }
-                }
-            });
-            break;
+            return interaction.reply({
+                embeds: [new Discord.MessageEmbed()
+                    .setTitle(`${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]} Random Picker ${embedEmojis[Math.floor(Math.random() * embedEmojis.length)]}`)
+                    .setColor(embedColors[Math.floor(Math.random() * embedColors.length)])
+                    .setDescription(commaArgs.join(`\n\n`))]
+            })
         case 'poll':
             // Get options
-            const pollTitle = args[0].value;
-            const pollOptions = args[1].value.split(/,+/g);
+            const pollTitle = interaction.options.getString('title');
+            const pollOptions = interaction.options.getString('options').split(/,+/g);
+
+            const msg = await interaction.deferReply({ fetchReply: true })
+
             // Get server custom emojis
             const serverEmojis = client.guilds.cache.get(interaction.guildId)?.emojis.cache || { size: 0 };
+
             // Each arg will be assigned an emoji. Chosen emojis will be stored here.
             const pickedEmojis = [];
 
@@ -585,25 +455,16 @@ client.on('interactionCreate', async interaction => {
             }
 
             // Sends poll embed
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        content: `Poll starting!`
-                    }
-                }
+            await interaction.editReply({
+                content: `Poll starting!`,
+                embeds: [
+                    new Discord.MessageEmbed()
+                        .setTitle(pollTitle)
+                        .setColor(0x3498DB)
+                        .setDescription(pollOptions.join(`\n\n`))
+                        .setFooter('Vote by clicking the corresponding emoji')
+                ]
             });
-            const msg = await client.channels.cache.get(interaction.channelId).send(
-                {
-                    embeds: [
-                        new Discord.MessageEmbed()
-                            .setTitle(pollTitle)
-                            .setColor(0x3498DB)
-                            .setDescription(pollOptions.join(`\n\n`))
-                            .setFooter('Vote by reacting with the corresponding emoji')
-                    ]
-                }
-            );
 
             // Reacts to embed accordingly
             for (let i = 0; i < pollOptions.length; i++) {
@@ -611,41 +472,18 @@ client.on('interactionCreate', async interaction => {
             };
             break;
         case 'toma':
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        content: 'https://cdn.discordapp.com/emojis/487347201706819584.png'
-                    }
-                }
-            });
-            break;
+            return interaction.reply({ content: 'https://cdn.discordapp.com/emojis/487347201706819584.png' });
         case 'movie':
             slashMovie.handler(interaction);
             break;
         case 'donato':
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        content: donato[Math.floor(Math.random() * donato.length)]
-                    }
-                }
-            });
-            break;
+            return interaction.reply({ content: donato[Math.floor(Math.random() * donato.length)] });
         case 'queridometro':
             // Gets user by ID
-            const ratingUser = await client.users.fetch(args[0].value).catch((e) => '');
+            const ratingUser = interaction.options.getUser('friend');
 
             // Start interaction
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        content: `Rating user`
-                    }
-                }
-            });
+            let queridometroMsg = await interaction.deferReply({ fetchReply: true });
 
             const queridometroEmojis = ['🐍', '🤮', '🙂', '☹', '💣', '♥', '💔', '🍌', '🪴'];
 
@@ -658,7 +496,7 @@ client.on('interactionCreate', async interaction => {
                 .setTimestamp(new Date().toJSON());
 
             // Send message and react accordingly
-            let queridometroMsg = await client.channels.cache.get(interaction.channelId).send({ embeds: [queridometroEmbed] });
+            interaction.editReply({ embeds: [queridometroEmbed] });
             for (let i = 0; i < queridometroEmojis.length; i++) {
                 await queridometroMsg.react(queridometroEmojis[i]);
             };
@@ -675,8 +513,84 @@ client.on('interactionCreate', async interaction => {
     }
 
     // Logs stuff
-    console.log(`\n${interaction.user.username} executed "${interaction.commandName}"${args ? ` with "${JSON.stringify(args)}"` : ""}${interaction.inGuild() ? ` in "${interaction.guild.name}":${interaction.guildId}` : ' via DM'}`);
+    console.log(`\n${interaction.user.username} executed "${interaction.commandName}"${args.length ? ` with "${JSON.stringify(args)}"` : ""}${interaction.inGuild() ? ` in "${interaction.guild.name}":${interaction.guildId}` : ' via DM'}`);
     logMessage ? console.log(logMessage) : null;
+});
+
+// Received a Button Interaction
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isButton()) return;
+
+    // Receiving a SNM Vote
+    try {
+        if (interaction.customId.startsWith('SNMVote')) {
+            await interaction.deferReply({ ephemeral: true });
+
+            const snmWeek = SNMWeekArray.get(interaction.guildId);
+            const snmServer = SNMServerArray.get(interaction.guildId);
+            const actionId = interaction.customId.replace('SNMVote - ', '');
+
+            if (snmWeek.status !== "voting") {
+                console.log(`${interaction.user.username} - Voting has ended`);
+                return interaction.editReply({ content: `Voting has ended` });
+            }
+
+            // If helper show/clear vote buttons were clicked
+            if (actionId === 'Show')
+                return snmCommands.snmVotes.handler(interaction, 'show');
+            else if (actionId === 'Clear')
+                return snmCommands.snmVotes.handler(interaction, 'clear');
+
+            let userObject = snmWeek.users.find(userIndex => userIndex.userId === interaction.user.id);
+            let movieTitleKey = snmWeek.emojisUsed.find(emoji => emoji.emoji === actionId).titleKey;
+
+            // user is not on the list yet
+            if (!userObject) {
+                let movieTitle = snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
+                userObject = snmWeek.users[snmWeek.users.push({ userId: interaction.user.id, username: interaction.user.username, movies: [], votes: [movieTitleKey] }) - 1];
+                await upsertSNMWeek(snmWeek);
+                const voteGuild = client.guilds.cache.get(snmServer.guildId)
+                const voteEmbed = new Discord.MessageEmbed()
+                    .setTitle(`Vote Registered ✅`)
+                    .setDescription(`${movieTitle}`)
+                    .setFooter(`${voteGuild.name} | SNM ${snmWeek.week}`, voteGuild.iconURL())
+                    .setColor(0x3498DB)
+                    .setTimestamp(new Date().toJSON());
+                await interaction.user.send({ embeds: [voteEmbed] });
+                interaction.editReply({ content: `Vote registered, a log was sent to your DM` });
+                console.log(`Added user ${interaction.user.username} with their vote`);
+            }
+            // user already voted on that movie
+            else if (userObject.votes.includes(movieTitleKey)) {
+                interaction.editReply({ content: `You already voted on that movie.` });
+                console.log(`${interaction.user.username} - Duplicate vote`);
+            }
+            // valid vote
+            else if (userObject.votes.length < snmServer.maxVotes) {
+                let movieTitle = snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
+                userObject.votes.push(movieTitleKey);
+                await upsertSNMWeek(snmWeek);
+                const voteGuild = client.guilds.cache.get(snmServer.guildId)
+                const voteEmbed = new Discord.MessageEmbed()
+                    .setTitle(`Vote Registered ✅`)
+                    .setDescription(`${movieTitle}`)
+                    .setFooter(`${voteGuild.name} | SNM ${snmWeek.week}`, voteGuild.iconURL())
+                    .setColor(0x3498DB)
+                    .setTimestamp(new Date().toJSON());
+                await interaction.user.send({ embeds: [voteEmbed] });
+                interaction.editReply({ content: `Vote registered, a log was sent to your DM` });
+                console.log(`${interaction.user.username} voted. ${userObject.votes.length}/${snmServer.maxVotes}`);
+            }
+            // no votes left
+            else {
+                interaction.editReply({ content: `You have no votes left.\n\`/snmVotes clear\` to clear your votes.` });
+                console.log(`${interaction.user.username} - No votes left`);
+            }
+        }
+    }
+    catch (e) {
+        reportError(e);
+    }
 });
 
 client.on('ready', async () => {
@@ -930,72 +844,7 @@ client.on('error', (error) => {
 client.on('messageReactionAdd', async (reaction, user) => {
     // Reactions from self, do nothing
     if (user.id === client.user.id) return;
-    // Reaction on a SNMWeek voteMessage
-    else if (SNMWeekArray.get(reaction.message.guild?.id)?.voteMessage?.messageId === reaction.message.id) {
-        const snmWeek = SNMWeekArray.get(reaction.message.guild.id);
-        const snmServer = SNMServerArray.get(reaction.message.guild.id);
 
-        if (reaction.users.cache.find(userIndex => userIndex.id === user.id)) {
-            // User added a new reaction ( = did not click an existing reaction), remove and do nothing
-            if (reaction.count === 1) {
-                await reaction.users.remove(user);
-                console.log(`${user.username} - Invalid reaction on SNM`);
-                return;
-            }
-            // If SNM not voting, remove and warn user
-            else if (snmWeek.status !== "voting") {
-                await reaction.users.remove(user);
-                console.log(`${user.username} - Voting has ended`);
-                return client.users.cache.get(user.id).send({ content: `Voting has ended` });
-            }
-
-            let userObject = snmWeek.users.find(userIndex => userIndex.userId === user.id);
-            let movieTitleKey = snmWeek.emojisUsed.find(emoji => emoji.emoji === reaction.emoji.identifier || emoji.emoji === reaction.emoji.name).titleKey;
-
-            // user is not on the list yet
-            if (!userObject) {
-                let movieTitle = snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
-                userObject = snmWeek.users[snmWeek.users.push({ userId: user.id, username: user.username, movies: [], votes: [movieTitleKey] }) - 1];
-                await upsertSNMWeek(snmWeek);
-                const voteGuild = client.guilds.cache.get(snmServer.guildId)
-                const voteEmbed = new Discord.MessageEmbed()
-                    .setTitle(`Vote Registered ✅`)
-                    .setDescription(`${movieTitle}`)
-                    .setFooter(`${voteGuild.name} | SNM ${snmWeek.week}`, voteGuild.iconURL())
-                    .setColor(0x3498DB)
-                    .setTimestamp(new Date().toJSON());
-                client.users.cache.get(user.id).send({ embeds: [voteEmbed] });
-                console.log(`Added user ${user.username} with their vote`);
-            }
-            // user already voted on that movie
-            else if (userObject.votes.includes(movieTitleKey)) {
-                client.users.cache.get(user.id).send({ content: `You already voted on that movie.` });
-                console.log(`Duplicate vote`);
-            }
-            // valid vote
-            else if (userObject.votes.length < snmServer.maxVotes) {
-                let movieTitle = snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === movieTitleKey)).movies.find(movie => movie.titleKey === movieTitleKey).title;
-                userObject.votes.push(movieTitleKey);
-                await upsertSNMWeek(snmWeek);
-                const voteGuild = client.guilds.cache.get(snmServer.guildId)
-                const voteEmbed = new Discord.MessageEmbed()
-                    .setTitle(`Vote Registered ✅`)
-                    .setDescription(`${movieTitle}`)
-                    .setFooter(`${voteGuild.name} | SNM ${snmWeek.week}`, voteGuild.iconURL())
-                    .setColor(0x3498DB)
-                    .setTimestamp(new Date().toJSON());
-                client.users.cache.get(user.id).send({ embeds: [voteEmbed] });
-                console.log(`${user.username} voted. ${userObject.votes.length}/${snmServer.maxVotes}`);
-            }
-            // no votes left
-            else {
-                client.users.cache.get(user.id).send({ content: `You have no votes left.\n\`/snmVotes clear\` to clear your votes.` });
-                console.log(`No votes left`);
-            }
-
-            await reaction.users.remove(user);
-        }
-    }
     // reaction on torrent second option
     // TODO: Redo this
     // else if (lastSnm.voteMessage && reaction.message.embeds.length > 0 && reaction.message.embeds[0]?.title === `SNM ${lastSnm.week} Second Option`) {

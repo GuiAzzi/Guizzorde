@@ -1,4 +1,5 @@
 import cron, { CronJob } from 'cron';
+import { CommandInteraction } from 'discord.js';
 
 import { client } from '../../config/index.js';
 import { reportError } from '../../util/index.js';
@@ -54,46 +55,41 @@ export class SNMServer {
                         cronNew: new cron.CronJob(
                             this.schedule.new,
                             async () => {
-                                await snmCommands.snmAdmin.handler({
-                                    fromScheduler: true,
-                                    guild_id: this.guildId,
-                                    // get defaultChannel from SNMServerArray because it keeps the reference, if changed later
-                                    channel_id: SNMServerArray.get(this.guildId).defaultChannel,
-                                    member: {
-                                        user: {
-                                            id: client.user.id,
-                                            username: client.user.username
+                                await snmCommands.snmAdmin.handler(
+                                    new CommandInteraction(client, {
+                                        guild_id: this.guildId,
+                                        channel_id: SNMServerArray.get(this.guildId).defaultChannel,
+                                        user: client.user,
+                                        member: {
+                                            user: client.user,
+                                        },
+                                        data: {
+                                            name: 'snmadmin',
+                                            options: [{ value: 'new', name: 'command', type: '3' }],
                                         }
-                                    },
-                                    data: {
-                                        name: 'snmadmin',
-                                        options: [{ value: 'new', name: 'command' }],
-                                    }
-                                })
+                                    }), true)
                             },
                             null,
                             true,
-                            // TODO: Update to SNMServer.timeZone whem implemented
+                            // TODO: Update to SNMServer.timeZone when implemented
                             'America/Sao_Paulo'
                         ),
                         cronStart: new cron.CronJob(
                             this.schedule.start,
                             async () => {
-                                await snmCommands.snmAdmin.handler({
-                                    fromScheduler: true,
-                                    guild_id: this.guildId,
-                                    channel_id: SNMServerArray.get(this.guildId).defaultChannel,
-                                    member: {
-                                        user: {
-                                            id: client.user.id,
-                                            username: client.user.username
+                                await snmCommands.snmAdmin.handler(
+                                    new CommandInteraction(client, {
+                                        guild_id: this.guildId,
+                                        channel_id: SNMServerArray.get(this.guildId).defaultChannel,
+                                        user: client.user,
+                                        member: {
+                                            user: client.user
+                                        },
+                                        data: {
+                                            name: 'snmadmin',
+                                            options: [{ value: 'start', name: 'command', type: '3' }],
                                         }
-                                    },
-                                    data: {
-                                        name: 'snmadmin',
-                                        options: [{ value: 'start', name: 'command' }],
-                                    }
-                                })
+                                    }), true)
                             },
                             null,
                             true,
@@ -102,21 +98,19 @@ export class SNMServer {
                         cronEnd: new cron.CronJob(
                             this.schedule.end,
                             async () => {
-                                await snmCommands.snmAdmin.handler({
-                                    fromScheduler: true,
-                                    guild_id: this.guildId,
-                                    channel_id: SNMServerArray.get(this.guildId).defaultChannel,
-                                    member: {
-                                        user: {
-                                            id: client.user.id,
-                                            username: client.user.username
+                                await snmCommands.snmAdmin.handler(
+                                    new CommandInteraction(client, {
+                                        guild_id: this.guildId,
+                                        channel_id: SNMServerArray.get(this.guildId).defaultChannel,
+                                        user: client.user,
+                                        member: {
+                                            user: client.user
+                                        },
+                                        data: {
+                                            name: 'snmadmin',
+                                            options: [{ value: 'end', name: 'command', type: '3' }],
                                         }
-                                    },
-                                    data: {
-                                        name: 'snmadmin',
-                                        options: [{ value: 'end', name: 'command' }],
-                                    }
-                                })
+                                    }), true)
                             },
                             null,
                             true,
