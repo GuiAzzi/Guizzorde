@@ -30,6 +30,8 @@ export class Config {
         this.notionToken = params.notionToken;
         /** @type {notionDatabaseId} The database for Notion to interact with */
         this.notionDatabaseId = params.notionDatabaseId;
+        /** @type {openAIApiKey} OpenAI API Key */
+        this.openAIApiKey = params.openAIApiKey;
     }
 }
 
@@ -45,7 +47,8 @@ const configJSON = existsSync('./src/config/config.json') ? JSON.parse(readFileS
     OSCredentials: process.env.OSCREDENTIALS?.split(','),
     RemindMeCollection: process.env.REMINDME_COLLECTION,
     notionToken: process.env.NOTION_KEY,
-    notionDatabaseId: process.env.NOTION_DATABASE_ID
+    notionDatabaseId: process.env.NOTION_DATABASE_ID,
+    openAIApiKey: process.env.OPENAI_API_KEY
 
 };
 export const configObj = new Config(configJSON);

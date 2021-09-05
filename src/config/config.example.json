@@ -13,5 +13,9 @@
         "useragent",
         "username",
         "password"
-    ]
+    ],
+    "RemindMeCollection": "<reminders-collection>",
+    "notionToken": "<notion-token>",
+    "notionDatabaseId": "<notion-database>",
+    "openAIApiKey":"<openai-api-key>"
 }

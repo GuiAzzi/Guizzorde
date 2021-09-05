@@ -33,6 +33,7 @@
     "justwatch-api": "^1.0.7",
     "libsodium-wrappers": "^0.7.9",
     "mongodb": "^3.1.13",
+    "openai-api": "^1.2.5",
     "opensubtitles-api": "^5.1.2",
     "torrent-search-api": "^2.1.4",
     "ytdl-core": "^4.9.1"

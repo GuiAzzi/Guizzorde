@@ -225,3 +225,45 @@ export async function getWinnersList(guildId) {
         return Promise.reject(e);
     }
 }
+
+/**
+ * Generates a list with all the past winner's titles from a guild
+ * To be used as prompt for the OpenAI recommendation function
+ * @param {string} guildId The guild Id
+ * @returns {Promise<string>} Array containing all winner's titles
+*/
+export async function generateOpenAIList(guildId) {
+    try {
+        /**
+         * Maps results and gets the winner's title
+         * @param {Partial<SNMWeek>} item 
+        */
+        const mapFunc = (item) => {
+            const winnerUser = item.users.find(user => user.movies.find(movie => movie.titleKey === item.winner.titleKey));
+            return `${item.week} - ${winnerUser.movies.find(movie => movie.titleKey === item.winner.titleKey).title}`;
+        }
+
+        const mongodb = await dbConnect();
+        const winnerList = await mongodb.db(configObj.mongodbName)
+            .collection(configObj.mongodbCollections[1])
+            .find(
+                {
+                    guildId: guildId,
+                    status: 'finished'
+                },
+                {
+                    sort: { week: 1 },
+                    projection: { winner: 1, users: 1, week: 1 }
+                }
+            )
+            .map(mapFunc)
+            .toArray();
+        mongodb.close();
+
+        const res = `${winnerList.join('\n')}`;
+        return Promise.resolve(res);
+    }
+    catch (e) {
+        return Promise.reject(e);
+    }
+}

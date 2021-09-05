@@ -1,5 +1,6 @@
 import Discord from 'discord.js';
 import Jimp from 'jimp/dist/index.js';
+import OpenAI from 'openai-api';
 import OS from 'opensubtitles-api';
 import torrentSearch from 'torrent-search-api';
 import ytdl from 'ytdl-core';
@@ -122,6 +123,9 @@ const OpenSubtitles = new OS({
     password: configObj.OSCredentials[2],
     ssl: true
 });
+
+// OpenAI
+export const openai = new OpenAI(configObj.openAIApiKey);
 
 const searchSubtitle = async (title, lang = 'eng') => {
     const sub = await OpenSubtitles.search({

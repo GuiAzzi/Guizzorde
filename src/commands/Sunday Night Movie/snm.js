@@ -6,7 +6,9 @@ import Discord, {
     Permissions,
 } from 'discord.js';
 
+import { openai } from '../../../index.js';
 import {
+    generateOpenAIList,
     getSNMServer,
     getSNMWeek,
     getWinnersList,
@@ -182,15 +184,7 @@ export const snmCommands = {
                         // Can only be used by admins and bot self
                         if (!memberPerformed.permissions.has(Permissions.FLAGS.ADMINISTRATOR) && interaction.member.user.id !== client.user.id) {
                             if (!fromScheduler) {
-                                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                                    data: {
-                                        type: 4,
-                                        data: {
-                                            content: `Insufficient permissions.`,
-                                            flags: 64
-                                        }
-                                    }
-                                });
+                                return interaction.reply({ content: `Insufficient permissions.`, ephemeral: true });
                             }
                             break;
                         }
@@ -198,18 +192,11 @@ export const snmCommands = {
                         // Interaction first contact (to be edited)
                         let newSNMEmbed = new Discord.MessageEmbed().setTitle('Creating SNM').setDescription('🛠 Working...').setColor(0x3498DB);
                         if (!fromScheduler) {
-                            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                                data: {
-                                    type: 4,
-                                    data: {
-                                        embeds: [newSNMEmbed],
-                                    }
-                                }
-                            });
+                            await interaction.deferReply({ embeds: [newSNMEmbed] });
                         }
                         else {
                             // If bot can't get channel - it may have been deleted
-                            if (!await client.channels.cache.get(interaction.channelId))
+                            if (!client.channels.cache.get(interaction.channelId))
                                 return reportError(`Couldn't get defaultChannel of ${interaction.guildId}. Maybe it was deleted?`);
 
                             scheduleMsg = await client.channels.cache.get(interaction.channelId).send({ embeds: [newSNMEmbed] });
@@ -218,18 +205,12 @@ export const snmCommands = {
                         const lastSNM = await getSNMWeek(interaction.guildId);
 
                         if (lastSNM.week && lastSNM.status != 'finished') {
-
                             newSNMEmbed.setTitle(`Can't start new SNM`).setDescription(`Sunday Night Movie ${lastSNM.week} is \`${lastSNM.status}\``)
 
-                            if (!fromScheduler) {
-                                await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                                    data: {
-                                        embeds: [newSNMEmbed]
-                                    }
-                                })
-                            }
+                            if (!fromScheduler)
+                                interaction.editReply({ embeds: [newSNMEmbed] });
                             else
-                                await scheduleMsg.edit({ embeds: [newSNMEmbed] });
+                                scheduleMsg.edit({ embeds: [newSNMEmbed] });
                             break;
                         }
 
@@ -245,31 +226,68 @@ export const snmCommands = {
                             }
                         )
 
+                        // Creates a movie suggestion with OpenAI
+                        // Don't do it if first week => no movies to sample
+                        let openAISeeded = false;
+                        if (lastSNM.week > 1) {
+                            try {
+                                const prompt = `Generate a good and unique movie recommendation based on the following list, not including the "Ignore List":\n\n${await generateOpenAIList(interaction.guildId)}`;
+
+                                const response = await openai.complete({
+                                    engine: 'davinci',
+                                    prompt: prompt,
+                                    maxTokens: 20,
+                                    temperature: 0.7,
+                                    topP: 1,
+                                    presencePenalty: 0,
+                                    frequencyPenalty: 0,
+                                    bestOf: 1,
+                                    n: 1,
+                                    stream: false,
+                                });
+
+                                // OpenAI generates some lines, we just want the first one
+                                let openAIEntry = response.data.choices[0].text.split('\n')[1];
+                                // If OpenAI generated a line with week+1
+                                if (openAIEntry.startsWith(`${newSNM.week}`)) {
+                                    openAIEntry = openAIEntry.replace(`${newSNM.week} - `, '').trim();
+                                    newSNM.users.push({
+                                        userId: client.user.id,
+                                        username: client.user.username,
+                                        movies: [{
+                                            title: openAIEntry,
+                                            titleKey: 1
+                                        }],
+                                    });
+                                    newSNM.movieCount += 1;
+                                    openAISeeded = new Discord.MessageEmbed()
+                                        .setTitle(`🤖 Guizzorde's Suggestion 🤖`)
+                                        .setDescription(openAIEntry)
+                                        .setFooter(`Powered by OpenAI`)
+                                        .setColor(0x3498DB);
+                                }
+                            }
+                            catch (e) {
+                                console.error(e);
+                                openAISeeded = false
+                            }
+                        }
+
                         newSNM = await upsertSNMWeek(newSNM);
                         const SNMRole = await getSNMRole(interaction.guildId);
                         newSNMEmbed
                             .setTitle(`🎬 Sunday Night Movie ${newSNM.week} 🎬`)
                             .setDescription(`Requests are now open!\n\`/snmTitle add\` to request a movie.`);
-                        if (!fromScheduler) {
-                            await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                                data: {
-                                    embeds: [newSNMEmbed]
-                                }
-                            })
-                        }
+                        if (!fromScheduler)
+                            interaction.editReply({ embeds: openAISeeded ? [newSNMEmbed, openAISeeded] : [newSNMEmbed] });
                         else
-                            scheduleMsg.edit({ embeds: [newSNMEmbed] });
+                            scheduleMsg.edit({ embeds: openAISeeded ? [newSNMEmbed, openAISeeded] : [newSNMEmbed] });
                         break;
                     }
                     catch (e) {
                         reportError(e);
-                        if (!fromScheduler) {
-                            await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                                data: {
-                                    embeds: [new Discord.MessageEmbed().setTitle('Error').setDescription('An error has occured. Pelase report this bug.').setColor("RED")]
-                                }
-                            });
-                        }
+                        if (!fromScheduler)
+                            interaction.editReply({ embeds: [new Discord.MessageEmbed().setTitle('Error').setDescription('An error has occured. Pelase report this bug.').setColor("RED")] });
                     }
                 }
                 case 'start': {
@@ -1099,10 +1117,10 @@ export const snmCommands = {
                 maxEntries ? snmServer.maxEntries = maxEntries : null;
                 maxVotes ? snmServer.maxVotes = maxVotes : null;
                 if (defaultChannel) {
-                    snmServer.defaultChannel = defaultChannel;
+                    snmServer.defaultChannel = defaultChannel.id;
                     // Certifies that we have all channels cached
                     client.guilds.fetch(interaction.guildId, true, true);
-                    client.channels.fetch(defaultChannel, true, true);
+                    client.channels.fetch(defaultChannel.id, true, true);
                 }
 
                 if (running === true || running === false) {
