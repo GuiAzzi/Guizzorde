@@ -165,12 +165,13 @@ const searchSubtitle = async (title, lang = 'eng') => {
 // });
 
 // Receive Slash Interaction
-client.ws.on('INTERACTION_CREATE', async interaction => {
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
 
-    const args = interaction.data.options;
+    const args = interaction.options.data;
     let logMessage = "";
 
-    switch (interaction.data.name.toLowerCase()) {
+    switch (interaction.commandName) {
         case 'help':
             const description = `/ping - Pings the API
 /say - Make the bot say something
@@ -302,7 +303,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                             else {
                                 // If last pass - add footer
                                 if (i === arr.length - 1) {
-                                    if (interaction.guild_id)
+                                    if (interaction.guildId)
                                         torrentEmbed.setFooter(`Tip: ${tips[Math.floor(Math.random() * tips.length)]}`);
                                     else
                                         torrentEmbed.setFooter(`Tip: ${tips[1]}`);
@@ -458,7 +459,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                         image.print(font, 240, 40, args[0].value, 530);
                         image.writeAsync('src/rato/rato_plaquistaEditado.jpg').then(async result => {
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').delete();
-                            client.channels.cache.get(interaction.channel_id).send({ files: ["src/rato/rato_plaquistaEditado.jpg"] });
+                            client.channels.cache.get(interaction.channelId).send({ files: ["src/rato/rato_plaquistaEditado.jpg"] });
                         });
                     });
                 });
@@ -473,7 +474,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                         }
                     }
                 });
-                client.channels.cache.get(interaction.channel_id).send({ files: [`src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`] });
+                client.channels.cache.get(interaction.channelId).send({ files: [`src/rato/tenistas/rato${Math.floor(Math.random() * 72)}.jpg`] });
             }
 
             break;
@@ -563,7 +564,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
             const pollTitle = args[0].value;
             const pollOptions = args[1].value.split(/,+/g);
             // Get server custom emojis
-            const serverEmojis = client.guilds.cache.get(interaction.guild_id)?.emojis.cache || { size: 0 };
+            const serverEmojis = client.guilds.cache.get(interaction.guildId)?.emojis.cache || { size: 0 };
             // Each arg will be assigned an emoji. Chosen emojis will be stored here.
             const pickedEmojis = [];
 
@@ -592,7 +593,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                     }
                 }
             });
-            const msg = await client.channels.cache.get(interaction.channel_id).send(
+            const msg = await client.channels.cache.get(interaction.channelId).send(
                 {
                     embeds: [
                         new Discord.MessageEmbed()
@@ -657,7 +658,7 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
                 .setTimestamp(new Date().toJSON());
 
             // Send message and react accordingly
-            let queridometroMsg = await client.channels.cache.get(interaction.channel_id).send({ embeds: [queridometroEmbed] });
+            let queridometroMsg = await client.channels.cache.get(interaction.channelId).send({ embeds: [queridometroEmbed] });
             for (let i = 0; i < queridometroEmojis.length; i++) {
                 await queridometroMsg.react(queridometroEmojis[i]);
             };
@@ -674,15 +675,9 @@ client.ws.on('INTERACTION_CREATE', async interaction => {
     }
 
     // Logs stuff
-    if (interaction.member)
-        // If Slash Command was executed on a server
-        console.log(`\n${interaction.member.user.username} executed '${interaction.data.name}'${args ? ` with "${JSON.stringify(args)}"` : ""} in ${interaction.guild_id}`);
-    else
-        // If Slash Command was executed via DM 
-        console.log(`\n${interaction.user.username} executed '${interaction.data.name}'${args ? ` with "${JSON.stringify(args)}"` : ""} via DM`);
-
+    console.log(`\n${interaction.user.username} executed "${interaction.commandName}"${args ? ` with "${JSON.stringify(args)}"` : ""}${interaction.inGuild() ? ` in "${interaction.guild.name}":${interaction.guildId}` : ' via DM'}`);
     logMessage ? console.log(logMessage) : null;
-})
+});
 
 client.on('ready', async () => {
     // client.user.setAvatar(`src/config/avatar.jpg`);

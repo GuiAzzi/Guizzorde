@@ -1,4 +1,4 @@
-import Discord from 'discord.js';
+import Discord, { CommandInteraction } from 'discord.js';
 import JustWatch from 'justwatch-api';
 import OS from 'opensubtitles-api';
 import torrentSearch from 'torrent-search-api';
@@ -375,11 +375,12 @@ export const slashMovie = new GuizzordeCommand({
     },
     register: register,
     deregister: deregister,
+    /** @param {CommandInteraction} interaction */
     handler: async function (interaction) {
         try {
             // FIXME: Messy AF - Maybe let default be EN
-            const title = interaction.data.options?.find((arg => arg.name === 'title'))?.value;
-            let jwLocale = interaction.data.options?.find((arg => arg.name === 'language'))?.value;
+            const title = interaction.options.getString('title');
+            let jwLocale = interaction.options.getString('language');
 
             // Sends to-be-edited message
             await client.api.interactions(interaction.id, interaction.token).callback.post({
