@@ -4,6 +4,7 @@ import {
     CronTime,
 } from 'cron';
 import {
+    CommandInteraction,
     Message,
     MessageEmbed,
 } from 'discord.js';
@@ -77,12 +78,13 @@ export const remindMeCommands = {
         }),
         register: register,
         deregister: deregister,
+        /** @param {CommandInteraction} interaction */
         handler: async function (interaction) {
             try {
-                const note = interaction.data.options?.find((arg => arg.name === 'note'))?.value;
-                const date = interaction.data.options?.find((arg => arg.name === 'date'))?.value;
-                const _private = interaction.data.options?.find((arg => arg.name === 'private'))?.value || interaction.user?.id ? true : false
-                const timeZone = interaction.data.options?.find((arg => arg.name === 'timezone'))?.value || -180
+                const note = interaction.options.getString('note');
+                const date = interaction.options.getString('date');
+                const _private = interaction.options.getBoolean('private') || interaction.inGuild() ? false : true;
+                const timeZone = interaction.options.getInteger('timezone') || -180;
 
                 // deferred response | type 5
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
@@ -147,7 +149,7 @@ export const remindMeCommands = {
                     reminderId: Reminders.lastReminder?.reminderId + 1 || 1,
                     ownerId: interaction.user?.id || interaction.member.user.id,
                     message: {
-                        channelId: interaction.channel_id,
+                        channelId: interaction.channelId,
                         messageId: _private ? null : originalMsg.id
                     },
                     // If invoked via DM (.user present); if on guild (.member present)
@@ -243,9 +245,10 @@ export const remindMeCommands = {
         }),
         register: register,
         deregister: deregister,
+        /** @param {CommandInteraction} interaction */
         handler: async function (interaction) {
             try {
-                const id = interaction.data.options?.find((arg => arg.name === 'id'))?.value;
+                const id = interaction.options.getInteger('id');
                 const requestingUserId = interaction.user?.id || interaction.member.user.id;
 
                 // deferred response | type 5
@@ -270,9 +273,9 @@ export const remindMeCommands = {
                         // Makes Embed Description Array containing subscribed Reminders data
                         const subscribedArray = [];
                         for (const item of userSubList) {
-                            subscribedArray.push(`📅 ID: ${item.reminderId}\n📝 ${item.text}\n⏰ ${new Date(item.date * 1000).toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})} BRT${item.ownerId === requestingUserId ? `\n🙂 ${item.users.map(e => e.username).join(', ')}` : ''}${item.private ? '\n🔒 Private' : '\n🔓 Public'}\n`);
+                            subscribedArray.push(`📅 ID: ${item.reminderId}\n📝 ${item.text}\n⏰ ${new Date(item.date * 1000).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })} BRT${item.ownerId === requestingUserId ? `\n🙂 ${item.users.map(e => e.username).join(', ')}` : ''}${item.private ? '\n🔒 Private' : '\n🔓 Public'}\n`);
                         }
-                        userSubListEmbed.setDescription(subscribedArray);
+                        userSubListEmbed.setDescription(String(subscribedArray));
                     }
 
                     return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
@@ -302,7 +305,7 @@ export const remindMeCommands = {
                         // Get new Reminder MessageId and ChannelId
                         const newReminderMsg = await client.api.webhooks(configObj.appId, interaction.token).messages('@original').get();
                         reminder.message = {
-                            channelId: interaction.channel_id,
+                            channelId: interaction.channelId,
                             messageId: newReminderMsg.id
                         }
                         reminder.private = false;
@@ -348,13 +351,15 @@ export async function fireReminder(reminder) {
         reminder.users = await getSubscribedUsers(reminder.reminderId);
         for (const user of reminder.users) {
             await client.users.fetch(user.userId)
-                .then(user => user.send(
-                    new MessageEmbed()
-                        .setTitle(`⏰ RemindMe Notification! ⏰`)
-                        .setDescription(reminder.text)
-                        .setColor(0x3498DB)
-                        .setTimestamp(new Date().toJSON())
-                ))
+                .then(user => user.send({
+                    embeds: [
+                        new MessageEmbed()
+                            .setTitle(`⏰ RemindMe Notification! ⏰`)
+                            .setDescription(reminder.text)
+                            .setColor(0x3498DB)
+                            .setTimestamp(new Date().toJSON())
+                    ]
+                }))
                 .catch(e => reportError(e));
         }
 

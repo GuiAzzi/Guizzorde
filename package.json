@@ -1,6 +1,9 @@
 {
   "name": "guizzorde",
   "version": "2.0.0",
+  "engines": {
+    "node": "16.6"
+  },
   "description": "Just another discord bot",
   "type": "module",
   "main": "index.js",
@@ -19,14 +22,16 @@
   },
   "homepage": "https://github.com/GuiAzzi/Guizzorde#readme",
   "dependencies": {
-    "@discordjs/opus": "^0.3.3",
+    "@discordjs/opus": "^0.5.3",
+    "@discordjs/voice": "^0.6.0",
     "@notionhq/client": "^0.2.3",
     "chrono-node": "^2.2.6",
     "cron": "^1.8.2",
-    "discord.js": "^12.4.1",
+    "discord.js": "^13.1.0",
     "ffmpeg-static": "^4.2.7",
     "jimp": "^0.7.0",
     "justwatch-api": "^1.0.7",
+    "libsodium-wrappers": "^0.7.9",
     "mongodb": "^3.1.13",
     "opensubtitles-api": "^5.1.2",
     "torrent-search-api": "^2.1.4",

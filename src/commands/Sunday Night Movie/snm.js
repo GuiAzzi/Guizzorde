@@ -1,5 +1,10 @@
 import { CronTime } from 'cron';
-import Discord from 'discord.js';
+import Discord, {
+    CommandInteraction,
+    MessageActionRow,
+    MessageButton,
+    Permissions,
+} from 'discord.js';
 
 import {
     getSNMServer,
@@ -52,9 +57,10 @@ export const snmCommands = {
         }),
         register: register,
         deregister: deregister,
+        /** @param {CommandInteraction} interaction */
         handler: async function (interaction) {
-            const week = interaction.data.options?.find((arg => arg.name === 'week'))?.value;
-            const _export = interaction.data.options?.find((arg => arg.name === 'export'))?.value;
+            const week = interaction.options.getInteger('week');
+            const _export = interaction.options.getBoolean('export');
 
             let snmWeekEmbed = new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB);
 
@@ -70,10 +76,10 @@ export const snmCommands = {
 
             try {
                 // If week <= 0 gets list of winners
-                if (week <= 0) {
+                if (week != null && week <= 0) {
 
-                    const arr = (await getWinnersList(interaction.guild_id)).match(/.{1,2048}$/gms);
-                    
+                    const arr = (await getWinnersList(interaction.guildId)).match(/.{1,2048}$/gms);
+
                     for (let i = 0; i < arr.length; i++) {
                         if (i === 0) {
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
@@ -98,7 +104,7 @@ export const snmCommands = {
                     }
                 }
                 else {
-                    const snmWeek = await getSNMWeek(interaction.guild_id, week);
+                    const snmWeek = await getSNMWeek(interaction.guildId, week);
 
                     // Week doesn't exist
                     if (!snmWeek.week) {
@@ -131,7 +137,7 @@ export const snmCommands = {
     /** @type {GuizzordeCommand} snmAdmin - /snmAdmin <New|Start|End|Pause> */
     snmAdmin: new GuizzordeCommand({
         command: new _slashCommand({
-            name: 'snmAdmin',
+            name: 'snmadmin',
             description: `Manage current SNM`,
             options: [
                 {
@@ -158,11 +164,12 @@ export const snmCommands = {
         }),
         register: register,
         deregister: deregister,
-        handler: async function (interaction) {
-            const command = interaction.data.options?.find((arg => arg.name === 'command'))?.value;
+        /** @param {CommandInteraction} interaction */
+        handler: async function (interaction, fromScheduler) {
+            const command = interaction.options.getString('command');
 
             // Fetch guild and member (to ADMINISTRATOR check permission)
-            const guildPerformed = await client.guilds.fetch(interaction.guild_id);
+            const guildPerformed = await client.guilds.fetch(interaction.guildId);
             const memberPerformed = await guildPerformed.members.fetch(interaction.member.user.id);
 
             // if fromSchedules: true = command executed from scheduler
@@ -173,8 +180,8 @@ export const snmCommands = {
                 case 'new': {
                     try {
                         // Can only be used by admins and bot self
-                        if (!memberPerformed.hasPermission('ADMINISTRATOR') && interaction.member.user.id !== client.user.id) {
-                            if (!interaction.fromScheduler) {
+                        if (!memberPerformed.permissions.has(Permissions.FLAGS.ADMINISTRATOR) && interaction.member.user.id !== client.user.id) {
+                            if (!fromScheduler) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
                                         type: 4,
@@ -190,7 +197,7 @@ export const snmCommands = {
 
                         // Interaction first contact (to be edited)
                         let newSNMEmbed = new Discord.MessageEmbed().setTitle('Creating SNM').setDescription('🛠 Working...').setColor(0x3498DB);
-                        if (!interaction.fromScheduler) {
+                        if (!fromScheduler) {
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
                                     type: 4,
@@ -202,19 +209,19 @@ export const snmCommands = {
                         }
                         else {
                             // If bot can't get channel - it may have been deleted
-                            if (!await client.channels.cache.get(interaction.channel_id))
-                                return reportError(`Couldn't get defaultChannel of ${interaction.guild_id}. Maybe it was deleted?`);
+                            if (!await client.channels.cache.get(interaction.channelId))
+                                return reportError(`Couldn't get defaultChannel of ${interaction.guildId}. Maybe it was deleted?`);
 
-                            scheduleMsg = await client.channels.cache.get(interaction.channel_id).send(newSNMEmbed);
+                            scheduleMsg = await client.channels.cache.get(interaction.channelId).send({ embeds: [newSNMEmbed] });
                         }
 
-                        const lastSNM = await getSNMWeek(interaction.guild_id);
+                        const lastSNM = await getSNMWeek(interaction.guildId);
 
                         if (lastSNM.week && lastSNM.status != 'finished') {
 
                             newSNMEmbed.setTitle(`Can't start new SNM`).setDescription(`Sunday Night Movie ${lastSNM.week} is \`${lastSNM.status}\``)
 
-                            if (!interaction.fromScheduler) {
+                            if (!fromScheduler) {
                                 await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                     data: {
                                         embeds: [newSNMEmbed]
@@ -222,13 +229,13 @@ export const snmCommands = {
                                 })
                             }
                             else
-                                await scheduleMsg.edit(newSNMEmbed);
+                                await scheduleMsg.edit({ embeds: [newSNMEmbed] });
                             break;
                         }
 
                         let newSNM = new SNMWeek(
                             {
-                                guildId: interaction.guild_id,
+                                guildId: interaction.guildId,
                                 week: lastSNM?.week + 1 || 1,
                                 status: 'ongoing',
                                 movieCount: 0,
@@ -239,11 +246,11 @@ export const snmCommands = {
                         )
 
                         newSNM = await upsertSNMWeek(newSNM);
-                        const SNMRole = await getSNMRole(interaction.guild_id);
+                        const SNMRole = await getSNMRole(interaction.guildId);
                         newSNMEmbed
                             .setTitle(`🎬 Sunday Night Movie ${newSNM.week} 🎬`)
                             .setDescription(`Requests are now open!\n\`/snmTitle add\` to request a movie.`);
-                        if (!interaction.fromScheduler) {
+                        if (!fromScheduler) {
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                 data: {
                                     embeds: [newSNMEmbed]
@@ -251,12 +258,12 @@ export const snmCommands = {
                             })
                         }
                         else
-                            scheduleMsg.edit(newSNMEmbed);
+                            scheduleMsg.edit({ embeds: [newSNMEmbed] });
                         break;
                     }
                     catch (e) {
                         reportError(e);
-                        if (!interaction.fromScheduler) {
+                        if (!fromScheduler) {
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                 data: {
                                     embeds: [new Discord.MessageEmbed().setTitle('Error').setDescription('An error has occured. Pelase report this bug.').setColor("RED")]
@@ -268,8 +275,8 @@ export const snmCommands = {
                 case 'start': {
                     try {
                         // Can only be used in guilds
-                        if (!interaction.guild_id) {
-                            if (!interaction.fromScheduler) {
+                        if (!interaction.guildId) {
+                            if (!fromScheduler) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
                                         type: 4,
@@ -283,8 +290,8 @@ export const snmCommands = {
                             break;
                         }
                         // Can only be used by admins and bot self
-                        else if (!memberPerformed.hasPermission('ADMINISTRATOR') && interaction.member.user.id !== client.user.id) {
-                            if (!interaction.fromScheduler) {
+                        else if (!memberPerformed.permissions.has(Permissions.FLAGS.ADMINISTRATOR) && interaction.member.user.id !== client.user.id) {
+                            if (!fromScheduler) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
                                         type: 4,
@@ -300,7 +307,7 @@ export const snmCommands = {
 
                         // Interaction first contact (to be edited)
                         let startSNMEmbed = new Discord.MessageEmbed().setTitle('Starting SNM').setDescription('🛠 Working...').setColor(0x3498DB);
-                        if (!interaction.fromScheduler) {
+                        if (!fromScheduler) {
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
                                     type: 4,
@@ -312,26 +319,26 @@ export const snmCommands = {
                         }
                         else {
                             // If bot can't get channel - it may have been deleted
-                            if (!await client.channels.cache.get(interaction.channel_id))
-                                return reportError(`Couldn't get defaultChannel of ${interaction.guild_id}. Maybe it was deleted?`);
+                            if (!await client.channels.cache.get(interaction.channelId))
+                                return reportError(`Couldn't get defaultChannel of ${interaction.guildId}. Maybe it was deleted?`);
 
-                            scheduleMsg = await client.channels.cache.get(interaction.channel_id).send(startSNMEmbed);
+                            scheduleMsg = await client.channels.cache.get(interaction.channelId).send({ embeds: [startSNMEmbed] });
                         }
 
                         // get message to add reactions and save on snmWeek object
                         let voteMessage;
-                        if (!interaction.fromScheduler) {
+                        if (!fromScheduler) {
                             const webhookMessage = await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({ data: {} });
                             voteMessage = new Discord.Message(client, webhookMessage, client.channels.cache.get(webhookMessage.channel_id));
                         }
                         else
                             voteMessage = scheduleMsg
 
-                        const lastSNM = await getSNMWeek(interaction.guild_id);
+                        const lastSNM = await getSNMWeek(interaction.guildId);
 
                         if (!lastSNM.week) {
                             startSNMEmbed.setTitle('Error').setDescription('No week to start').setColor("RED");
-                            if (!interaction.fromScheduler) {
+                            if (!fromScheduler) {
                                 await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                     data: {
                                         embeds: [startSNMEmbed]
@@ -339,12 +346,12 @@ export const snmCommands = {
                                 });
                             }
                             else
-                                await scheduleMsg.edit(startSNMEmbed);
+                                await scheduleMsg.edit({ embeds: [startSNMEmbed] });
                             break;
                         }
                         else if (lastSNM.status === 'voting') {
                             startSNMEmbed.setTitle('Error').setDescription(`\`SNM ${lastSNM.week}\` voting has already started!`).setColor("RED");
-                            if (!interaction.fromScheduler) {
+                            if (!fromScheduler) {
                                 await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                     data: {
                                         embeds: [startSNMEmbed]
@@ -352,12 +359,12 @@ export const snmCommands = {
                                 });
                             }
                             else
-                                await scheduleMsg.edit(startSNMEmbed);
+                                await scheduleMsg.edit({ embeds: [startSNMEmbed] });
                             break;
                         }
                         else if (lastSNM.status === 'finished') {
                             startSNMEmbed.setTitle('Error').setDescription(`\`SNM ${lastSNM.week}\` is finished.`).setColor("RED");
-                            if (!interaction.fromScheduler) {
+                            if (!fromScheduler) {
                                 await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                     data: {
                                         embeds: [startSNMEmbed]
@@ -365,7 +372,7 @@ export const snmCommands = {
                                 });
                             }
                             else
-                                await scheduleMsg.edit(startSNMEmbed);
+                                await scheduleMsg.edit({ embeds: [startSNMEmbed] });
                             break;
                         }
 
@@ -373,15 +380,29 @@ export const snmCommands = {
                         lastSNM.voteMessage = { channelId: voteMessage.channel.id, messageId: voteMessage.id };
                         // Builds rich embed with a random emoji for each movie
                         const printArray = [];
-                        const emojiArray = client.guilds.cache.get(interaction.guild_id).emojis.cache;
+                        const emojiArray = client.guilds.cache.get(interaction.guildId).emojis.cache;
                         const emojisUsed = [];
+                        /** @type {MessageActionRow[]} */
+                        const rows = [new MessageActionRow()];
 
                         lastSNM.users.forEach(user => {
                             user.movies.forEach(movie => {
+                                // Rows can have a max of 5 components
+                                // So if a row is at 5 items we need to create another one
+                                if (rows[rows.length - 1].components.length === 5)
+                                    rows.push(new MessageActionRow());
+
                                 let rndEmoji;
                                 if (emojiArray.size !== 0) {
                                     rndEmoji = emojiArray.random();
                                     printArray[movie.titleKey - 1] = `<:${rndEmoji.name}:${rndEmoji.id}> - ${movie.title}\n`;
+                                    rows[rows.length - 1].addComponents(
+                                        new MessageButton()
+                                            .setCustomId(`SNMVote - ${rndEmoji.name}:${rndEmoji.id}`)
+                                            .setEmoji(rndEmoji)
+                                            // .setLabel(movie.title)
+                                            .setStyle('PRIMARY')
+                                    );
                                     emojisUsed[movie.titleKey - 1] = { titleKey: movie.titleKey, emoji: rndEmoji.identifier };
                                     emojiArray.delete(rndEmoji.id);
                                 }
@@ -391,6 +412,13 @@ export const snmCommands = {
                                     while (emojisUsed.includes(rndEmoji))
                                         rndEmoji = randomEmoji();
                                     printArray[movie.titleKey - 1] = `${rndEmoji} - ${movie.title}\n`;
+                                    rows[rows.length - 1].addComponents(
+                                        new MessageButton()
+                                            .setCustomId(`SNMVote - ${rndEmoji}`)
+                                            .setEmoji(rndEmoji)
+                                            // .setLabel(movie.title)
+                                            .setStyle('PRIMARY')
+                                    );
                                     emojisUsed[movie.titleKey - 1] = { titleKey: movie.titleKey, emoji: rndEmoji };
                                 }
                             })
@@ -398,30 +426,43 @@ export const snmCommands = {
                         lastSNM.emojisUsed = emojisUsed;
                         await upsertSNMWeek(lastSNM);
 
-                        const SNMRole = await getSNMRole(interaction.guild_id);
+                        const SNMRole = await getSNMRole(interaction.guildId);
 
-                        // Create the embed with titles, emojis and reactions
+                        if (rows.length <= 4) {
+                            rows.push(new MessageActionRow().addComponents(
+                                [
+                                    new MessageButton()
+                                        .setCustomId(`SNMVote - Show`)
+                                        .setLabel(`Show Votes`)
+                                        .setStyle('SECONDARY'),
+                                    new MessageButton()
+                                        .setCustomId(`SNMVote - Clear`)
+                                        .setLabel(`Clear Votes`)
+                                        .setStyle('SECONDARY')
+                                ]
+                            ))
+                        }
+
+                        // Create the embed with titles, emojis and buttons
                         let votingEmbed = new Discord.MessageEmbed()
                             .setTitle(`🌟 Sunday Night Movie ${lastSNM.week} 🌟`)
                             .setColor(0x3498DB)
                             .setDescription(printArray.join(" "))
-                            .setFooter('Click the corresponding reaction to vote!');
-
-                        for (const emoji of emojisUsed)
-                            await voteMessage.react(emoji.emoji);
+                            .setFooter('Click the corresponding button to vote!');
 
                         const mentionMsg = `${SNMRole ? "<@&" + SNMRole.id + "> " : "@here"} Voting has started!`
-                        if (!interaction.fromScheduler) {
+                        if (!fromScheduler) {
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                 data: {
-                                    embeds: [votingEmbed]
+                                    embeds: [votingEmbed],
+                                    components: rows
                                 }
                             });
-                            new Discord.WebhookClient(configObj.appId, interaction.token).send(mentionMsg);
+                            new Discord.WebhookClient({ id: configObj.appId, token: interaction.token }).send({ content: mentionMsg });
                         }
                         else {
-                            await scheduleMsg.edit(votingEmbed);
-                            await client.channels.cache.get(interaction.channel_id).send(mentionMsg);
+                            await scheduleMsg.edit({ embeds: [votingEmbed], components: rows });
+                            await client.channels.cache.get(interaction.channelId).send({ content: mentionMsg });
                         }
                         break;
                     }
@@ -432,8 +473,8 @@ export const snmCommands = {
                 case 'end': {
                     try {
                         // Can only be used in guilds
-                        if (!interaction.guild_id) {
-                            if (!interaction.fromScheduler) {
+                        if (!interaction.guildId) {
+                            if (!fromScheduler) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
                                         type: 4,
@@ -447,8 +488,8 @@ export const snmCommands = {
                             break;
                         }
                         // Can only be used by admins and bot self
-                        else if (!memberPerformed.hasPermission('ADMINISTRATOR') && interaction.member.user.id !== client.user.id) {
-                            if (!interaction.fromScheduler) {
+                        else if (!memberPerformed.permissions.has(Permissions.FLAGS.ADMINISTRATOR) && interaction.member.user.id !== client.user.id) {
+                            if (!fromScheduler) {
                                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                                     data: {
                                         type: 4,
@@ -464,7 +505,7 @@ export const snmCommands = {
 
                         // Interaction first contact (to be edited)
                         let endSNMEmbed = new Discord.MessageEmbed().setTitle('Ending SNM').setDescription('🛠 Working...').setColor(0x3498DB);
-                        if (!interaction.fromScheduler) {
+                        if (!fromScheduler) {
                             await client.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
                                     type: 4,
@@ -476,20 +517,20 @@ export const snmCommands = {
                         }
                         else {
                             // If bot can't get channel - it may have been deleted
-                            if (!await client.channels.cache.get(interaction.channel_id))
-                                return reportError(`Couldn't get defaultChannel of ${interaction.guild_id}. Maybe it was deleted?`);
+                            if (!await client.channels.cache.get(interaction.channelId))
+                                return reportError(`Couldn't get defaultChannel of ${interaction.guildId}. Maybe it was deleted?`);
 
-                            scheduleMsg = await client.channels.cache.get(interaction.channel_id).send(endSNMEmbed);
+                            scheduleMsg = await client.channels.cache.get(interaction.channelId).send({ embeds: [endSNMEmbed] });
                         }
 
                         let winnerMovie;
                         let embedDescription;
 
-                        const lastSNM = await getSNMWeek(interaction.guild_id);
+                        const lastSNM = await getSNMWeek(interaction.guildId);
 
                         if (!lastSNM.week) {
                             endSNMEmbed.setTitle('Error').setDescription('No week to end').setColor("RED");
-                            if (!interaction.fromScheduler) {
+                            if (!fromScheduler) {
                                 await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                     data: {
                                         embeds: [endSNMEmbed]
@@ -497,7 +538,7 @@ export const snmCommands = {
                                 });
                             }
                             else
-                                await scheduleMsg.edit(endSNMEmbed);
+                                await scheduleMsg.edit({ embeds: [endSNMEmbed] });
                             break;
                         }
 
@@ -505,7 +546,7 @@ export const snmCommands = {
                         // <logic (check github, I have this code on v1)>
 
                         // FIXME: Doodoo code. Old and bad.
-                        // creates array with titleKey and voteCount (movie:votes)
+                        // creates array with titleKey and voteCount (movie:votes) TODO: redo it as ({movieName, movieCode}:votes)
                         let allVotes = [];
 
                         for (const userIndex in lastSNM.users) {
@@ -538,7 +579,7 @@ export const snmCommands = {
                             endSNMEmbed
                                 .setTitle(`😲 It's a tie! 😲`)
                                 .setDescription(embedDescription + `Checking...`);
-                            if (!interaction.fromScheduler) {
+                            if (!fromScheduler) {
                                 await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                     data: {
                                         embeds: [endSNMEmbed]
@@ -546,7 +587,7 @@ export const snmCommands = {
                                 });
                             }
                             else
-                                await scheduleMsg.edit(endSNMEmbed);
+                                await scheduleMsg.edit({ embeds: [endSNMEmbed] });
                             const rndWinnerPos = Math.floor(Math.random() * winners.length);
                             lastSNM.winner = winners[rndWinnerPos];
                             lastSNM.winner.userId = lastSNM.users.find(user => user.movies.find(movie => movie.titleKey === lastSNM.winner.titleKey)).userId;
@@ -557,7 +598,7 @@ export const snmCommands = {
                             endSNMEmbed
                                 .setTitle(`🙌 We have a winner! 🙌`)
                                 .setDescription(embedDescription + `Checking...`);
-                            if (!interaction.fromScheduler) {
+                            if (!fromScheduler) {
                                 await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                     data: {
                                         embeds: [endSNMEmbed]
@@ -565,7 +606,7 @@ export const snmCommands = {
                                 });
                             }
                             else
-                                await scheduleMsg.edit(endSNMEmbed);
+                                await scheduleMsg.edit({ embeds: [endSNMEmbed] });
                             lastSNM.winner = winners[0];
                             lastSNM.winner.userId = lastSNM.users.find(user => user.movies.find(movie => movie.titleKey === lastSNM.winner.titleKey)).userId;
                             winnerMovie = { title: lastSNM.users.find(user => user.movies.find(movie => movie.titleKey === lastSNM.winner.titleKey)).movies.find(movie => movie.titleKey === lastSNM.winner.titleKey).title };
@@ -573,9 +614,21 @@ export const snmCommands = {
 
                         lastSNM.status = 'finished';
                         await upsertSNMWeek(lastSNM);
+
+                        // Disables all buttons on finished SNM VoteMessage
+                        const lastSNMVoteMessage = client.channels.cache.get(lastSNM.voteMessage.channelId).messages.cache.get(lastSNM.voteMessage.messageId);
+                        for (let actionRow of lastSNMVoteMessage.components) {
+                            for (let button of actionRow.components) {
+                                if (button.type === 'BUTTON')
+                                    button.setDisabled('true')
+                            }
+                        }
+                        lastSNMVoteMessage.embeds[0].setFooter(`This voting has ended`);
+                        lastSNMVoteMessage.edit({ embeds: lastSNMVoteMessage.embeds, components: lastSNMVoteMessage.components });
+
                         endSNMEmbed.setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`)
 
-                        if (!interaction.fromScheduler) {
+                        if (!fromScheduler) {
                             await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                                 data: {
                                     embeds: [endSNMEmbed]
@@ -583,11 +636,15 @@ export const snmCommands = {
                             });
                         }
                         else
-                            await scheduleMsg.edit(endSNMEmbed);
+                            await scheduleMsg.edit({ embeds: [endSNMEmbed] });
 
                         // TODO: Add SNMServer defaultRegion
                         // /movie followup message
-                        const movieEmbedMsg = await client.channels.cache.get(interaction.channel_id).send(new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB));
+                        const movieEmbedMsg = await client.channels.cache.get(interaction.channelId).send({
+                            embeds: [
+                                new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB)
+                            ]
+                        });
                         const movieEmbed = await generateMovieEmbed(winnerMovie.title, 'pt');
                         movieEmbed.setTimestamp(new Date().toJSON());
 
@@ -597,7 +654,7 @@ export const snmCommands = {
                             if (winnerUser) movieEmbed.setAuthor(winnerUser.username, winnerUser.avatarURL() || 'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png');
                         }
 
-                        movieEmbedMsg.edit(movieEmbed);
+                        movieEmbedMsg.edit({ embeds: [movieEmbed] });
                     }
                     catch (e) {
                         reportError(e);
@@ -609,7 +666,7 @@ export const snmCommands = {
     /** @type {GuizzordeCommand} snmTitle - /snmTitle add <title> | /snmTitle remove [title] */
     snmTitle: new GuizzordeCommand({
         command: new _slashCommand({
-            name: 'snmTitle',
+            name: 'snmtitle',
             description: `Add or remove SNM entries`,
             options: [
                 {
@@ -652,10 +709,11 @@ export const snmCommands = {
         }),
         register: register,
         deregister: deregister,
+        /** @param {CommandInteraction} interaction */
         handler: async function (interaction) {
             try {
                 // Cannot be used in DM
-                if (!interaction.guild_id) {
+                if (!interaction.guildId) {
                     return await client.api.interactions(interaction.id, interaction.token).callback.post({
                         data: {
                             type: 4,
@@ -667,13 +725,12 @@ export const snmCommands = {
                     });
                 }
 
-                const interactionOptions = interaction.data.options?.find((arg => arg.name === 'add' || arg.name === 'remove'));
-                const interactionChoice = interactionOptions.name;
-                const titleName = interactionOptions.options?.find((arg => arg.name === 'title'))?.value;
-                const silent = interactionOptions.options?.find((arg => arg.name === 'silent'))?.value;
+                const interactionOptions = interaction.options.getSubcommand();
+                const titleName = interaction.options.getString('title');
+                const silent = interaction.options.getBoolean('silent')
 
-                const snmServer = await getSNMServer(interaction.guild_id);
-                const lastSNM = await getSNMWeek(interaction.guild_id);
+                const snmServer = await getSNMServer(interaction.guildId);
+                const lastSNM = await getSNMWeek(interaction.guildId);
 
                 if (!lastSNM.week) {
                     return await client.api.interactions(interaction.id, interaction.token).callback.post({
@@ -687,7 +744,7 @@ export const snmCommands = {
                     });
                 }
 
-                switch (interactionChoice) {
+                switch (interactionOptions) {
                     case 'add': {
                         // Interaction first contact (to be edited)
                         // if silent - use ephemeral messages
@@ -899,7 +956,7 @@ export const snmCommands = {
     /** @type {GuizzordeCommand} snmConfig - /snmConfig */
     snmConfig: new GuizzordeCommand({
         command: new _slashCommand({
-            name: 'snmConfig',
+            name: 'snmconfig',
             description: 'Change SNM settings for this Server',
             options: [
                 {
@@ -941,10 +998,11 @@ export const snmCommands = {
         }),
         register: register,
         deregister: deregister,
+        /** @param {CommandInteraction} interaction */
         handler: async function (interaction) {
             try {
                 // Cannot be used in DM
-                if (!interaction.guild_id) {
+                if (!interaction.guildId) {
                     return await client.api.interactions(interaction.id, interaction.token).callback.post({
                         data: {
                             type: 4,
@@ -956,7 +1014,7 @@ export const snmCommands = {
                     });
                 }
                 // If no parameter was passed
-                else if (!interaction.data.options) {
+                else if (interaction.options.data.length === 0) {
                     return await client.api.interactions(interaction.id, interaction.token).callback.post({
                         data: {
                             type: 4,
@@ -969,11 +1027,11 @@ export const snmCommands = {
                 }
 
                 // Fetch guild and member (to ADMINISTRATOR check permission)
-                const guildPerformed = await client.guilds.fetch(interaction.guild_id);
+                const guildPerformed = await client.guilds.fetch(interaction.guildId);
                 const memberPerformed = await guildPerformed.members.fetch(interaction.member.user.id);
 
                 // Can only be used by admins and bot self
-                if (!memberPerformed.hasPermission('ADMINISTRATOR') || !interaction.member.user.id === client.user.id) {
+                if (!memberPerformed.permissions.has(Permissions.FLAGS.ADMINISTRATOR) || !interaction.member.user.id === client.user.id) {
                     return await client.api.interactions(interaction.id, interaction.token).callback.post({
                         data: {
                             type: 4,
@@ -997,16 +1055,16 @@ export const snmCommands = {
                 });
 
                 const cronRegex = /((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})|default/;
-                const maxEntries = interaction.data.options?.find((arg => arg.name === 'max_entries'))?.value;
-                const maxVotes = interaction.data.options?.find((arg => arg.name === 'max_votes'))?.value;
-                const defaultChannel = interaction.data.options?.find((arg => arg.name === 'default_channel'))?.value;
-                const running = interaction.data.options?.find((arg => arg.name === 'schedule'))?.value;
-                const cronNew = interaction.data.options?.find((arg => arg.name === 'new'))?.value;
-                const cronStart = interaction.data.options?.find((arg => arg.name === 'start'))?.value;
-                const cronEnd = interaction.data.options?.find((arg => arg.name === 'end'))?.value;
+                const maxEntries = interaction.options.getInteger('max_entries');
+                const maxVotes = interaction.options.getInteger('max_votes');
+                const defaultChannel = interaction.options.getChannel('default_channel');
+                const running = interaction.options.getBoolean('schedule');
+                const cronNew = interaction.options.getString('new');
+                const cronStart = interaction.options.getString('start');
+                const cronEnd = interaction.options.getString('end');
 
                 // If channel doesn't belong to this guild
-                if (defaultChannel && client.channels.cache.get(defaultChannel)?.type !== 'text') {
+                if (defaultChannel && !defaultChannel.isText()) {
                     return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                         data: {
                             content: `\`default_channel\` must be a text channel or bot has no access to it`
@@ -1035,7 +1093,7 @@ export const snmCommands = {
                     });
                 }
 
-                let snmServer = await getSNMServer(interaction.guild_id);
+                let snmServer = await getSNMServer(interaction.guildId);
 
                 // FIXME: Should be a better way to do this
                 maxEntries ? snmServer.maxEntries = maxEntries : null;
@@ -1043,7 +1101,7 @@ export const snmCommands = {
                 if (defaultChannel) {
                     snmServer.defaultChannel = defaultChannel;
                     // Certifies that we have all channels cached
-                    client.guilds.fetch(interaction.guild_id, true, true);
+                    client.guilds.fetch(interaction.guildId, true, true);
                     client.channels.fetch(defaultChannel, true, true);
                 }
 
@@ -1052,7 +1110,7 @@ export const snmCommands = {
                     await snmServer.toggleSchedule(running);
                 }
 
-                const SNMSchedule = SNMSchedulesArray.get(interaction.guild_id);
+                const SNMSchedule = SNMSchedulesArray.get(interaction.guildId);
                 if (cronNew) {
                     cronNew === 'default' ? snmServer.schedule.new = '0 8 * * 1' : snmServer.schedule.new = cronNew;
                     // Update cronJob if it exists
@@ -1093,7 +1151,7 @@ export const snmCommands = {
     /** @type {GuizzordeCommand} snmRate - /snmRate <text> */
     snmRate: new GuizzordeCommand({
         command: new _slashCommand({
-            name: 'snmRate',
+            name: 'snmrate',
             description: `Add or change your current SNM rating`,
             options: [
                 {
@@ -1106,9 +1164,10 @@ export const snmCommands = {
         }),
         register: register,
         deregister: deregister,
+        /** @param {CommandInteraction} interaction */
         handler: async function (interaction) {
             try {
-                const rating = interaction.data.options?.find((arg => arg.name === 'rating'))?.value;
+                const rating = interaction.options.getString('rating');
 
                 // Sends to-be-edited message
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
@@ -1120,7 +1179,7 @@ export const snmCommands = {
                     }
                 });
 
-                const lastFinishedSNM = await getSNMWeek(interaction.guild_id, null, 'finished');
+                const lastFinishedSNM = await getSNMWeek(interaction.guildId, null, 'finished');
 
                 // Week doesn't exist
                 if (!lastFinishedSNM.week) {
@@ -1171,7 +1230,7 @@ export const snmCommands = {
     /** @type {GuizzordeCommand} snmVotes - /snmVotes <Show | Clear> */
     snmVotes: new GuizzordeCommand({
         command: new _slashCommand({
-            name: 'snmVotes',
+            name: 'snmvotes',
             description: 'Manage your current SNM votes',
             options: [
                 {
@@ -1194,22 +1253,15 @@ export const snmCommands = {
         }),
         register: register,
         deregister: deregister,
-        handler: async function (interaction) {
+        /** @param {CommandInteraction} interaction */
+        handler: async function (interaction, actionFromVoteMessage) {
             try {
-                const choice = interaction.data.options[0].value;
+                const choice = actionFromVoteMessage || interaction.options.getString('command');
 
-                // Sends to-be-edited message
-                await client.api.interactions(interaction.id, interaction.token).callback.post({
-                    data: {
-                        type: 4,
-                        data: {
-                            content: `Working...`,
-                            flags: 64
-                        }
-                    }
-                });
+                // Defers reply
+                !actionFromVoteMessage ? interaction.deferReply({ ephemeral: true }) : null
 
-                const lastSNM = await getSNMWeek(interaction.guild_id);
+                const lastSNM = await getSNMWeek(interaction.guildId);
                 const userFound = lastSNM.users.find(user => user.userId === interaction.member.user.id);
 
                 // Week doesn't exist
@@ -1298,10 +1350,11 @@ export const snmEnable = new GuizzordeCommand({
     ),
     register: () => register(snmEnable.command),
     deregister: () => deregister(snmEnable.command),
+    /** @param {CommandInteraction} interaction */
     handler: async function (interaction) {
         try {
             // Cannot be used in DM
-            if (!interaction.guild_id) {
+            if (!interaction.guildId) {
                 return await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
                         type: 4,
@@ -1314,11 +1367,11 @@ export const snmEnable = new GuizzordeCommand({
             }
 
             // Fetch guild and member (to ADMINISTRATOR check permission)
-            const guildPerformed = await client.guilds.fetch(interaction.guild_id);
+            const guildPerformed = await client.guilds.fetch(interaction.guildId);
             const memberPerformed = await guildPerformed.members.fetch(interaction.member.user.id);
 
             // Can only be used by admins
-            if (!memberPerformed.hasPermission('ADMINISTRATOR')) {
+            if (!memberPerformed.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
                 return await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
                         type: 4,
@@ -1330,7 +1383,7 @@ export const snmEnable = new GuizzordeCommand({
                 });
             }
 
-            const option = interaction.data.options?.find((arg => arg.name === 'option')).value;
+            const option = interaction.options.getBoolean('option');
 
             if (option === true) {
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
@@ -1355,14 +1408,14 @@ export const snmEnable = new GuizzordeCommand({
                 })
             }
 
-            let snmServer = await getSNMServer(interaction.guild_id);
+            let snmServer = await getSNMServer(interaction.guildId);
 
             // No SNMServer for this Server
             if (!snmServer.guildId) {
                 snmServer = new SNMServer({
-                    guildId: interaction.guild_id,
+                    guildId: interaction.guildId,
                     enabled: true,
-                    defaultChannel: interaction.channel_id,
+                    defaultChannel: interaction.channelId,
                     maxEntries: 1,
                     maxVotes: 2,
                     schedule: {
@@ -1380,7 +1433,7 @@ export const snmEnable = new GuizzordeCommand({
             }
             snmServer.enabled = option;
             await upsertSNMServer(snmServer);
-            await snmCommands.toggleSNM(interaction.guild_id, option);
+            await snmCommands.toggleSNM(interaction.guildId, option);
         }
         catch (e) {
             reportError(e);

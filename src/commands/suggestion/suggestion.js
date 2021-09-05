@@ -1,5 +1,6 @@
-import Discord from 'discord.js';
-import { Client } from "@notionhq/client";
+import Discord, { CommandInteraction } from 'discord.js';
+
+import { Client } from '@notionhq/client';
 
 import {
     client,
@@ -27,9 +28,10 @@ export const suggestion = new GuizzordeCommand({
     },
     register: register,
     deregister: deregister,
+    /** @param {CommandInteraction} interaction */
     handler: async function (interaction) {
         try {
-            const text = interaction.data.options?.find((arg => arg.name === 'text'))?.value;
+            const text = interaction.options.getString('text');
 
             // deferred response | type 5
             await client.api.interactions(interaction.id, interaction.token).callback.post({
@@ -63,8 +65,6 @@ export const suggestion = new GuizzordeCommand({
                     }
                 }]
             })
-
-            console.log(response);
 
             if (response) {
                 return await client.api.webhooks(configObj.appId, interaction.token).post({

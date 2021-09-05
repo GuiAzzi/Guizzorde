@@ -1,4 +1,4 @@
-import Discord from 'discord.js';
+import Discord, { CommandInteraction } from 'discord.js';
 import JustWatch from 'justwatch-api';
 import OS from 'opensubtitles-api';
 import torrentSearch from 'torrent-search-api';
@@ -145,9 +145,10 @@ export async function generateMovieEmbed(title, jwLocale) {
         }).join(' | ') || 'Not Found';
 
         // Director
-        embedDirectorValue = jwTitleEN.credits?.map(credit => {
-            if (credit.role === 'DIRECTOR') return credit.name;
-        }) || 'Not Found';
+        embedDirectorValue = jwTitleEN.credits?.reduce((directors = [], credit) => {
+            if (credit.role === 'DIRECTOR') directors.push(credit.name);
+            return directors;
+        }, []).join(', ') || 'Not Found';
 
         // Runtime
         if (jwTitleEN.runtime) {
@@ -185,9 +186,10 @@ export async function generateMovieEmbed(title, jwLocale) {
         }).join(' | ') || 'Not Found';
 
         // Director
-        embedDirectorValue = jwTitleBR.credits?.map(credit => {
-            if (credit.role === 'DIRECTOR') return credit.name;
-        }) || 'Not Found';
+        embedDirectorValue = jwTitleBR.credits?.reduce((directors = [], credit) => {
+            if (credit.role === 'DIRECTOR') directors.push(credit.name);
+            return directors;
+        }, []).join(', ') || 'Not Found';
 
         // Runtime
         if (jwTitleBR.runtime) {
@@ -221,40 +223,40 @@ export async function generateMovieEmbed(title, jwLocale) {
             {
                 // Synopse
                 name: 'Plot',
-                value: embedPlotValue
+                value: String(embedPlotValue)
             },
             {
                 // Genres
                 name: 'Genre',
-                value: embedGenreValue
+                value: String(embedGenreValue)
             },
             {
                 name: 'Directed by',
-                value: embedDirectorValue,
+                value: String(embedDirectorValue),
                 inline: true
             },
             {
                 name: 'Runtime',
-                value: embedRuntimeValue,
+                value: String(embedRuntimeValue),
                 inline: true
             },
             {
                 name: 'Where to watch',
-                value: embedWhereToWatchValue
+                value: String(embedWhereToWatchValue)
             },
             {
                 name: 'IMDB',
-                value: embedRatingValue.imdb || 'Not Found',
+                value: String(embedRatingValue.imdb || 'Not Found'),
                 inline: true
             },
             {
                 name: 'TMDB',
-                value: embedRatingValue.tmdb || 'Not Found',
+                value: String(embedRatingValue.tmdb || 'Not Found'),
                 inline: true
             },
             {
                 name: 'Torrent',
-                value: jwTorrentField
+                value: String(jwTorrentField)
             },
         )
 }
@@ -285,9 +287,10 @@ export async function generateCompactMovieEmbed(title, jwLocale) {
     const embedGenreValue = jwTitle.genre_ids?.map(genreArray => {
         return jwGenresEN.find(genre => genreArray === genre.id).translation
     }).join(' | ') || 'Not Found';
-    const embedDirectorValue = jwTitle.credits?.map(credit => {
-        if (credit.role === 'DIRECTOR') return credit.name;
-    }) || 'Not Found';
+    const embedDirectorValue = jwTitle.credits?.reduce((directors = [], credit) => {
+        if (credit.role === 'DIRECTOR') directors.push(credit.name);
+        return directors;
+    }, []).join(', ') || 'Not Found';
     let embedRuntimeValue = 'Not Found';
     if (jwTitle.runtime) {
         let hours = (jwTitle.runtime / 60);
@@ -312,30 +315,30 @@ export async function generateCompactMovieEmbed(title, jwLocale) {
         .addFields(
             {
                 name: 'Plot',
-                value: embedPlotValue
+                value: String(embedPlotValue)
             },
             {
                 name: 'Directed by',
-                value: embedDirectorValue,
+                value: String(embedDirectorValue),
                 inline: true
             },
             {
                 name: 'Runtime',
-                value: embedRuntimeValue,
+                value: String(embedRuntimeValue),
                 inline: true
             },
             {
                 name: 'Genre',
-                value: embedGenreValue
+                value: String(embedGenreValue)
             },
             {
                 name: 'IMDB',
-                value: embedRatingValue.imdb || 'Not Found',
+                value: String(embedRatingValue.imdb || 'Not Found'),
                 inline: true
             },
             {
                 name: 'TMDB',
-                value: embedRatingValue.tmdb || 'Not Found',
+                value: String(embedRatingValue.tmdb || 'Not Found'),
                 inline: true
             },
         )
@@ -372,11 +375,12 @@ export const slashMovie = new GuizzordeCommand({
     },
     register: register,
     deregister: deregister,
+    /** @param {CommandInteraction} interaction */
     handler: async function (interaction) {
         try {
             // FIXME: Messy AF - Maybe let default be EN
-            const title = interaction.data.options?.find((arg => arg.name === 'title'))?.value;
-            let jwLocale = interaction.data.options?.find((arg => arg.name === 'language'))?.value;
+            const title = interaction.options.getString('title');
+            let jwLocale = interaction.options.getString('language');
 
             // Sends to-be-edited message
             await client.api.interactions(interaction.id, interaction.token).callback.post({
