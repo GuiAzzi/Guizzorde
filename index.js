@@ -105,6 +105,10 @@ const memes = [
     {
         name: 'animals are leaving',
         meme: 'https://cdn.discordapp.com/attachments/168624317049995264/809568621923008542/o9HmFOlY3-uvW4Ys.mp4'
+    },
+    {
+        name: 'yoshi',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/890379430357250048/yoshi-dancando.mov'
     }
 ];
 
@@ -946,7 +950,7 @@ client.on('messageCreate', async message => {
             // Removes any command from the text, so the bot doesn't execute !snmStart or loops !say for example
             const sendMessage = messageText.replace(/!\w+/gim, '');
             if (sendMessage)
-                message.channel.send({ embeds: [sendMessage] });
+                message.channel.send({ content: sendMessage });
             else
                 message.author.send({ content: `You forgot to tell me what to say.\nUsage: \`!say <something>\`` });
             break;
