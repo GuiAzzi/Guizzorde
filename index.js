@@ -109,6 +109,10 @@ const memes = [
     {
         name: 'yoshi',
         meme: 'https://cdn.discordapp.com/attachments/168624317049995264/890379430357250048/yoshi-dancando.mov'
+    },
+    {
+        name: 'halloween',
+        meme: 'https://cdn.discordapp.com/attachments/168624317049995264/893926859799142541/Lonely_Halloween_Song.mp4'
     }
 ];
 
