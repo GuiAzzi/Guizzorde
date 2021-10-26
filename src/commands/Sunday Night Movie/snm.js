@@ -51,9 +51,15 @@ export const snmCommands = {
                 },
                 {
                     type: 5,
-                    name: 'export',
-                    description: 'Prints the raw SNM data',
-                }
+                    name: 'silent',
+                    description: 'No message will be sent to the channel.'
+                },
+                // Disabled for now
+                // {
+                //     type: 5,
+                //     name: 'export',
+                //     description: 'Prints the raw SNM data',
+                // }
             ]
 
         }),
@@ -62,16 +68,19 @@ export const snmCommands = {
         /** @param {CommandInteraction} interaction */
         handler: async function (interaction) {
             const week = interaction.options.getInteger('week');
+            const silent = interaction.options.getBoolean('silent');
             const _export = interaction.options.getBoolean('export');
 
             let snmWeekEmbed = new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB);
 
             // Sends to-be-edited message
+
             await client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: {
                     type: 4,
                     data: {
-                        embeds: [snmWeekEmbed]
+                        embeds: [snmWeekEmbed],
+                        flags: silent ? 64 : null
                     }
                 }
             });
@@ -99,7 +108,8 @@ export const snmCommands = {
                                     embeds: [
                                         snmWeekEmbed.setTitle('')
                                             .setDescription(arr[i])
-                                    ]
+                                    ],
+                                    flags: silent ? 64 : null
                                 }
                             });
                         }

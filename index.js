@@ -1,4 +1,4 @@
-import Discord from 'discord.js';
+import Discord, { Message } from 'discord.js';
 import Jimp from 'jimp/dist/index.js';
 import OpenAI from 'openai-api';
 import OS from 'opensubtitles-api';
@@ -965,7 +965,7 @@ client.on('messageCreate', async message => {
                 break;
             }
             if (args.length === 0) {
-                message.channel.send({ content: `Usage: \`!changeSub <channel id> <torrent message id> <new sub download link>\`` });
+                message.channel.send({ content: `Usage: \`!changeSub <channelId> <torrent message id> <new sub download link>\`` });
                 logMessage = "Wrong usage"
                 break;
             }
@@ -1075,6 +1075,40 @@ client.on('messageCreate', async message => {
             player.stop();
             connection.destroy();
             break;
+        case 'editembed': {
+            if (message.author.id === configObj.ownerId) {
+                const cmdUsage = `Usage: \`!editEmbed <channelId> <messageId> <embed number> [<title>] [<desc>] [<footer>] [<timestamp>] [color]\``;
+                message.channel.type !== 'DM' ? message.delete() : null;
+                if (args.length === 0) {
+                    message.author.send({ content: cmdUsage });
+                    break;
+                }
+
+                try {
+                    /** @type {Message} */
+                    const embedMsg = await (await client.channels.fetch(args[0])).messages.fetch(args[1]);
+                    const embed = embedMsg.embeds[args[2]];
+
+                    const embedParams = message.content.match(/(?<=\[)(.*?)(?=\])/gs)
+
+                    // If string is different from '[]' (aka -> should be edited) | '[]' is our code for "don't edit this field"
+                    embedParams[0] ? embed.setTitle(embedParams[0]) : null;
+                    embedParams[1] ? embed.setDescription(embedParams[1]) : null;
+                    embedParams[2] ? embed.setFooter(embedParams[2]) : null;
+                    embedParams[3] ? embed.setTimestamp(embedParams[3]) : null;
+                    embedParams[4] ? embed.setColor(embedParams[4]) : null;
+
+                    embedMsg.edit({ embeds: embedMsg.embeds });
+                }
+                catch (e) {
+                    console.log(e);
+                    message.author.send({ content: cmdUsage });
+                }
+
+            }
+            else reportError(`${message.author.username} tried to use !editEmbed as ${message.cleanContent}`);
+            break;
+        }
         default:
             break;
     }
