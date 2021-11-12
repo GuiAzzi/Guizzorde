@@ -241,7 +241,7 @@ export const snmCommands = {
                         let openAISeeded = false;
                         if (lastSNM.week > 1) {
                             try {
-                                const prompt = `Generate a good and unique movie recommendation based on the following list, not including the "Ignore List":\n\n${await generateOpenAIList(interaction.guildId)}`;
+                                const prompt = `Based on the whole following list, generate a new good rated movie entry:\n\n${await generateOpenAIList(interaction.guildId)}`;
 
                                 const response = await openai.complete({
                                     engine: 'davinci',

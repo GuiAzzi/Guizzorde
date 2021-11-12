@@ -187,7 +187,7 @@ export async function toggleUserSubscription(reminderId, user, operation) {
                     { reminderId: reminderId },
                     { $addToSet: { users: { userId: user.id, username: user.username } } }
                 )
-            user.send({ content: 'Subscribed! You will be notified via DM.' });
+            user.send({ content: 'Subscribed. You will be notified via DM.' });
         }
         else if (operation === "remove") {
             await mongodb.db(configObj.mongodbName)

@@ -179,7 +179,7 @@ export const remindMeCommands = {
                     data: {
                         embeds: [
                             new MessageEmbed()
-                                .setTitle(`📅 New Reminder 📅`)
+                                .setTitle(`📅 Reminder Created 📅`)
                                 .setDescription(note)
                                 .setColor(0x3498DB)
                                 .setFooter(!_private ? `Click the bell to subscribe` : "")
@@ -354,7 +354,7 @@ export async function fireReminder(reminder) {
                 .then(user => user.send({
                     embeds: [
                         new MessageEmbed()
-                            .setTitle(`⏰ RemindMe Notification! ⏰`)
+                            .setTitle(`⏰ RemindMe Notification ⏰`)
                             .setDescription(reminder.text)
                             .setColor(0x3498DB)
                             .setTimestamp(new Date().toJSON())
