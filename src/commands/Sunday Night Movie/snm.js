@@ -644,15 +644,17 @@ export const snmCommands = {
                         await upsertSNMWeek(lastSNM);
 
                         // Disables all buttons on finished SNM VoteMessage
-                        const lastSNMVoteMessage = client.channels.cache.get(lastSNM.voteMessage.channelId).messages.cache.get(lastSNM.voteMessage.messageId);
-                        for (let actionRow of lastSNMVoteMessage.components) {
-                            for (let button of actionRow.components) {
-                                if (button.type === 'BUTTON')
-                                    button.setDisabled('true')
+                        const lastSNMVoteMessage = client.channels.cache.get(lastSNM.voteMessage?.channelId)?.messages.cache.get(lastSNM.voteMessage.messageId);
+                        if (lastSNMVoteMessage) {
+                            for (let actionRow of lastSNMVoteMessage.components) {
+                                for (let button of actionRow.components) {
+                                    if (button.type === 'BUTTON')
+                                        button.setDisabled('true')
+                                }
                             }
+                            lastSNMVoteMessage.embeds[0].setFooter(`This voting has ended`);
+                            lastSNMVoteMessage.edit({ embeds: lastSNMVoteMessage.embeds, components: lastSNMVoteMessage.components });
                         }
-                        lastSNMVoteMessage.embeds[0].setFooter(`This voting has ended`);
-                        lastSNMVoteMessage.edit({ embeds: lastSNMVoteMessage.embeds, components: lastSNMVoteMessage.components });
 
                         endSNMEmbed.setDescription(embedDescription + `🎉 **${winnerMovie.title}** 🎉`)
 
@@ -673,7 +675,7 @@ export const snmCommands = {
                                 new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB)
                             ]
                         });
-                        const movieEmbed = await generateMovieEmbed(winnerMovie.title, 'pt');
+                        const movieEmbed = await generateMovieEmbed(winnerMovie.title);
                         movieEmbed.setTimestamp(new Date().toJSON());
 
                         if (lastSNM.winner.userId && movieEmbed.description != 'Movie not found 😞') {
