@@ -48,7 +48,7 @@ const searchSubtitle = async (title, lang = 'eng') => {
 /**
  * Generates full movie embed with torrent and subtitle
  * @param {string} title Movie title
- * @param {string} jwLocale JustWatch locale
+ * @param {string} [jwLocale] JustWatch locale
  * @returns {Promise<Discord.MessageEmbed>} The movie embed
  */
 export async function generateMovieEmbed(title, jwLocale) {
@@ -281,7 +281,7 @@ export async function generateMovieEmbed(title, jwLocale) {
 /**
  * Generates compact movie embed
  * @param {string} title Movie title
- * @param {string} jwLocale JustWatch locale
+ * @param {string} [jwLocale] JustWatch locale
  * @returns {Promise<Discord.MessageEmbed>} The movie embed
  */
 export async function generateCompactMovieEmbed(title, jwLocale) {
