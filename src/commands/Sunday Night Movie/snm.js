@@ -270,9 +270,8 @@ export const snmCommands = {
                                         }],
                                     });
                                     newSNM.movieCount += 1;
-                                    openAISeeded = new Discord.MessageEmbed()
-                                        .setTitle(`🤖 Guizzorde's Suggestion 🤖`)
-                                        .setDescription(openAIEntry)
+                                    openAISeeded = (await generateCompactMovieEmbed(openAIEntry))
+                                        .setDescription(`🤖 Guizzorde's Suggestion 🤖`)
                                         .setFooter(`Powered by OpenAI`)
                                         .setColor(0x3498DB);
                                 }
