@@ -77,7 +77,7 @@ export async function upsertSNMWeek(snmWeek) {
                 $set: snmWeek
             }, {
                 upsert: true,
-                returnOriginal: false
+                returnDocument: 'after',
             });
         mongodb.close();
         const week = new SNMWeek(res.value);
@@ -129,7 +129,7 @@ export async function upsertSNMServer(snmServer) {
                 $set: snmServer
             }, {
                 upsert: true,
-                returnOriginal: false
+                returnDocument: 'after',
             });
         mongodb.close();
         const server = new SNMServer(res.value);

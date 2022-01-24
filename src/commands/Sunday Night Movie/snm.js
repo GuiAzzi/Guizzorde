@@ -758,6 +758,16 @@ export const snmCommands = {
                 const titleName = interaction.options.getString('title');
                 const silent = interaction.options.getBoolean('silent')
 
+                // Need to defer before 3 seconds
+                await client.api.interactions(interaction.id, interaction.token).callback.post({
+                    data: {
+                        type: 5,
+                        data: {
+                            flags: silent ? 64 : null
+                        }
+                    }
+                })
+
                 const snmServer = await getSNMServer(interaction.guildId);
                 const lastSNM = await getSNMWeek(interaction.guildId);
 
@@ -775,30 +785,6 @@ export const snmCommands = {
 
                 switch (interactionOptions) {
                     case 'add': {
-                        // Interaction first contact (to be edited)
-                        // if silent - use ephemeral messages
-                        if (silent) {
-                            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                                data: {
-                                    type: 4,
-                                    data: {
-                                        content: `Adding title...`,
-                                        flags: 64
-                                    }
-                                }
-                            })
-                        }
-                        else if (!silent) {
-                            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                                data: {
-                                    type: 4,
-                                    data: {
-                                        content: `Adding title...`,
-                                    }
-                                }
-                            });
-                        }
-
                         // If week is no longer "ongoing"
                         if (lastSNM.status != 'ongoing') {
                             return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
@@ -864,30 +850,6 @@ export const snmCommands = {
                         break;
                     }
                     case 'remove': {
-                        // Interaction first contact (to be edited)
-                        // if silent - use ephemeral messages
-                        if (silent) {
-                            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                                data: {
-                                    type: 4,
-                                    data: {
-                                        content: `Removing title...`,
-                                        flags: 64
-                                    }
-                                }
-                            })
-                        }
-                        else if (!silent) {
-                            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                                data: {
-                                    type: 4,
-                                    data: {
-                                        content: `Removing title...`,
-                                    }
-                                }
-                            });
-                        }
-
                         // If week is no longer "ongoing"
                         if (lastSNM.status != 'ongoing') {
                             return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
@@ -1201,10 +1163,7 @@ export const snmCommands = {
                 // Sends to-be-edited message
                 await client.api.interactions(interaction.id, interaction.token).callback.post({
                     data: {
-                        type: 4,
-                        data: {
-                            content: `Saving...`
-                        }
+                        type: 5
                     }
                 });
 
@@ -1239,7 +1198,6 @@ export const snmCommands = {
 
                 return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
                     data: {
-                        content: `Saved!`,
                         embeds: [
                             new Discord.MessageEmbed()
                                 .setColor(0x3498DB)

@@ -73,7 +73,7 @@ export async function upsertReminder(reminder) {
                 $set: reminder
             }, {
                 upsert: true,
-                returnOriginal: false
+                returnDocument: 'after',
             });
         await mongodb.close();
 

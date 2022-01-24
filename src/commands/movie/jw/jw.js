@@ -313,8 +313,8 @@ export const jwProvidersBR = [
         "monetization_types": [
             "flatrate"
         ],
-        "icon_url": "/icon/255349076/{profile}",
-        "icon_blur_hash": "KHBgfJ00V;^q9FWaD,fkD$",
+        "icon_url": "/icon/147638351/{profile}",
+        "icon_blur_hash": "KQ5=;uogRNR1f5ohIUWBt6",
         "slug": "disney-plus",
         "data": {
             "deeplink_data": [
@@ -359,62 +359,72 @@ export const jwProvidersBR = [
             }
         },
         "addon_packages": [
-            "apk",
-            "apm",
-            "aep",
-            "aen",
-            "acs",
-            "aan",
-            "acb",
-            "asb",
-            "ask",
-            "acn",
-            "ame",
-            "asf",
-            "afb",
-            "asu",
-            "ahb",
-            "app",
-            "aav",
-            "ahm",
-            "ado",
-            "agc",
-            "ast",
-            "afa",
-            "aah",
-            "ahy",
-            "bpc",
-            "ait",
-            "amu",
-            "aot",
-            "azt",
-            "aim",
-            "apa",
-            "azp",
-            "nic",
-            "aln",
-            "abp",
-            "abo",
-            "avt",
-            "ang",
-            "aac",
-            "asd",
-            "asn",
-            "afm",
-            "apo",
             "azh",
-            "abf",
-            "acu",
-            "abb",
-            "fac",
             "adp",
-            "ash",
-            "anh",
-            "adw",
-            "aum",
             "amg",
+            "afm",
+            "ask",
+            "abe",
+            "aan",
+            "adw",
+            "apo",
+            "acs",
+            "abm",
+            "acm",
+            "amu",
+            "nic",
+            "avt",
+            "app",
+            "aep",
+            "acb",
+            "abp",
+            "aft",
+            "fac",
+            "aln",
+            "asn",
+            "apa",
+            "asd",
+            "agc",
+            "apm",
+            "afb",
+            "aim",
+            "afl",
+            "ahh",
+            "afa",
+            "ang",
+            "asf",
+            "asu",
+            "abf",
+            "ame",
+            "ahm",
+            "aoc",
+            "asb",
+            "anh",
+            "azp",
+            "ash",
+            "ahy",
+            "azt",
+            "ado",
+            "apg",
+            "abb",
+            "aav",
+            "aah",
+            "aen",
+            "ait",
+            "aum",
+            "afg",
+            "ast",
+            "ahb",
+            "bpc",
             "asm",
-            "abe"
+            "alo",
+            "aac",
+            "abo",
+            "acu",
+            "aot",
+            "ach",
+            "acn",
+            "apk"
         ],
         "parent_packages": null
     },
@@ -486,9 +496,9 @@ export const jwProvidersBR = [
         "display_priority": 7,
         "priority": 0,
         "monetization_types": [
-            "rent",
             "buy",
-            "flatrate"
+            "flatrate",
+            "rent"
         ],
         "icon_url": "/icon/755940/{profile}",
         "icon_blur_hash": "KW7e=Mj]Muflj[j?Dgayxu",
@@ -586,12 +596,12 @@ export const jwProvidersBR = [
 
             ],
             "packages": {
-                "android_tv": "",
-                "fire_tv": "",
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
                 "tvos": "enabled",
-                "tizenos": "",
-                "webos": "",
-                "xbox": ""
+                "tizenos": "enabled",
+                "webos": "enabled",
+                "xbox": "enabled"
             }
         },
         "addon_packages": null,
@@ -921,36 +931,6 @@ export const jwProvidersBR = [
         "parent_packages": null
     },
     {
-        "id": 447,
-        "technical_name": "belasartesalacarte",
-        "short_name": "bac",
-        "clear_name": "Belas Artes à La Carte",
-        "display_priority": 106,
-        "priority": 0,
-        "monetization_types": [
-            "flatrate",
-            "rent"
-        ],
-        "icon_url": "/icon/202326287/{profile}",
-        "icon_blur_hash": "KJCXjCbH66JTa|a|1zoKw^",
-        "slug": "belas-artes-a-la-carte",
-        "data": {
-            "deeplink_data": [
-
-            ],
-            "packages": {
-                "android_tv": "",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
-                "xbox": ""
-            }
-        },
-        "addon_packages": null,
-        "parent_packages": null
-    },
-    {
         "id": 462,
         "technical_name": "vidplus",
         "short_name": "vid",
@@ -998,6 +978,36 @@ export const jwProvidersBR = [
             ],
             "packages": {
                 "android_tv": "enabled",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 447,
+        "technical_name": "belasartesalacarte",
+        "short_name": "bac",
+        "clear_name": "Belas Artes à La Carte",
+        "display_priority": 106,
+        "priority": 0,
+        "monetization_types": [
+            "rent",
+            "flatrate"
+        ],
+        "icon_url": "/icon/202326287/{profile}",
+        "icon_blur_hash": "KJCXjCbH66JTa|a|1zoKw^",
+        "slug": "belas-artes-a-la-carte",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
                 "fire_tv": "",
                 "tvos": "",
                 "tizenos": "",
@@ -1067,35 +1077,6 @@ export const jwProvidersBR = [
         "parent_packages": null
     },
     {
-        "id": 475,
-        "technical_name": "docsville",
-        "short_name": "dsv",
-        "clear_name": "DOCSVILLE",
-        "display_priority": 1006,
-        "priority": 0,
-        "monetization_types": [
-            "flatrate"
-        ],
-        "icon_url": "/icon/208148387/{profile}",
-        "icon_blur_hash": "KFS=u7xuuPxuj[bHuOaenj",
-        "slug": "docsville",
-        "data": {
-            "deeplink_data": [
-
-            ],
-            "packages": {
-                "android_tv": "enabled",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
-                "xbox": ""
-            }
-        },
-        "addon_packages": null,
-        "parent_packages": null
-    },
-    {
         "id": 473,
         "technical_name": "revry",
         "short_name": "rvy",
@@ -1126,83 +1107,24 @@ export const jwProvidersBR = [
         "parent_packages": null
     },
     {
-        "id": 31,
-        "technical_name": "hbogo",
-        "short_name": "hbg",
-        "clear_name": "HBO Go",
-        "display_priority": 1007,
+        "id": 475,
+        "technical_name": "docsville",
+        "short_name": "dsv",
+        "clear_name": "DOCSVILLE",
+        "display_priority": 1006,
         "priority": 0,
         "monetization_types": [
             "flatrate"
         ],
-        "icon_url": "/icon/614494/{profile}",
-        "icon_blur_hash": "KLCGfHax4T.7azM|4mj[%g",
-        "slug": "hbo-go",
+        "icon_url": "/icon/208148387/{profile}",
+        "icon_blur_hash": "KFS=u7xuuPxuj[bHuOaenj",
+        "slug": "docsville",
         "data": {
             "deeplink_data": [
 
             ],
             "packages": {
                 "android_tv": "enabled",
-                "fire_tv": "enabled",
-                "tvos": "enabled",
-                "tizenos": "enabled",
-                "webos": "enabled",
-                "xbox": ""
-            }
-        },
-        "addon_packages": null,
-        "parent_packages": null
-    },
-    {
-        "id": 490,
-        "technical_name": "arte1play",
-        "short_name": "arp",
-        "clear_name": "Arte1 Play ",
-        "display_priority": 1007,
-        "priority": 0,
-        "monetization_types": [
-            "flatrate",
-            "free"
-        ],
-        "icon_url": "/icon/208860849/{profile}",
-        "icon_blur_hash": "KUMg*pt6MdxuWBV@8wV@tl",
-        "slug": "arte1-play",
-        "data": {
-            "deeplink_data": [
-
-            ],
-            "packages": {
-                "android_tv": "",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
-                "xbox": ""
-            }
-        },
-        "addon_packages": null,
-        "parent_packages": null
-    },
-    {
-        "id": 477,
-        "technical_name": "gospelplay",
-        "short_name": "gos",
-        "clear_name": "GOSPEL PLAY",
-        "display_priority": 1007,
-        "priority": 0,
-        "monetization_types": [
-            "flatrate"
-        ],
-        "icon_url": "/icon/208171655/{profile}",
-        "icon_blur_hash": "KUELyxV@M|b_t7Rj0LkCof",
-        "slug": "gospel-play",
-        "data": {
-            "deeplink_data": [
-
-            ],
-            "packages": {
-                "android_tv": "",
                 "fire_tv": "",
                 "tvos": "",
                 "tizenos": "",
@@ -1226,35 +1148,6 @@ export const jwProvidersBR = [
         "icon_url": "/icon/208853791/{profile}",
         "icon_blur_hash": "KF9tDee.IUxtjZRk00kCxu",
         "slug": "now",
-        "data": {
-            "deeplink_data": [
-
-            ],
-            "packages": {
-                "android_tv": "",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
-                "xbox": ""
-            }
-        },
-        "addon_packages": null,
-        "parent_packages": null
-    },
-    {
-        "id": 478,
-        "technical_name": "historyplay",
-        "short_name": "hpl",
-        "clear_name": "History Play",
-        "display_priority": 1007,
-        "priority": 0,
-        "monetization_types": [
-            "flatrate"
-        ],
-        "icon_url": "/icon/208172686/{profile}",
-        "icon_blur_hash": "KRC~34WC0$xsa|Rl5Aoe-T",
-        "slug": "history-play",
         "data": {
             "deeplink_data": [
 
@@ -1313,6 +1206,64 @@ export const jwProvidersBR = [
         "icon_url": "/icon/209565607/{profile}",
         "icon_blur_hash": "KH8MN_soNaoLjta|1HS2xG",
         "slug": "tntgo",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 477,
+        "technical_name": "gospelplay",
+        "short_name": "gos",
+        "clear_name": "GOSPEL PLAY",
+        "display_priority": 1007,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/208171655/{profile}",
+        "icon_blur_hash": "KUELyxV@M|b_t7Rj0LkCof",
+        "slug": "gospel-play",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 478,
+        "technical_name": "historyplay",
+        "short_name": "hpl",
+        "clear_name": "History Play",
+        "display_priority": 1007,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/208172686/{profile}",
+        "icon_blur_hash": "KRC~34WC0$xsa|Rl5Aoe-T",
+        "slug": "history-play",
         "data": {
             "deeplink_data": [
 
@@ -1826,9 +1777,198 @@ export const jwProvidersBR = [
         },
         "addon_packages": null,
         "parent_packages": null
+    },
+    {
+        "id": 677,
+        "technical_name": "eventive",
+        "short_name": "eve",
+        "clear_name": "Eventive",
+        "display_priority": 10010,
+        "priority": 0,
+        "monetization_types": [
+            "rent",
+            "free"
+        ],
+        "icon_url": "/icon/258768419/{profile}",
+        "icon_blur_hash": "KRB~h^x]03tSR+V]4qM|%K",
+        "slug": "eventive",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 683,
+        "technical_name": "amazonlooke",
+        "short_name": "alo",
+        "clear_name": "Looke Amazon Channel",
+        "display_priority": 10011,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/259251955/{profile}",
+        "icon_blur_hash": "KvH:2-j[WD0NofWB?Fayof",
+        "slug": "looke-amazon-channel",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": [
+            "prv",
+            "amp"
+        ]
+    },
+    {
+        "id": 582,
+        "technical_name": "amazonparamountplus",
+        "short_name": "app",
+        "clear_name": "Paramount+ Amazon Channel",
+        "display_priority": 10012,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/246478651/{profile}",
+        "icon_blur_hash": "KxHo^-a}Ic0Wj]N1?Cayt3",
+        "slug": "paramount-amazon-channel",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": [
+            "prv",
+            "amp"
+        ]
+    },
+    {
+        "id": 262,
+        "technical_name": "amazonnoggin",
+        "short_name": "ang",
+        "clear_name": "Noggin Amazon Channel",
+        "display_priority": 10013,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/241732611/{profile}",
+        "icon_blur_hash": "K+F=:paybE00j[WU?aayoN",
+        "slug": "noggin-amazon-channel",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": [
+            "prv",
+            "amp"
+        ]
+    },
+    {
+        "id": 588,
+        "technical_name": "amazonmgm",
+        "short_name": "amg",
+        "clear_name": "MGM Amazon Channel",
+        "display_priority": 10014,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/246682790/{profile}",
+        "icon_blur_hash": "KmJ*uAayWB00j[WB%Mayof",
+        "slug": "mgm-amazon-channel",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": [
+            "prv",
+            "amp"
+        ]
+    },
+    {
+        "id": 608,
+        "technical_name": "amazonlovenature",
+        "short_name": "aln",
+        "clear_name": "Love Nature Amazon Channel",
+        "display_priority": 10015,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/248045090/{profile}",
+        "icon_blur_hash": "KJRp8+I:%hoaR%oz?wnhiw",
+        "slug": "love-nature-amazon-channel",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": [
+            "prv",
+            "amp"
+        ]
     }
 ]
-
 // https://apis.justwatch.com/content/providers/locale/en_US
 export const jwProvidersEN = [
     {
@@ -1887,62 +2027,72 @@ export const jwProvidersEN = [
             }
         },
         "addon_packages": [
-            "afa",
-            "adw",
-            "adp",
-            "aim",
-            "apm",
-            "bpc",
-            "acu",
-            "asm",
-            "asf",
-            "asb",
-            "asn",
-            "anh",
-            "afm",
-            "asd",
-            "azh",
-            "abe",
-            "azt",
-            "ash",
-            "avt",
-            "aah",
-            "amg",
-            "ast",
-            "aan",
-            "abo",
-            "aep",
-            "acn",
-            "apk",
-            "ait",
-            "acs",
-            "nic",
-            "asu",
-            "aln",
+            "ame",
             "aav",
-            "apa",
-            "azp",
-            "ado",
-            "agc",
-            "aen",
+            "asu",
+            "aot",
+            "afg",
+            "abm",
+            "acm",
+            "ast",
+            "acn",
             "apo",
-            "afb",
-            "aac",
-            "abb",
+            "agc",
+            "alo",
+            "asd",
+            "asn",
+            "adp",
+            "acu",
             "ahy",
-            "fac",
+            "azp",
+            "aah",
+            "abe",
+            "afa",
+            "azh",
+            "apm",
+            "ask",
+            "ahh",
+            "adw",
+            "afl",
+            "abf",
+            "apa",
+            "amg",
+            "ait",
+            "aac",
+            "amu",
+            "anh",
+            "nic",
+            "aim",
+            "ahb",
+            "asb",
             "ang",
+            "fac",
+            "ado",
             "aum",
             "acb",
-            "amu",
-            "abf",
-            "ask",
-            "ahm",
-            "aot",
-            "ahb",
             "abp",
-            "ame",
-            "app"
+            "asf",
+            "abb",
+            "bpc",
+            "asm",
+            "ach",
+            "azt",
+            "afb",
+            "aln",
+            "aep",
+            "aen",
+            "acs",
+            "apg",
+            "aan",
+            "abo",
+            "ahm",
+            "app",
+            "afm",
+            "aft",
+            "aoc",
+            "ash",
+            "apk",
+            "avt"
         ],
         "parent_packages": null
     },
@@ -1956,8 +2106,8 @@ export const jwProvidersEN = [
         "monetization_types": [
             "flatrate"
         ],
-        "icon_url": "/icon/255349076/{profile}",
-        "icon_blur_hash": "KHBgfJ00V;^q9FWaD,fkD$",
+        "icon_url": "/icon/147638351/{profile}",
+        "icon_blur_hash": "KQ5=;uogRNR1f5ohIUWBt6",
         "slug": "disney-plus",
         "data": {
             "deeplink_data": [
@@ -2023,12 +2173,12 @@ export const jwProvidersEN = [
 
             ],
             "packages": {
-                "android_tv": "",
-                "fire_tv": "",
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
                 "tvos": "enabled",
-                "tizenos": "",
-                "webos": "",
-                "xbox": ""
+                "tizenos": "enabled",
+                "webos": "enabled",
+                "xbox": "enabled"
             }
         },
         "addon_packages": null,
@@ -2291,10 +2441,10 @@ export const jwProvidersEN = [
             "packages": {
                 "android_tv": "enabled",
                 "fire_tv": "enabled",
-                "tvos": "",
+                "tvos": "enabled",
                 "tizenos": "enabled",
                 "webos": "enabled",
-                "xbox": ""
+                "xbox": "enabled"
             }
         },
         "addon_packages": null,
@@ -3247,8 +3397,8 @@ export const jwProvidersEN = [
         "display_priority": 48,
         "priority": 0,
         "monetization_types": [
-            "flatrate",
-            "free"
+            "free",
+            "flatrate"
         ],
         "icon_url": "/icon/241588643/{profile}",
         "icon_blur_hash": "K95#hSofM{ayj[j[00WBxu",
@@ -4044,8 +4194,8 @@ export const jwProvidersEN = [
         "monetization_types": [
             "flatrate"
         ],
-        "icon_url": "/icon/6368831/{profile}",
-        "icon_blur_hash": "KB6{prtnIqcGj[f80PWC%0",
+        "icon_url": "/icon/257378431/{profile}",
+        "icon_blur_hash": "KIRMYwoM~pP;a#m,uNozaL",
         "slug": "britbox",
         "data": {
             "deeplink_data": [
@@ -5785,9 +5935,9 @@ export const jwProvidersEN = [
         "display_priority": 137,
         "priority": 0,
         "monetization_types": [
-            "flatrate",
             "rent",
-            "buy"
+            "buy",
+            "flatrate"
         ],
         "icon_url": "/icon/147271109/{profile}",
         "icon_blur_hash": "KVNu8Y$#xDs.WWWV}-j@R-",
@@ -5966,8 +6116,8 @@ export const jwProvidersEN = [
         "display_priority": 143,
         "priority": 0,
         "monetization_types": [
-            "flatrate",
-            "free"
+            "free",
+            "flatrate"
         ],
         "icon_url": "/icon/164156069/{profile}",
         "icon_blur_hash": "KXNLY~kC=}Sej[s:}^oLEK",
@@ -6114,8 +6264,8 @@ export const jwProvidersEN = [
         "display_priority": 148,
         "priority": 0,
         "monetization_types": [
-            "free",
-            "flatrate"
+            "flatrate",
+            "free"
         ],
         "icon_url": "/icon/198433889/{profile}",
         "icon_blur_hash": "KwQ]mAof%Mo0j[oz_NofM{",
@@ -6234,8 +6384,8 @@ export const jwProvidersEN = [
         "display_priority": 152,
         "priority": 0,
         "monetization_types": [
-            "flatrate",
-            "free"
+            "free",
+            "flatrate"
         ],
         "icon_url": "/icon/198433912/{profile}",
         "icon_blur_hash": "KkEJiBbuOWkVoff*2YbIso",
@@ -6264,8 +6414,8 @@ export const jwProvidersEN = [
         "display_priority": 153,
         "priority": 0,
         "monetization_types": [
-            "free",
-            "flatrate"
+            "flatrate",
+            "free"
         ],
         "icon_url": "/icon/198433922/{profile}",
         "icon_blur_hash": "K#Ju7al7@X%1k9r?MKjYkq",
@@ -6354,8 +6504,8 @@ export const jwProvidersEN = [
         "display_priority": 156,
         "priority": 0,
         "monetization_types": [
-            "free",
-            "flatrate"
+            "flatrate",
+            "free"
         ],
         "icon_url": "/icon/198433900/{profile}",
         "icon_blur_hash": "KZC%2Xa#D%a~ofay00of%L",
@@ -6620,8 +6770,8 @@ export const jwProvidersEN = [
         "display_priority": 165,
         "priority": 0,
         "monetization_types": [
-            "flatrate",
-            "ads"
+            "ads",
+            "flatrate"
         ],
         "icon_url": "/icon/199382338/{profile}",
         "icon_blur_hash": "KYBDWpfQIUofj[ay00fQ%M",
@@ -7093,8 +7243,8 @@ export const jwProvidersEN = [
         "display_priority": 182,
         "priority": 0,
         "monetization_types": [
-            "ads",
-            "flatrate"
+            "flatrate",
+            "ads"
         ],
         "icon_url": "/icon/240558410/{profile}",
         "icon_blur_hash": "KPDI:$EB4.#RR%Or0L$^$*",
@@ -7123,9 +7273,9 @@ export const jwProvidersEN = [
         "display_priority": 1011,
         "priority": 0,
         "monetization_types": [
-            "flatrate",
             "rent",
-            "buy"
+            "buy",
+            "flatrate"
         ],
         "icon_url": "/icon/241658074/{profile}",
         "icon_blur_hash": "KEKc3Hs.8w%Mj@xu8wfQt7",
@@ -7300,8 +7450,8 @@ export const jwProvidersEN = [
         "display_priority": 1018,
         "priority": 0,
         "monetization_types": [
-            "flatrate",
-            "free"
+            "free",
+            "flatrate"
         ],
         "icon_url": "/icon/243244293/{profile}",
         "icon_blur_hash": "KYEU#fj[E4~8j[j[%0a|oK",
@@ -7777,6 +7927,36 @@ export const jwProvidersEN = [
         "icon_url": "/icon/255472309/{profile}",
         "icon_blur_hash": "KGC0xyoftRMxRkbbL4kDV?",
         "slug": "kino-now",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 677,
+        "technical_name": "eventive",
+        "short_name": "eve",
+        "clear_name": "Eventive",
+        "display_priority": 10017,
+        "priority": 0,
+        "monetization_types": [
+            "rent",
+            "free"
+        ],
+        "icon_url": "/icon/258768419/{profile}",
+        "icon_blur_hash": "KRB~h^x]03tSR+V]4qM|%K",
+        "slug": "eventive",
         "data": {
             "deeplink_data": [
 
