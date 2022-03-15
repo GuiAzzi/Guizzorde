@@ -30,6 +30,7 @@ import {
     SNMWeekArray,
     suggestion,
     toggleUserSubscription,
+    bbb
 } from './src/commands/index.js';
 // Guizzorde config object
 import {
@@ -521,6 +522,9 @@ client.on('interactionCreate', async interaction => {
             break;
         case 'suggestion':
             suggestion.handler(interaction);
+            break;
+        case 'horabbb':
+            bbb.handler(interaction);
             break;
     }
 
