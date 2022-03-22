@@ -409,19 +409,10 @@ export const slashMovie = new GuizzordeCommand({
             let jwLocale = interaction.options.getString('language');
 
             // Sends to-be-edited message
-            await client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: {
-                    type: 4,
-                    data: {
-                        embeds: [new Discord.MessageEmbed().setTitle('Searching...').setColor(0x3498DB)]
-                    }
-                }
-            });
+            interaction.deferReply();
 
-            return await client.api.webhooks(configObj.appId, interaction.token).messages('@original').patch({
-                data: {
-                    embeds: [await generateMovieEmbed(title, jwLocale)]
-                }
+            interaction.editReply({
+                embeds: [await generateMovieEmbed(title, jwLocale)]
             });
         }
         catch (e) {
