@@ -30,7 +30,8 @@ import {
     SNMWeekArray,
     suggestion,
     toggleUserSubscription,
-    bbb
+    bbb,
+    activity
 } from './src/commands/index.js';
 // Guizzorde config object
 import {
@@ -207,7 +208,11 @@ client.on('interactionCreate', async interaction => {
                 /random - Randomly pick from one of the typed options
                 /poll - Start a poll that people can vote on typed options
                 /movie - Display info about a movie
-                /queridometro - Start a public rating on a server member`);
+                /queridometro - Start a public rating on a server member
+                /remindme - Set up a reminder for yourself or for a server
+                /remindme_list - Manage your reminders
+                /suggestion - Suggest me a new feature!
+                /activity - Starts an activity from the list on the server`);
 
             return interaction.reply({ embeds: [embed], ephemeral: true })
         case 'ping':
@@ -525,6 +530,9 @@ client.on('interactionCreate', async interaction => {
             break;
         case 'horabbb':
             bbb.handler(interaction);
+            break;
+        case 'activity':
+            activity.handler(interaction);
             break;
     }
 
