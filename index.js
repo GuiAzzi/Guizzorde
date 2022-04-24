@@ -1072,6 +1072,8 @@ client.on('messageCreate', async message => {
                 resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown3.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else if (messageText === 'countdown4')
                 resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown4.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
+            else if (messageText === 'countdown5')
+                resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown5.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else
                 resource = createAudioResource(ytdl(messageText, { filter: 'audioonly' }), { inputType: StreamType.Arbitrary, inlineVolume: 0.15 });
 

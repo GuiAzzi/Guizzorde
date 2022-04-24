@@ -86,13 +86,13 @@ export const activity = new GuizzordeCommand({
     deregister: deregister,
     /** @param {CommandInteraction} interaction */
     handler: async function (interaction) {
-        await interaction.deferReply({ephemeral: true});
+        await interaction.deferReply({ ephemeral: true });
         try {
             const actId = interaction.options.getString('name')
             const voiceChannel = interaction.options.getChannel('voice_channel');
 
             if (!voiceChannel.isVoice())
-                return interaction.editReply({content: `Channel must be a Voice Channel`});
+                return interaction.editReply({ content: `Channel must be a Voice Channel` });
 
             const actRes = await client.api.channels(voiceChannel.id).invites.post({
                 data: {
@@ -109,7 +109,7 @@ export const activity = new GuizzordeCommand({
                 }
             });
 
-            return interaction.editReply({content: `https://discord.com/invite/${actRes.code}`});
+            return interaction.editReply({ content: `https://discord.com/invite/${actRes.code}` });
         }
         catch (e) {
             reportError(e, interaction);
