@@ -1026,7 +1026,7 @@ client.on('messageCreate', async message => {
         //     logMessage = `Changed sub from ${args[0]} of channel ${args[1]} with ${args[2]}`;
         //     break;
         case 'play':
-            if (message.author.id !== configObj.ownerId) {
+            if (message.author.id !== configObj.ownerId && message.author.id !== '524072816560177154') {
                 message.channel.send({ content: 'Função bloqueada pra você. Desbloqueie com 20 dola na mão do pai.' });
                 logMessage = "not owner";
                 break;
@@ -1063,7 +1063,7 @@ client.on('messageCreate', async message => {
             let resource;
 
             if (messageText === 'countdown')
-                resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown${Math.floor(Math.random() * 4) + 1}.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
+                resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown${Math.floor(Math.random() * 6) + 1}.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else if (messageText === 'countdown1')
                 resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown1.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else if (messageText === 'countdown2')
@@ -1074,6 +1074,8 @@ client.on('messageCreate', async message => {
                 resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown4.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else if (messageText === 'countdown5')
                 resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown5.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
+            else if (messageText === 'countdown6')
+                resource = createAudioResource(`src/commands/Sunday Night Movie/sounds/countdown6.mp3`, { inputType: StreamType.Arbitrary, inlineVolume: 0.7 });
             else
                 resource = createAudioResource(ytdl(messageText, { filter: 'audioonly' }), { inputType: StreamType.Arbitrary, inlineVolume: 0.15 });
 
