@@ -359,72 +359,80 @@ export const jwProvidersBR = [
             }
         },
         "addon_packages": [
-            "azh",
-            "adp",
-            "amg",
-            "afm",
-            "ask",
-            "abe",
-            "aan",
-            "adw",
-            "apo",
-            "acs",
-            "abm",
-            "acm",
-            "amu",
-            "nic",
-            "avt",
-            "app",
-            "aep",
-            "acb",
-            "abp",
-            "aft",
-            "fac",
-            "aln",
-            "asn",
-            "apa",
-            "asd",
-            "agc",
-            "apm",
-            "afb",
+            "asm",
             "aim",
-            "afl",
-            "ahh",
-            "afa",
-            "ang",
-            "asf",
-            "asu",
-            "abf",
+            "apo",
+            "aep",
+            "adw",
+            "acn",
             "ame",
-            "ahm",
-            "aoc",
-            "asb",
-            "anh",
-            "azp",
-            "ash",
-            "ahy",
-            "azt",
-            "ado",
-            "apg",
-            "abb",
-            "aav",
-            "aah",
-            "aen",
-            "ait",
-            "aum",
-            "afg",
+            "acb",
+            "apk",
             "ast",
             "ahb",
-            "bpc",
-            "asm",
-            "alo",
-            "aac",
-            "abo",
-            "acu",
-            "aot",
+            "abp",
+            "ait",
+            "ask",
+            "amu",
             "ach",
-            "acn",
-            "apk"
+            "alo",
+            "anh",
+            "afm",
+            "acs",
+            "agc",
+            "azh",
+            "mdp",
+            "aoc",
+            "app",
+            "aft",
+            "acu",
+            "atc",
+            "asf",
+            "aln",
+            "ahh",
+            "apn",
+            "abf",
+            "amg",
+            "azt",
+            "afb",
+            "abm",
+            "afl",
+            "atv",
+            "abe",
+            "tov",
+            "azp",
+            "adp",
+            "ahy",
+            "aac",
+            "bpc",
+            "asd",
+            "ahm",
+            "fac",
+            "apm",
+            "afg",
+            "ava",
+            "apa",
+            "ash",
+            "abb",
+            "apg",
+            "afa",
+            "sfc",
+            "aen",
+            "aah",
+            "aav",
+            "aan",
+            "ado",
+            "asu",
+            "aot",
+            "avt",
+            "abo",
+            "acm",
+            "asb",
+            "asn",
+            "aum",
+            "ang",
+            "nic",
+            "hsa"
         ],
         "parent_packages": null
     },
@@ -496,9 +504,9 @@ export const jwProvidersBR = [
         "display_priority": 7,
         "priority": 0,
         "monetization_types": [
+            "rent",
             "buy",
-            "flatrate",
-            "rent"
+            "flatrate"
         ],
         "icon_url": "/icon/755940/{profile}",
         "icon_blur_hash": "KW7e=Mj]Muflj[j?Dgayxu",
@@ -558,8 +566,8 @@ export const jwProvidersBR = [
         "monetization_types": [
             "flatrate"
         ],
-        "icon_url": "/icon/182948653/{profile}",
-        "icon_blur_hash": "KI9@PAog4m_2jtD%D}WTxv",
+        "icon_url": "/icon/285237061/{profile}",
+        "icon_blur_hash": "KSFEgT-E8{=*oFND01W9-:",
         "slug": "hbo-max",
         "data": {
             "deeplink_data": [
@@ -637,47 +645,18 @@ export const jwProvidersBR = [
         "parent_packages": null
     },
     {
-        "id": 227,
-        "technical_name": "telecineplay",
-        "short_name": "tcp",
-        "clear_name": "Telecine Play",
-        "display_priority": 12,
-        "priority": 0,
-        "monetization_types": [
-            "flatrate"
-        ],
-        "icon_url": "/icon/176934433/{profile}",
-        "icon_blur_hash": "KXR{cAt7%gXmayni?^WBMx",
-        "slug": "telecine-play",
-        "data": {
-            "deeplink_data": [
-
-            ],
-            "packages": {
-                "android_tv": "",
-                "fire_tv": "enabled",
-                "tvos": "",
-                "tizenos": "enabled",
-                "webos": "enabled",
-                "xbox": ""
-            }
-        },
-        "addon_packages": null,
-        "parent_packages": null
-    },
-    {
         "id": 307,
         "technical_name": "globoplay",
         "short_name": "gop",
-        "clear_name": "Globo Play",
+        "clear_name": "Globoplay",
         "display_priority": 13,
         "priority": 0,
         "monetization_types": [
             "flatrate"
         ],
-        "icon_url": "/icon/136871678/{profile}",
-        "icon_blur_hash": "KXSn]PxGqGxGa|WVqaWVoL",
-        "slug": "globo-play",
+        "icon_url": "/icon/270278212/{profile}",
+        "icon_blur_hash": "KMSd5FrKvLnBb]e:*KjbTx",
+        "slug": "globoplay",
         "data": {
             "deeplink_data": [
 
@@ -931,64 +910,6 @@ export const jwProvidersBR = [
         "parent_packages": null
     },
     {
-        "id": 462,
-        "technical_name": "vidplus",
-        "short_name": "vid",
-        "clear_name": "Vid Plus",
-        "display_priority": 106,
-        "priority": 0,
-        "monetization_types": [
-            "flatrate"
-        ],
-        "icon_url": "/icon/207331558/{profile}",
-        "icon_blur_hash": "KD8XdrteH_-paxkC8$RC%c",
-        "slug": "vid-plus",
-        "data": {
-            "deeplink_data": [
-
-            ],
-            "packages": {
-                "android_tv": "",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
-                "xbox": ""
-            }
-        },
-        "addon_packages": null,
-        "parent_packages": null
-    },
-    {
-        "id": 521,
-        "technical_name": "spamflix",
-        "short_name": "sfx",
-        "clear_name": "Spamflix",
-        "display_priority": 106,
-        "priority": 0,
-        "monetization_types": [
-            "rent"
-        ],
-        "icon_url": "/icon/240831409/{profile}",
-        "icon_blur_hash": "KY1hy+fjU[cOfRilbBfPjf",
-        "slug": "spamflix",
-        "data": {
-            "deeplink_data": [
-
-            ],
-            "packages": {
-                "android_tv": "enabled",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
-                "xbox": ""
-            }
-        },
-        "addon_packages": null,
-        "parent_packages": null
-    },
-    {
         "id": 447,
         "technical_name": "belasartesalacarte",
         "short_name": "bac",
@@ -1037,6 +958,35 @@ export const jwProvidersBR = [
             ],
             "packages": {
                 "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 521,
+        "technical_name": "spamflix",
+        "short_name": "sfx",
+        "clear_name": "Spamflix",
+        "display_priority": 106,
+        "priority": 0,
+        "monetization_types": [
+            "rent"
+        ],
+        "icon_url": "/icon/240831409/{profile}",
+        "icon_blur_hash": "KY1hy+fjU[cOfRilbBfPjf",
+        "slug": "spamflix",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "enabled",
                 "fire_tv": "",
                 "tvos": "",
                 "tizenos": "",
@@ -1125,35 +1075,6 @@ export const jwProvidersBR = [
             ],
             "packages": {
                 "android_tv": "enabled",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
-                "xbox": ""
-            }
-        },
-        "addon_packages": null,
-        "parent_packages": null
-    },
-    {
-        "id": 484,
-        "technical_name": "nowonline",
-        "short_name": "now",
-        "clear_name": "NOW",
-        "display_priority": 1007,
-        "priority": 0,
-        "monetization_types": [
-            "flatrate"
-        ],
-        "icon_url": "/icon/208853791/{profile}",
-        "icon_blur_hash": "KF9tDee.IUxtjZRk00kCxu",
-        "slug": "now",
-        "data": {
-            "deeplink_data": [
-
-            ],
-            "packages": {
-                "android_tv": "",
                 "fire_tv": "",
                 "tvos": "",
                 "tizenos": "",
@@ -1264,6 +1185,35 @@ export const jwProvidersBR = [
         "icon_url": "/icon/208172686/{profile}",
         "icon_blur_hash": "KRC~34WC0$xsa|Rl5Aoe-T",
         "slug": "history-play",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 484,
+        "technical_name": "nowonline",
+        "short_name": "now",
+        "clear_name": "NOW",
+        "display_priority": 1007,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/208853791/{profile}",
+        "icon_blur_hash": "KF9tDee.IUxtjZRk00kCxu",
+        "slug": "now",
         "data": {
             "deeplink_data": [
 
@@ -1438,8 +1388,8 @@ export const jwProvidersBR = [
         "monetization_types": [
             "ads"
         ],
-        "icon_url": "/icon/243251295/{profile}",
-        "icon_blur_hash": "KfE2:;ng4ooKoKj[0LXA-:",
+        "icon_url": "/icon/269433194/{profile}",
+        "icon_blur_hash": "K43ufijuNHoejtay0Na{xZ",
         "slug": "filmzie",
         "data": {
             "deeplink_data": [
@@ -1826,11 +1776,11 @@ export const jwProvidersBR = [
 
             ],
             "packages": {
-                "android_tv": "",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
+                "tvos": "enabled",
+                "tizenos": "enabled",
+                "webos": "enabled",
                 "xbox": ""
             }
         },
@@ -1858,11 +1808,11 @@ export const jwProvidersBR = [
 
             ],
             "packages": {
-                "android_tv": "",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
+                "tvos": "enabled",
+                "tizenos": "enabled",
+                "webos": "enabled",
                 "xbox": ""
             }
         },
@@ -1873,11 +1823,41 @@ export const jwProvidersBR = [
         ]
     },
     {
+        "id": 10,
+        "technical_name": "amazon",
+        "short_name": "amz",
+        "clear_name": "Amazon Video",
+        "display_priority": 10013,
+        "priority": 0,
+        "monetization_types": [
+            "rent",
+            "buy"
+        ],
+        "icon_url": "/icon/430993/{profile}",
+        "icon_blur_hash": "KYPG%2-p-;~AIoNHXU%2s+",
+        "slug": "amazon-video",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
+                "tvos": "enabled",
+                "tizenos": "enabled",
+                "webos": "enabled",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
         "id": 262,
         "technical_name": "amazonnoggin",
         "short_name": "ang",
         "clear_name": "Noggin Amazon Channel",
-        "display_priority": 10013,
+        "display_priority": 10014,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -1890,11 +1870,11 @@ export const jwProvidersBR = [
 
             ],
             "packages": {
-                "android_tv": "",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
+                "tvos": "enabled",
+                "tizenos": "enabled",
+                "webos": "enabled",
                 "xbox": ""
             }
         },
@@ -1909,7 +1889,7 @@ export const jwProvidersBR = [
         "technical_name": "amazonmgm",
         "short_name": "amg",
         "clear_name": "MGM Amazon Channel",
-        "display_priority": 10014,
+        "display_priority": 10015,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -1922,11 +1902,11 @@ export const jwProvidersBR = [
 
             ],
             "packages": {
-                "android_tv": "",
-                "fire_tv": "",
-                "tvos": "",
-                "tizenos": "",
-                "webos": "",
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
+                "tvos": "enabled",
+                "tizenos": "enabled",
+                "webos": "enabled",
                 "xbox": ""
             }
         },
@@ -1941,7 +1921,7 @@ export const jwProvidersBR = [
         "technical_name": "amazonlovenature",
         "short_name": "aln",
         "clear_name": "Love Nature Amazon Channel",
-        "display_priority": 10015,
+        "display_priority": 10016,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -1949,6 +1929,38 @@ export const jwProvidersBR = [
         "icon_url": "/icon/248045090/{profile}",
         "icon_blur_hash": "KJRp8+I:%hoaR%oz?wnhiw",
         "slug": "love-nature-amazon-channel",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
+                "tvos": "enabled",
+                "tizenos": "enabled",
+                "webos": "enabled",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": [
+            "prv",
+            "amp"
+        ]
+    },
+    {
+        "id": 692,
+        "technical_name": "cultpix",
+        "short_name": "ctx",
+        "clear_name": "Cultpix",
+        "display_priority": 10017,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/264459628/{profile}",
+        "icon_blur_hash": "KC6$v3oLJQsofQWo1uWV$Q",
+        "slug": "cultpix",
         "data": {
             "deeplink_data": [
 
@@ -1963,10 +1975,36 @@ export const jwProvidersBR = [
             }
         },
         "addon_packages": null,
-        "parent_packages": [
-            "prv",
-            "amp"
-        ]
+        "parent_packages": null
+    },
+    {
+        "id": 701,
+        "technical_name": "filmbox",
+        "short_name": "flb",
+        "clear_name": "FilmBox+",
+        "display_priority": 10018,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/269959825/{profile}",
+        "icon_blur_hash": "KmSrQ6pwpcoLaykC*Jm,VY",
+        "slug": "filmbox",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
     }
 ]
 // https://apis.justwatch.com/content/providers/locale/en_US
@@ -2027,72 +2065,80 @@ export const jwProvidersEN = [
             }
         },
         "addon_packages": [
-            "ame",
-            "aav",
-            "asu",
-            "aot",
-            "afg",
-            "abm",
-            "acm",
-            "ast",
-            "acn",
-            "apo",
-            "agc",
-            "alo",
-            "asd",
-            "asn",
-            "adp",
-            "acu",
-            "ahy",
-            "azp",
-            "aah",
-            "abe",
-            "afa",
-            "azh",
-            "apm",
-            "ask",
-            "ahh",
-            "adw",
-            "afl",
-            "abf",
-            "apa",
-            "amg",
-            "ait",
-            "aac",
-            "amu",
-            "anh",
-            "nic",
-            "aim",
-            "ahb",
-            "asb",
-            "ang",
-            "fac",
-            "ado",
-            "aum",
-            "acb",
-            "abp",
-            "asf",
-            "abb",
-            "bpc",
-            "asm",
-            "ach",
-            "azt",
-            "afb",
-            "aln",
-            "aep",
-            "aen",
-            "acs",
-            "apg",
-            "aan",
-            "abo",
-            "ahm",
-            "app",
-            "afm",
-            "aft",
-            "aoc",
-            "ash",
             "apk",
-            "avt"
+            "ast",
+            "aan",
+            "amu",
+            "aum",
+            "aft",
+            "ang",
+            "acn",
+            "mdp",
+            "ahm",
+            "ahh",
+            "azp",
+            "afa",
+            "acb",
+            "abe",
+            "acu",
+            "apa",
+            "abb",
+            "asf",
+            "abo",
+            "abm",
+            "fac",
+            "ava",
+            "adp",
+            "avt",
+            "amg",
+            "abp",
+            "asm",
+            "abf",
+            "atv",
+            "apn",
+            "tov",
+            "app",
+            "apm",
+            "aln",
+            "hsa",
+            "aac",
+            "aav",
+            "azt",
+            "atc",
+            "ash",
+            "afb",
+            "afg",
+            "aen",
+            "ame",
+            "aot",
+            "asb",
+            "acm",
+            "sfc",
+            "adw",
+            "afm",
+            "acs",
+            "asu",
+            "aim",
+            "aah",
+            "azh",
+            "aoc",
+            "asd",
+            "afl",
+            "ahy",
+            "apg",
+            "ahb",
+            "alo",
+            "bpc",
+            "nic",
+            "ask",
+            "apo",
+            "asn",
+            "ado",
+            "agc",
+            "ach",
+            "aep",
+            "anh",
+            "ait"
         ],
         "parent_packages": null
     },
@@ -2252,8 +2298,8 @@ export const jwProvidersEN = [
         "monetization_types": [
             "flatrate"
         ],
-        "icon_url": "/icon/182948653/{profile}",
-        "icon_blur_hash": "KI9@PAog4m_2jtD%D}WTxv",
+        "icon_url": "/icon/285237061/{profile}",
+        "icon_blur_hash": "KSFEgT-E8{=*oFND01W9-:",
         "slug": "hbo-max",
         "data": {
             "deeplink_data": [
@@ -2705,15 +2751,15 @@ export const jwProvidersEN = [
         "id": 528,
         "technical_name": "amazonamcplus",
         "short_name": "azp",
-        "clear_name": "AMC Plus",
-        "display_priority": 23,
+        "clear_name": "AMC+ Amazon Channel",
+        "display_priority": 26,
         "priority": 0,
         "monetization_types": [
             "flatrate"
         ],
         "icon_url": "/icon/241732522/{profile}",
         "icon_blur_hash": "LXBDsOay4Tof00fQ?bay?bfQE1j[",
-        "slug": "amc-plus",
+        "slug": "amc-amazon-channel",
         "data": {
             "deeplink_data": [
 
@@ -2738,7 +2784,7 @@ export const jwProvidersEN = [
         "technical_name": "hbonow",
         "short_name": "hbn",
         "clear_name": "HBO Now",
-        "display_priority": 24,
+        "display_priority": 27,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -2767,7 +2813,7 @@ export const jwProvidersEN = [
         "technical_name": "rokuchannel",
         "short_name": "rkc",
         "clear_name": "The Roku Channel",
-        "display_priority": 27,
+        "display_priority": 30,
         "priority": 0,
         "monetization_types": [
             "ads"
@@ -2789,11 +2835,11 @@ export const jwProvidersEN = [
             }
         },
         "addon_packages": [
-            "erk",
             "srk",
             "prk",
             "sru",
-            "ark"
+            "ark",
+            "erk"
         ],
         "parent_packages": null
     },
@@ -2802,7 +2848,7 @@ export const jwProvidersEN = [
         "technical_name": "rokuchannelshowtime",
         "short_name": "srk",
         "clear_name": "Showtime Roku Premium Channel",
-        "display_priority": 28,
+        "display_priority": 31,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -2833,7 +2879,7 @@ export const jwProvidersEN = [
         "technical_name": "rokuchannelparamountplus",
         "short_name": "prk",
         "clear_name": "Paramount+ Roku Premium Channel",
-        "display_priority": 29,
+        "display_priority": 32,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -2864,7 +2910,7 @@ export const jwProvidersEN = [
         "technical_name": "rokuchannelstarz",
         "short_name": "sru",
         "clear_name": "Starz Roku Premium Channel",
-        "display_priority": 30,
+        "display_priority": 33,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -2895,7 +2941,7 @@ export const jwProvidersEN = [
         "technical_name": "rokuchannelamcplus",
         "short_name": "ark",
         "clear_name": "AMC+ Roku Premium Channel",
-        "display_priority": 31,
+        "display_priority": 34,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -2922,11 +2968,40 @@ export const jwProvidersEN = [
         ]
     },
     {
+        "id": 526,
+        "technical_name": "amcplus",
+        "short_name": "acp",
+        "clear_name": "AMC+",
+        "display_priority": 35,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/277399832/{profile}",
+        "icon_blur_hash": "K73TGHQ-m,o#aye:HXtRXn",
+        "slug": "amc",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
         "id": 636,
         "technical_name": "rokuchannelepix",
         "short_name": "erk",
         "clear_name": "Epix Roku Premium Channel",
-        "display_priority": 32,
+        "display_priority": 40,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -2957,7 +3032,7 @@ export const jwProvidersEN = [
         "technical_name": "kocowa",
         "short_name": "koc",
         "clear_name": "Kocowa",
-        "display_priority": 33,
+        "display_priority": 41,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -2986,7 +3061,7 @@ export const jwProvidersEN = [
         "technical_name": "youtubered",
         "short_name": "ytr",
         "clear_name": "YouTube Premium",
-        "display_priority": 34,
+        "display_priority": 42,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3015,7 +3090,7 @@ export const jwProvidersEN = [
         "technical_name": "youtubefree",
         "short_name": "yfr",
         "clear_name": "YouTube Free",
-        "display_priority": 35,
+        "display_priority": 43,
         "priority": 0,
         "monetization_types": [
             "ads"
@@ -3044,7 +3119,7 @@ export const jwProvidersEN = [
         "technical_name": "hoopla",
         "short_name": "hop",
         "clear_name": "Hoopla",
-        "display_priority": 36,
+        "display_priority": 44,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3073,7 +3148,7 @@ export const jwProvidersEN = [
         "technical_name": "thecw",
         "short_name": "tcw",
         "clear_name": "The CW",
-        "display_priority": 37,
+        "display_priority": 45,
         "priority": 0,
         "monetization_types": [
             "free"
@@ -3102,7 +3177,7 @@ export const jwProvidersEN = [
         "technical_name": "cwseed",
         "short_name": "cws",
         "clear_name": "CW Seed",
-        "display_priority": 38,
+        "display_priority": 46,
         "priority": 0,
         "monetization_types": [
             "free"
@@ -3131,7 +3206,7 @@ export const jwProvidersEN = [
         "technical_name": "vudu",
         "short_name": "vdu",
         "clear_name": "Vudu",
-        "display_priority": 39,
+        "display_priority": 47,
         "priority": 0,
         "monetization_types": [
             "rent",
@@ -3161,7 +3236,7 @@ export const jwProvidersEN = [
         "technical_name": "vudufree",
         "short_name": "vuf",
         "clear_name": "VUDU Free",
-        "display_priority": 40,
+        "display_priority": 48,
         "priority": 0,
         "monetization_types": [
             "ads"
@@ -3190,7 +3265,7 @@ export const jwProvidersEN = [
         "technical_name": "starz",
         "short_name": "stz",
         "clear_name": "Starz",
-        "display_priority": 41,
+        "display_priority": 49,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3219,7 +3294,7 @@ export const jwProvidersEN = [
         "technical_name": "criterionchannel",
         "short_name": "crc",
         "clear_name": "Criterion Channel",
-        "display_priority": 42,
+        "display_priority": 50,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3248,7 +3323,7 @@ export const jwProvidersEN = [
         "technical_name": "showtime",
         "short_name": "sho",
         "clear_name": "Showtime",
-        "display_priority": 43,
+        "display_priority": 51,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3277,7 +3352,7 @@ export const jwProvidersEN = [
         "technical_name": "pbs",
         "short_name": "pbs",
         "clear_name": "PBS",
-        "display_priority": 44,
+        "display_priority": 52,
         "priority": 0,
         "monetization_types": [
             "free",
@@ -3307,7 +3382,7 @@ export const jwProvidersEN = [
         "technical_name": "pantaflix",
         "short_name": "pfx",
         "clear_name": "Pantaflix",
-        "display_priority": 45,
+        "display_priority": 53,
         "priority": 0,
         "monetization_types": [
             "rent"
@@ -3336,7 +3411,7 @@ export const jwProvidersEN = [
         "technical_name": "fxnow",
         "short_name": "fxn",
         "clear_name": "FXNow",
-        "display_priority": 46,
+        "display_priority": 54,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3365,7 +3440,7 @@ export const jwProvidersEN = [
         "technical_name": "tubitv",
         "short_name": "tbv",
         "clear_name": "Tubi TV",
-        "display_priority": 47,
+        "display_priority": 55,
         "priority": 0,
         "monetization_types": [
             "free"
@@ -3394,11 +3469,11 @@ export const jwProvidersEN = [
         "technical_name": "kanopy",
         "short_name": "knp",
         "clear_name": "Kanopy",
-        "display_priority": 48,
+        "display_priority": 56,
         "priority": 0,
         "monetization_types": [
-            "free",
-            "flatrate"
+            "flatrate",
+            "free"
         ],
         "icon_url": "/icon/241588643/{profile}",
         "icon_blur_hash": "K95#hSofM{ayj[j[00WBxu",
@@ -3424,7 +3499,7 @@ export const jwProvidersEN = [
         "technical_name": "comedycentral",
         "short_name": "com",
         "clear_name": "Comedy Central",
-        "display_priority": 49,
+        "display_priority": 57,
         "priority": 0,
         "monetization_types": [
             "ads",
@@ -3454,7 +3529,7 @@ export const jwProvidersEN = [
         "technical_name": "microsoft",
         "short_name": "msf",
         "clear_name": "Microsoft Store",
-        "display_priority": 50,
+        "display_priority": 58,
         "priority": 0,
         "monetization_types": [
             "buy",
@@ -3484,7 +3559,7 @@ export const jwProvidersEN = [
         "technical_name": "crunchyroll",
         "short_name": "cru",
         "clear_name": "Crunchyroll",
-        "display_priority": 51,
+        "display_priority": 59,
         "priority": 0,
         "monetization_types": [
             "free"
@@ -3513,7 +3588,7 @@ export const jwProvidersEN = [
         "technical_name": "redbox",
         "short_name": "rbx",
         "clear_name": "Redbox",
-        "display_priority": 52,
+        "display_priority": 60,
         "priority": 0,
         "monetization_types": [
             "buy",
@@ -3543,7 +3618,7 @@ export const jwProvidersEN = [
         "technical_name": "sunnxt",
         "short_name": "snx",
         "clear_name": "Sun Nxt",
-        "display_priority": 53,
+        "display_priority": 61,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3572,7 +3647,7 @@ export const jwProvidersEN = [
         "technical_name": "maxgo",
         "short_name": "mxg",
         "clear_name": "Max Go",
-        "display_priority": 54,
+        "display_priority": 62,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3601,7 +3676,7 @@ export const jwProvidersEN = [
         "technical_name": "abcgo",
         "short_name": "abc",
         "clear_name": "ABC",
-        "display_priority": 55,
+        "display_priority": 63,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -3631,7 +3706,7 @@ export const jwProvidersEN = [
         "technical_name": "directv",
         "short_name": "drv",
         "clear_name": "DIRECTV",
-        "display_priority": 56,
+        "display_priority": 64,
         "priority": 0,
         "monetization_types": [
             "buy",
@@ -3662,7 +3737,7 @@ export const jwProvidersEN = [
         "technical_name": "crackle",
         "short_name": "crk",
         "clear_name": "Crackle",
-        "display_priority": 57,
+        "display_priority": 65,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -3693,7 +3768,7 @@ export const jwProvidersEN = [
         "technical_name": "amctheatres",
         "short_name": "amt",
         "clear_name": "AMC Theatres",
-        "display_priority": 58,
+        "display_priority": 66,
         "priority": 0,
         "monetization_types": [
             "cinema"
@@ -3722,7 +3797,7 @@ export const jwProvidersEN = [
         "technical_name": "amc",
         "short_name": "amc",
         "clear_name": "AMC",
-        "display_priority": 59,
+        "display_priority": 67,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3751,7 +3826,7 @@ export const jwProvidersEN = [
         "technical_name": "fandor",
         "short_name": "fnd",
         "clear_name": "Fandor",
-        "display_priority": 60,
+        "display_priority": 68,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3780,7 +3855,7 @@ export const jwProvidersEN = [
         "technical_name": "curiositystream",
         "short_name": "cts",
         "clear_name": "Curiosity Stream",
-        "display_priority": 61,
+        "display_priority": 69,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3809,7 +3884,7 @@ export const jwProvidersEN = [
         "technical_name": "nbc",
         "short_name": "nbc",
         "clear_name": "NBC",
-        "display_priority": 63,
+        "display_priority": 71,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3838,7 +3913,7 @@ export const jwProvidersEN = [
         "technical_name": "epix",
         "short_name": "epx",
         "clear_name": "Epix",
-        "display_priority": 64,
+        "display_priority": 72,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3867,7 +3942,7 @@ export const jwProvidersEN = [
         "technical_name": "freeform",
         "short_name": "ffm",
         "clear_name": "Freeform",
-        "display_priority": 65,
+        "display_priority": 73,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3896,7 +3971,7 @@ export const jwProvidersEN = [
         "technical_name": "history",
         "short_name": "his",
         "clear_name": "History",
-        "display_priority": 66,
+        "display_priority": 74,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -3926,7 +4001,7 @@ export const jwProvidersEN = [
         "technical_name": "syfy",
         "short_name": "sfy",
         "clear_name": "Syfy",
-        "display_priority": 67,
+        "display_priority": 75,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -3955,7 +4030,7 @@ export const jwProvidersEN = [
         "technical_name": "aetv",
         "short_name": "aae",
         "clear_name": "A&E",
-        "display_priority": 68,
+        "display_priority": 76,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -3985,7 +4060,7 @@ export const jwProvidersEN = [
         "technical_name": "lifetime",
         "short_name": "lft",
         "clear_name": "Lifetime",
-        "display_priority": 69,
+        "display_priority": 77,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -4015,7 +4090,7 @@ export const jwProvidersEN = [
         "technical_name": "shudder",
         "short_name": "shd",
         "clear_name": "Shudder",
-        "display_priority": 70,
+        "display_priority": 78,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4044,7 +4119,7 @@ export const jwProvidersEN = [
         "technical_name": "screambox",
         "short_name": "scb",
         "clear_name": "Screambox",
-        "display_priority": 71,
+        "display_priority": 79,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4073,7 +4148,7 @@ export const jwProvidersEN = [
         "technical_name": "acorntv",
         "short_name": "act",
         "clear_name": "Acorn TV",
-        "display_priority": 72,
+        "display_priority": 80,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4102,7 +4177,7 @@ export const jwProvidersEN = [
         "technical_name": "sundancenow",
         "short_name": "sdn",
         "clear_name": "Sundance Now",
-        "display_priority": 73,
+        "display_priority": 81,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4131,7 +4206,7 @@ export const jwProvidersEN = [
         "technical_name": "popcornflix",
         "short_name": "pcf",
         "clear_name": "Popcornflix",
-        "display_priority": 74,
+        "display_priority": 82,
         "priority": 0,
         "monetization_types": [
             "ads"
@@ -4160,7 +4235,7 @@ export const jwProvidersEN = [
         "technical_name": "guidedoc",
         "short_name": "gdc",
         "clear_name": "GuideDoc",
-        "display_priority": 75,
+        "display_priority": 83,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4189,7 +4264,7 @@ export const jwProvidersEN = [
         "technical_name": "britbox",
         "short_name": "bbo",
         "clear_name": "BritBox",
-        "display_priority": 76,
+        "display_priority": 84,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4218,7 +4293,7 @@ export const jwProvidersEN = [
         "technical_name": "realeyz",
         "short_name": "rlz",
         "clear_name": "realeyz",
-        "display_priority": 77,
+        "display_priority": 85,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4247,7 +4322,7 @@ export const jwProvidersEN = [
         "technical_name": "mubi",
         "short_name": "mbi",
         "clear_name": "Mubi",
-        "display_priority": 78,
+        "display_priority": 86,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -4277,7 +4352,7 @@ export const jwProvidersEN = [
         "technical_name": "netflixkids",
         "short_name": "nfk",
         "clear_name": "Netflix Kids",
-        "display_priority": 80,
+        "display_priority": 88,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4306,7 +4381,7 @@ export const jwProvidersEN = [
         "technical_name": "pantaya",
         "short_name": "pty",
         "clear_name": "Pantaya",
-        "display_priority": 81,
+        "display_priority": 89,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4335,7 +4410,7 @@ export const jwProvidersEN = [
         "technical_name": "boomerang",
         "short_name": "bmg",
         "clear_name": "Boomerang",
-        "display_priority": 82,
+        "display_priority": 90,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -4365,7 +4440,7 @@ export const jwProvidersEN = [
         "technical_name": "umc",
         "short_name": "umc",
         "clear_name": "Urban Movie Channel",
-        "display_priority": 83,
+        "display_priority": 91,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4394,7 +4469,7 @@ export const jwProvidersEN = [
         "technical_name": "historyvault",
         "short_name": "hvt",
         "clear_name": "History Vault",
-        "display_priority": 84,
+        "display_priority": 92,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4423,7 +4498,7 @@ export const jwProvidersEN = [
         "technical_name": "dovechannel",
         "short_name": "dvc",
         "clear_name": "Dove Channel",
-        "display_priority": 85,
+        "display_priority": 93,
         "priority": 0,
         "monetization_types": [
             "free"
@@ -4452,7 +4527,7 @@ export const jwProvidersEN = [
         "technical_name": "yupptv",
         "short_name": "ytv",
         "clear_name": "Yupp TV",
-        "display_priority": 86,
+        "display_priority": 94,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -4482,7 +4557,7 @@ export const jwProvidersEN = [
         "technical_name": "erosnow",
         "short_name": "ern",
         "clear_name": "Eros Now",
-        "display_priority": 87,
+        "display_priority": 95,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4511,7 +4586,7 @@ export const jwProvidersEN = [
         "technical_name": "magnoliaselects",
         "short_name": "mns",
         "clear_name": "Magnolia Selects",
-        "display_priority": 88,
+        "display_priority": 96,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4540,7 +4615,7 @@ export const jwProvidersEN = [
         "technical_name": "wwenetwork",
         "short_name": "wwe",
         "clear_name": "WWE Network",
-        "display_priority": 89,
+        "display_priority": 97,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4569,7 +4644,7 @@ export const jwProvidersEN = [
         "technical_name": "myoutdoortv",
         "short_name": "mot",
         "clear_name": "MyOutdoorTV",
-        "display_priority": 90,
+        "display_priority": 98,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -4599,7 +4674,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonnickhits",
         "short_name": "anh",
         "clear_name": "Nickhits Amazon Channel",
-        "display_priority": 91,
+        "display_priority": 99,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4631,7 +4706,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonnoggin",
         "short_name": "ang",
         "clear_name": "Noggin Amazon Channel",
-        "display_priority": 92,
+        "display_priority": 100,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4663,7 +4738,7 @@ export const jwProvidersEN = [
         "technical_name": "hopster",
         "short_name": "htv",
         "clear_name": "Hopster TV",
-        "display_priority": 93,
+        "display_priority": 101,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4692,7 +4767,7 @@ export const jwProvidersEN = [
         "technical_name": "laughoutloud",
         "short_name": "lol",
         "clear_name": "Laugh Out Loud",
-        "display_priority": 94,
+        "display_priority": 102,
         "priority": 0,
         "monetization_types": [
             "ads"
@@ -4721,11 +4796,11 @@ export const jwProvidersEN = [
         "technical_name": "smithsonianchannel",
         "short_name": "ssc",
         "clear_name": "Smithsonian Channel",
-        "display_priority": 95,
+        "display_priority": 103,
         "priority": 0,
         "monetization_types": [
-            "flatrate",
-            "free"
+            "free",
+            "flatrate"
         ],
         "icon_url": "/icon/127413290/{profile}",
         "icon_blur_hash": "KhOdFPxaD4xaj[aeD4ae%#",
@@ -4751,7 +4826,7 @@ export const jwProvidersEN = [
         "technical_name": "pureflix",
         "short_name": "pux",
         "clear_name": "Pure Flix",
-        "display_priority": 96,
+        "display_priority": 104,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4780,7 +4855,7 @@ export const jwProvidersEN = [
         "technical_name": "hallmarkmovies",
         "short_name": "hmm",
         "clear_name": "Hallmark Movies",
-        "display_priority": 97,
+        "display_priority": 105,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4809,7 +4884,7 @@ export const jwProvidersEN = [
         "technical_name": "lifetimemovieclub",
         "short_name": "lmc",
         "clear_name": "Lifetime Movie Club",
-        "display_priority": 98,
+        "display_priority": 106,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4838,7 +4913,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonpbskids",
         "short_name": "apk",
         "clear_name": "PBS Kids Amazon Channel",
-        "display_priority": 99,
+        "display_priority": 107,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4870,7 +4945,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonboomerang",
         "short_name": "abo",
         "clear_name": "Boomerang Amazon Channel",
-        "display_priority": 100,
+        "display_priority": 108,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4902,7 +4977,7 @@ export const jwProvidersEN = [
         "technical_name": "amazoncinemax",
         "short_name": "acn",
         "clear_name": "Cinemax Amazon Channel",
-        "display_priority": 101,
+        "display_priority": 109,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4934,7 +5009,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonpantaya",
         "short_name": "apa",
         "clear_name": "Pantaya Amazon Channel",
-        "display_priority": 102,
+        "display_priority": 110,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4966,7 +5041,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonhallmarkmoviesnow",
         "short_name": "ahm",
         "clear_name": "Hallmark Movies Now Amazon Channel",
-        "display_priority": 103,
+        "display_priority": 111,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -4998,7 +5073,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonpbsmasterpiece",
         "short_name": "apm",
         "clear_name": "PBS Masterpiece Amazon Channel",
-        "display_priority": 104,
+        "display_priority": 112,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5030,7 +5105,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonviewster",
         "short_name": "avt",
         "clear_name": "Viewster Amazon Channel",
-        "display_priority": 105,
+        "display_priority": 113,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5062,7 +5137,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonmzchoice",
         "short_name": "ame",
         "clear_name": "MZ Choice Amazon Channel",
-        "display_priority": 106,
+        "display_priority": 114,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5094,7 +5169,7 @@ export const jwProvidersEN = [
         "technical_name": "spamflix",
         "short_name": "sfx",
         "clear_name": "Spamflix",
-        "display_priority": 107,
+        "display_priority": 115,
         "priority": 0,
         "monetization_types": [
             "rent"
@@ -5123,7 +5198,7 @@ export const jwProvidersEN = [
         "technical_name": "slingtv",
         "short_name": "stv",
         "clear_name": "Sling TV",
-        "display_priority": 108,
+        "display_priority": 116,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5152,7 +5227,7 @@ export const jwProvidersEN = [
         "technical_name": "plutotv",
         "short_name": "ptv",
         "clear_name": "Pluto TV",
-        "display_priority": 109,
+        "display_priority": 117,
         "priority": 0,
         "monetization_types": [
             "ads"
@@ -5181,7 +5256,7 @@ export const jwProvidersEN = [
         "technical_name": "hidive",
         "short_name": "hdv",
         "clear_name": "HiDive",
-        "display_priority": 111,
+        "display_priority": 119,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5210,7 +5285,7 @@ export const jwProvidersEN = [
         "technical_name": "vixtv",
         "short_name": "vix",
         "clear_name": "VIX ",
-        "display_priority": 112,
+        "display_priority": 120,
         "priority": 0,
         "monetization_types": [
             "ads"
@@ -5223,8 +5298,8 @@ export const jwProvidersEN = [
 
             ],
             "packages": {
-                "android_tv": "",
-                "fire_tv": "",
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
                 "tvos": "",
                 "tizenos": "",
                 "webos": "",
@@ -5239,7 +5314,7 @@ export const jwProvidersEN = [
         "technical_name": "nightflightplus",
         "short_name": "nfp",
         "clear_name": "Night Flight Plus",
-        "display_priority": 113,
+        "display_priority": 121,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5268,7 +5343,7 @@ export const jwProvidersEN = [
         "technical_name": "topic",
         "short_name": "tpc",
         "clear_name": "Topic",
-        "display_priority": 114,
+        "display_priority": 122,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5297,7 +5372,7 @@ export const jwProvidersEN = [
         "technical_name": "mtv",
         "short_name": "mtv",
         "clear_name": "MTV",
-        "display_priority": 115,
+        "display_priority": 123,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5326,7 +5401,7 @@ export const jwProvidersEN = [
         "technical_name": "retrocrush",
         "short_name": "rtc",
         "clear_name": "Retrocrush",
-        "display_priority": 116,
+        "display_priority": 124,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5355,7 +5430,7 @@ export const jwProvidersEN = [
         "technical_name": "classixapp",
         "short_name": "cla",
         "clear_name": "Classix",
-        "display_priority": 117,
+        "display_priority": 125,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5384,7 +5459,7 @@ export const jwProvidersEN = [
         "technical_name": "dekkoo",
         "short_name": "dkk",
         "clear_name": "Dekkoo",
-        "display_priority": 118,
+        "display_priority": 126,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5413,7 +5488,7 @@ export const jwProvidersEN = [
         "technical_name": "shoutfactorytv",
         "short_name": "sft",
         "clear_name": "Shout! Factory TV",
-        "display_priority": 119,
+        "display_priority": 127,
         "priority": 0,
         "monetization_types": [
             "free"
@@ -5442,7 +5517,7 @@ export const jwProvidersEN = [
         "technical_name": "chaiflicks",
         "short_name": "chf",
         "clear_name": "Chai Flicks",
-        "display_priority": 120,
+        "display_priority": 128,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5471,7 +5546,7 @@ export const jwProvidersEN = [
         "technical_name": "ovid",
         "short_name": "ovi",
         "clear_name": "OVID",
-        "display_priority": 121,
+        "display_priority": 129,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5500,7 +5575,7 @@ export const jwProvidersEN = [
         "technical_name": "mhzchoice",
         "short_name": "mhz",
         "clear_name": "Mhz Choice",
-        "display_priority": 122,
+        "display_priority": 130,
         "priority": 0,
         "monetization_types": [
             "buy",
@@ -5530,7 +5605,7 @@ export const jwProvidersEN = [
         "technical_name": "filmdetective",
         "short_name": "tfd",
         "clear_name": "The Film Detective",
-        "display_priority": 123,
+        "display_priority": 131,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -5560,7 +5635,7 @@ export const jwProvidersEN = [
         "technical_name": "vicetv",
         "short_name": "vtv",
         "clear_name": "Vice TV ",
-        "display_priority": 125,
+        "display_priority": 133,
         "priority": 0,
         "monetization_types": [
             "ads"
@@ -5589,7 +5664,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonshudder",
         "short_name": "asd",
         "clear_name": "Shudder Amazon Channel",
-        "display_priority": 126,
+        "display_priority": 134,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5621,7 +5696,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonmubi",
         "short_name": "amu",
         "clear_name": "Mubi Amazon Channel",
-        "display_priority": 127,
+        "display_priority": 135,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5653,7 +5728,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonacorntv",
         "short_name": "aac",
         "clear_name": "AcornTV Amazon Channel",
-        "display_priority": 128,
+        "display_priority": 136,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5685,7 +5760,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonbritbox",
         "short_name": "abb",
         "clear_name": "BritBox Amazon Channel",
-        "display_priority": 129,
+        "display_priority": 137,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5717,7 +5792,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonfandor",
         "short_name": "afa",
         "clear_name": "Fandor Amazon Channel",
-        "display_priority": 130,
+        "display_priority": 138,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5749,7 +5824,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonscreambox",
         "short_name": "asb",
         "clear_name": "Screambox Amazon Channel",
-        "display_priority": 131,
+        "display_priority": 139,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5781,7 +5856,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonsundancenow",
         "short_name": "asn",
         "clear_name": "Sundance Now Amazon Channel",
-        "display_priority": 132,
+        "display_priority": 140,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5813,7 +5888,7 @@ export const jwProvidersEN = [
         "technical_name": "cartoonnetwork",
         "short_name": "ctw",
         "clear_name": "Cartoon Network",
-        "display_priority": 133,
+        "display_priority": 141,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -5843,7 +5918,7 @@ export const jwProvidersEN = [
         "technical_name": "adultswim",
         "short_name": "ads",
         "clear_name": "Adult Swim",
-        "display_priority": 134,
+        "display_priority": 142,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -5873,7 +5948,7 @@ export const jwProvidersEN = [
         "technical_name": "usanetwork",
         "short_name": "usn",
         "clear_name": "USA Network",
-        "display_priority": 135,
+        "display_priority": 143,
         "priority": 0,
         "monetization_types": [
             "free",
@@ -5903,7 +5978,7 @@ export const jwProvidersEN = [
         "technical_name": "foxusa",
         "short_name": "fus",
         "clear_name": "Fox",
-        "display_priority": 136,
+        "display_priority": 144,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5932,12 +6007,12 @@ export const jwProvidersEN = [
         "technical_name": "flixfling",
         "short_name": "fxf",
         "clear_name": "FlixFling",
-        "display_priority": 137,
+        "display_priority": 145,
         "priority": 0,
         "monetization_types": [
+            "flatrate",
             "rent",
-            "buy",
-            "flatrate"
+            "buy"
         ],
         "icon_url": "/icon/147271109/{profile}",
         "icon_blur_hash": "KVNu8Y$#xDs.WWWV}-j@R-",
@@ -5963,7 +6038,7 @@ export const jwProvidersEN = [
         "technical_name": "amazonbetplus",
         "short_name": "bpc",
         "clear_name": "Bet+ Amazon Channel",
-        "display_priority": 138,
+        "display_priority": 146,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -5995,7 +6070,7 @@ export const jwProvidersEN = [
         "technical_name": "viki",
         "short_name": "vik",
         "clear_name": "Rakuten Viki",
-        "display_priority": 139,
+        "display_priority": 147,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6025,11 +6100,11 @@ export const jwProvidersEN = [
         "technical_name": "amctheatresondemand",
         "short_name": "amo",
         "clear_name": "AMC on Demand",
-        "display_priority": 140,
+        "display_priority": 148,
         "priority": 0,
         "monetization_types": [
-            "rent",
-            "buy"
+            "buy",
+            "rent"
         ],
         "icon_url": "/icon/166008757/{profile}",
         "icon_blur_hash": "K86ZewWUS1avj]Wq1Vj]sp",
@@ -6055,7 +6130,7 @@ export const jwProvidersEN = [
         "technical_name": "darkmatter",
         "short_name": "dkm",
         "clear_name": "Darkmatter TV",
-        "display_priority": 141,
+        "display_priority": 149,
         "priority": 0,
         "monetization_types": [
             "ads"
@@ -6068,11 +6143,11 @@ export const jwProvidersEN = [
 
             ],
             "packages": {
-                "android_tv": "",
-                "fire_tv": "",
-                "tvos": "",
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
+                "tvos": "enabled",
                 "tizenos": "",
-                "webos": "",
+                "webos": "enabled",
                 "xbox": ""
             }
         },
@@ -6084,7 +6159,7 @@ export const jwProvidersEN = [
         "technical_name": "tcm",
         "short_name": "tcm",
         "clear_name": "TCM",
-        "display_priority": 142,
+        "display_priority": 150,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -6113,11 +6188,11 @@ export const jwProvidersEN = [
         "technical_name": "bravotv",
         "short_name": "brv",
         "clear_name": "Bravo TV",
-        "display_priority": 143,
+        "display_priority": 151,
         "priority": 0,
         "monetization_types": [
-            "free",
-            "flatrate"
+            "flatrate",
+            "free"
         ],
         "icon_url": "/icon/164156069/{profile}",
         "icon_blur_hash": "KXNLY~kC=}Sej[s:}^oLEK",
@@ -6143,7 +6218,7 @@ export const jwProvidersEN = [
         "technical_name": "tnt",
         "short_name": "tnt",
         "clear_name": "TNT",
-        "display_priority": 144,
+        "display_priority": 152,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -6172,7 +6247,7 @@ export const jwProvidersEN = [
         "technical_name": "foodnetwork",
         "short_name": "fnw",
         "clear_name": "Food Network",
-        "display_priority": 145,
+        "display_priority": 153,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6202,7 +6277,7 @@ export const jwProvidersEN = [
         "technical_name": "bbcamerica",
         "short_name": "bca",
         "clear_name": "BBC America",
-        "display_priority": 146,
+        "display_priority": 154,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -6231,7 +6306,7 @@ export const jwProvidersEN = [
         "technical_name": "indieflix",
         "short_name": "ind",
         "clear_name": "IndieFlix",
-        "display_priority": 147,
+        "display_priority": 155,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6261,7 +6336,7 @@ export const jwProvidersEN = [
         "technical_name": "ahctv",
         "short_name": "ahc",
         "clear_name": "AHCTV",
-        "display_priority": 148,
+        "display_priority": 156,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6291,7 +6366,7 @@ export const jwProvidersEN = [
         "technical_name": "tlc",
         "short_name": "tlc",
         "clear_name": "TLC",
-        "display_priority": 149,
+        "display_priority": 157,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6321,7 +6396,7 @@ export const jwProvidersEN = [
         "technical_name": "hgtv",
         "short_name": "hgt",
         "clear_name": "HGTV",
-        "display_priority": 150,
+        "display_priority": 158,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6351,7 +6426,7 @@ export const jwProvidersEN = [
         "technical_name": "diynetwork",
         "short_name": "diy",
         "clear_name": "DIY Network",
-        "display_priority": 151,
+        "display_priority": 159,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6381,11 +6456,11 @@ export const jwProvidersEN = [
         "technical_name": "investigationdiscovery",
         "short_name": "inv",
         "clear_name": "Investigation Discovery",
-        "display_priority": 152,
+        "display_priority": 160,
         "priority": 0,
         "monetization_types": [
-            "free",
-            "flatrate"
+            "flatrate",
+            "free"
         ],
         "icon_url": "/icon/198433912/{profile}",
         "icon_blur_hash": "KkEJiBbuOWkVoff*2YbIso",
@@ -6411,7 +6486,7 @@ export const jwProvidersEN = [
         "technical_name": "sciencechannel",
         "short_name": "sci",
         "clear_name": "Science Channel",
-        "display_priority": 153,
+        "display_priority": 161,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6441,7 +6516,7 @@ export const jwProvidersEN = [
         "technical_name": "destinationamerica",
         "short_name": "dea",
         "clear_name": "Destination America",
-        "display_priority": 154,
+        "display_priority": 162,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6471,7 +6546,7 @@ export const jwProvidersEN = [
         "technical_name": "animalplanet",
         "short_name": "apl",
         "clear_name": "Animal Planet",
-        "display_priority": 155,
+        "display_priority": 163,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6501,7 +6576,7 @@ export const jwProvidersEN = [
         "technical_name": "discoverylife",
         "short_name": "dil",
         "clear_name": "Discovery Life",
-        "display_priority": 156,
+        "display_priority": 164,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6531,7 +6606,7 @@ export const jwProvidersEN = [
         "technical_name": "discoverygo",
         "short_name": "dis",
         "clear_name": "Discovery",
-        "display_priority": 157,
+        "display_priority": 165,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6561,7 +6636,7 @@ export const jwProvidersEN = [
         "technical_name": "motortrend",
         "short_name": "mtr",
         "clear_name": "Motor Trend",
-        "display_priority": 158,
+        "display_priority": 166,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -6590,7 +6665,7 @@ export const jwProvidersEN = [
         "technical_name": "cookingchanneltv",
         "short_name": "coo",
         "clear_name": "Cooking Channel",
-        "display_priority": 159,
+        "display_priority": 167,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6620,11 +6695,11 @@ export const jwProvidersEN = [
         "technical_name": "travelchannel",
         "short_name": "tra",
         "clear_name": "Travel Channel",
-        "display_priority": 160,
+        "display_priority": 168,
         "priority": 0,
         "monetization_types": [
-            "flatrate",
-            "free"
+            "free",
+            "flatrate"
         ],
         "icon_url": "/icon/198433924/{profile}",
         "icon_blur_hash": "KK96]YxoIst5ocoL0hRo$}",
@@ -6650,7 +6725,7 @@ export const jwProvidersEN = [
         "technical_name": "paramountnetwork",
         "short_name": "pnw",
         "clear_name": "Paramount Network",
-        "display_priority": 161,
+        "display_priority": 169,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -6679,7 +6754,7 @@ export const jwProvidersEN = [
         "technical_name": "heretv",
         "short_name": "hrv",
         "clear_name": "Here TV",
-        "display_priority": 162,
+        "display_priority": 170,
         "priority": 0,
         "monetization_types": [
             "free"
@@ -6708,7 +6783,7 @@ export const jwProvidersEN = [
         "technical_name": "tvland",
         "short_name": "tvl",
         "clear_name": "TV Land",
-        "display_priority": 163,
+        "display_priority": 171,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -6737,11 +6812,11 @@ export const jwProvidersEN = [
         "technical_name": "logotv",
         "short_name": "ltv",
         "clear_name": "Logo TV",
-        "display_priority": 164,
+        "display_priority": 172,
         "priority": 0,
         "monetization_types": [
-            "ads",
-            "flatrate"
+            "flatrate",
+            "ads"
         ],
         "icon_url": "/icon/199382333/{profile}",
         "icon_blur_hash": "KrL.4rs+M}:gf}n,OiWrt6",
@@ -6767,7 +6842,7 @@ export const jwProvidersEN = [
         "technical_name": "vh1",
         "short_name": "vho",
         "clear_name": "VH1",
-        "display_priority": 165,
+        "display_priority": 173,
         "priority": 0,
         "monetization_types": [
             "ads",
@@ -6797,7 +6872,7 @@ export const jwProvidersEN = [
         "technical_name": "flixpremiere",
         "short_name": "fpm",
         "clear_name": "Flix Premiere",
-        "display_priority": 166,
+        "display_priority": 174,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -6826,7 +6901,7 @@ export const jwProvidersEN = [
         "technical_name": "amazondreamworkstv",
         "short_name": "adw",
         "clear_name": "DreamWorksTV Amazon Channel",
-        "display_priority": 167,
+        "display_priority": 175,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -6858,7 +6933,7 @@ export const jwProvidersEN = [
         "technical_name": "tbs",
         "short_name": "tus",
         "clear_name": "TBS",
-        "display_priority": 169,
+        "display_priority": 177,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -6887,7 +6962,7 @@ export const jwProvidersEN = [
         "technical_name": "asiancrush",
         "short_name": "asc",
         "clear_name": "AsianCrush",
-        "display_priority": 170,
+        "display_priority": 178,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -6916,7 +6991,7 @@ export const jwProvidersEN = [
         "technical_name": "filmrise",
         "short_name": "flr",
         "clear_name": "FILMRISE",
-        "display_priority": 171,
+        "display_priority": 179,
         "priority": 0,
         "monetization_types": [
             "ads",
@@ -6946,7 +7021,7 @@ export const jwProvidersEN = [
         "technical_name": "revry",
         "short_name": "rvy",
         "clear_name": "Revry",
-        "display_priority": 172,
+        "display_priority": 180,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -6976,7 +7051,7 @@ export const jwProvidersEN = [
         "technical_name": "docsville",
         "short_name": "dsv",
         "clear_name": "DOCSVILLE",
-        "display_priority": 173,
+        "display_priority": 181,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7005,11 +7080,11 @@ export const jwProvidersEN = [
         "technical_name": "roosterteeth",
         "short_name": "rst",
         "clear_name": "Rooster Teeth",
-        "display_priority": 174,
+        "display_priority": 182,
         "priority": 0,
         "monetization_types": [
-            "ads",
-            "flatrate"
+            "flatrate",
+            "ads"
         ],
         "icon_url": "/icon/208856114/{profile}",
         "icon_blur_hash": "KiL{0:?HW==|xuoz8wVsbF",
@@ -7035,7 +7110,7 @@ export const jwProvidersEN = [
         "technical_name": "spectrumondemand",
         "short_name": "sod",
         "clear_name": "Spectrum On Demand",
-        "display_priority": 175,
+        "display_priority": 183,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7064,7 +7139,7 @@ export const jwProvidersEN = [
         "technical_name": "oxygen",
         "short_name": "oxy",
         "clear_name": "OXYGEN",
-        "display_priority": 176,
+        "display_priority": 184,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7093,7 +7168,7 @@ export const jwProvidersEN = [
         "technical_name": "hiyah",
         "short_name": "hyh",
         "clear_name": "Hi-YAH",
-        "display_priority": 177,
+        "display_priority": 185,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -7123,7 +7198,7 @@ export const jwProvidersEN = [
         "technical_name": "vrvco",
         "short_name": "vrv",
         "clear_name": "VRV",
-        "display_priority": 178,
+        "display_priority": 186,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -7153,7 +7228,7 @@ export const jwProvidersEN = [
         "technical_name": "trutv",
         "short_name": "tru",
         "clear_name": "tru TV",
-        "display_priority": 179,
+        "display_priority": 187,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7182,7 +7257,7 @@ export const jwProvidersEN = [
         "technical_name": "disneynow",
         "short_name": "dnw",
         "clear_name": "DisneyNOW",
-        "display_priority": 180,
+        "display_priority": 188,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7211,7 +7286,7 @@ export const jwProvidersEN = [
         "technical_name": "wetv",
         "short_name": "wet",
         "clear_name": "WeTV",
-        "display_priority": 181,
+        "display_priority": 189,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7240,7 +7315,7 @@ export const jwProvidersEN = [
         "technical_name": "discoveryplusus",
         "short_name": "dpu",
         "clear_name": "Discovery Plus",
-        "display_priority": 182,
+        "display_priority": 190,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -7270,7 +7345,7 @@ export const jwProvidersEN = [
         "technical_name": "arrowplayer",
         "short_name": "awp",
         "clear_name": "ARROW",
-        "display_priority": 1011,
+        "display_priority": 1019,
         "priority": 0,
         "monetization_types": [
             "rent",
@@ -7301,7 +7376,7 @@ export const jwProvidersEN = [
         "technical_name": "plex",
         "short_name": "plx",
         "clear_name": "Plex",
-        "display_priority": 1013,
+        "display_priority": 1021,
         "priority": 0,
         "monetization_types": [
             "free"
@@ -7330,7 +7405,7 @@ export const jwProvidersEN = [
         "technical_name": "wowpresentsplus",
         "short_name": "wow",
         "clear_name": "WOW Presents Plus",
-        "display_priority": 1014,
+        "display_priority": 1022,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7359,7 +7434,7 @@ export const jwProvidersEN = [
         "technical_name": "alamoondemand",
         "short_name": "alm",
         "clear_name": "Alamo on Demand",
-        "display_priority": 1015,
+        "display_priority": 1023,
         "priority": 0,
         "monetization_types": [
             "rent",
@@ -7389,7 +7464,7 @@ export const jwProvidersEN = [
         "technical_name": "magellantv",
         "short_name": "mgl",
         "clear_name": "Magellan TV",
-        "display_priority": 1016,
+        "display_priority": 1024,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7418,7 +7493,7 @@ export const jwProvidersEN = [
         "technical_name": "broadwayhd",
         "short_name": "bhd",
         "clear_name": "BroadwayHD",
-        "display_priority": 1017,
+        "display_priority": 1025,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7447,11 +7522,11 @@ export const jwProvidersEN = [
         "technical_name": "own",
         "short_name": "own",
         "clear_name": "The Oprah Winfrey Network",
-        "display_priority": 1018,
+        "display_priority": 1026,
         "priority": 0,
         "monetization_types": [
-            "free",
-            "flatrate"
+            "flatrate",
+            "free"
         ],
         "icon_url": "/icon/243244293/{profile}",
         "icon_blur_hash": "KYEU#fj[E4~8j[j[%0a|oK",
@@ -7477,13 +7552,13 @@ export const jwProvidersEN = [
         "technical_name": "filmzie",
         "short_name": "fmz",
         "clear_name": "Filmzie",
-        "display_priority": 1019,
+        "display_priority": 1027,
         "priority": 0,
         "monetization_types": [
             "ads"
         ],
-        "icon_url": "/icon/243251295/{profile}",
-        "icon_blur_hash": "KfE2:;ng4ooKoKj[0LXA-:",
+        "icon_url": "/icon/269433194/{profile}",
+        "icon_blur_hash": "K43ufijuNHoejtay0Na{xZ",
         "slug": "filmzie",
         "data": {
             "deeplink_data": [
@@ -7506,7 +7581,7 @@ export const jwProvidersEN = [
         "technical_name": "moviesaints",
         "short_name": "mvt",
         "clear_name": "MovieSaints",
-        "display_priority": 1020,
+        "display_priority": 1028,
         "priority": 0,
         "monetization_types": [
             "rent"
@@ -7535,11 +7610,11 @@ export const jwProvidersEN = [
         "technical_name": "dogwoof",
         "short_name": "dog",
         "clear_name": "Dogwoof On Demand",
-        "display_priority": 1021,
+        "display_priority": 1029,
         "priority": 0,
         "monetization_types": [
-            "rent",
-            "buy"
+            "buy",
+            "rent"
         ],
         "icon_url": "/icon/242710905/{profile}",
         "icon_blur_hash": "KL3nrwmmiwYkeUjFVraeg2",
@@ -7565,7 +7640,7 @@ export const jwProvidersEN = [
         "technical_name": "truestory",
         "short_name": "trs",
         "clear_name": "True Story",
-        "display_priority": 1022,
+        "display_priority": 1030,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -7595,7 +7670,7 @@ export const jwProvidersEN = [
         "technical_name": "marthastewart",
         "short_name": "mst",
         "clear_name": "Martha Stewart TV",
-        "display_priority": 1023,
+        "display_priority": 1031,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7624,7 +7699,7 @@ export const jwProvidersEN = [
         "technical_name": "dafilms",
         "short_name": "daf",
         "clear_name": "DocAlliance Films",
-        "display_priority": 1024,
+        "display_priority": 1032,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7653,7 +7728,7 @@ export const jwProvidersEN = [
         "technical_name": "britishpathe",
         "short_name": "bph",
         "clear_name": "British Pathé TV",
-        "display_priority": 1025,
+        "display_priority": 1033,
         "priority": 0,
         "monetization_types": [
             "flatrate",
@@ -7683,7 +7758,7 @@ export const jwProvidersEN = [
         "technical_name": "ondemandkorea",
         "short_name": "kor",
         "clear_name": "KoreaOnDemand",
-        "display_priority": 1026,
+        "display_priority": 1034,
         "priority": 0,
         "monetization_types": [
             "rent"
@@ -7712,7 +7787,7 @@ export const jwProvidersEN = [
         "technical_name": "hoichoi",
         "short_name": "hoc",
         "clear_name": "Hoichoi",
-        "display_priority": 1027,
+        "display_priority": 1035,
         "priority": 0,
         "monetization_types": [
             "free"
@@ -7741,7 +7816,7 @@ export const jwProvidersEN = [
         "technical_name": "filmmovementplus",
         "short_name": "fmp",
         "clear_name": "Film Movement Plus",
-        "display_priority": 1029,
+        "display_priority": 1037,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7770,7 +7845,7 @@ export const jwProvidersEN = [
         "technical_name": "iqiyi",
         "short_name": "iqi",
         "clear_name": "iQIYI",
-        "display_priority": 10009,
+        "display_priority": 10017,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7799,7 +7874,7 @@ export const jwProvidersEN = [
         "technical_name": "metrograph",
         "short_name": "mtg",
         "clear_name": "Metrograph",
-        "display_priority": 10010,
+        "display_priority": 10018,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7827,15 +7902,15 @@ export const jwProvidersEN = [
         "id": 613,
         "technical_name": "amazonimdbtv",
         "short_name": "aim",
-        "clear_name": "IMDB TV Amazon Channel",
-        "display_priority": 10011,
+        "clear_name": "Freevee Amazon Channel",
+        "display_priority": 10019,
         "priority": 0,
         "monetization_types": [
             "ads"
         ],
-        "icon_url": "/icon/248135480/{profile}",
-        "icon_blur_hash": "K:P$Kgf$$~Dga}xWpKWDf8",
-        "slug": "imdb-tv-amazon-channel",
+        "icon_url": "/icon/272702600/{profile}",
+        "icon_blur_hash": "K$HeqOj?WF00kBWC-=ayoe",
+        "slug": "freevee-amazon-channel",
         "data": {
             "deeplink_data": [
 
@@ -7860,7 +7935,7 @@ export const jwProvidersEN = [
         "technical_name": "curiatv",
         "short_name": "cur",
         "clear_name": "Curia",
-        "display_priority": 10012,
+        "display_priority": 10020,
         "priority": 0,
         "monetization_types": [
             "flatrate"
@@ -7889,7 +7964,7 @@ export const jwProvidersEN = [
         "technical_name": "publicdomainmovies",
         "short_name": "pdm",
         "clear_name": "Public Domain Movies",
-        "display_priority": 10013,
+        "display_priority": 10021,
         "priority": 0,
         "monetization_types": [
             "free"
@@ -7918,7 +7993,7 @@ export const jwProvidersEN = [
         "technical_name": "kinonow",
         "short_name": "knw",
         "clear_name": "Kino Now",
-        "display_priority": 10014,
+        "display_priority": 10022,
         "priority": 0,
         "monetization_types": [
             "buy",
@@ -7948,7 +8023,7 @@ export const jwProvidersEN = [
         "technical_name": "eventive",
         "short_name": "eve",
         "clear_name": "Eventive",
-        "display_priority": 10017,
+        "display_priority": 10025,
         "priority": 0,
         "monetization_types": [
             "rent",
@@ -7957,6 +8032,210 @@ export const jwProvidersEN = [
         "icon_url": "/icon/258768419/{profile}",
         "icon_blur_hash": "KRB~h^x]03tSR+V]4qM|%K",
         "slug": "eventive",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 692,
+        "technical_name": "cultpix",
+        "short_name": "ctx",
+        "clear_name": "Cultpix",
+        "display_priority": 10026,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/264459628/{profile}",
+        "icon_blur_hash": "KC6$v3oLJQsofQWo1uWV$Q",
+        "slug": "cultpix",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 694,
+        "technical_name": "cinessance",
+        "short_name": "cen",
+        "clear_name": "Cinessance",
+        "display_priority": 10027,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate",
+            "rent"
+        ],
+        "icon_url": "/icon/267115248/{profile}",
+        "icon_blur_hash": "KARp8-xu~q%Mayj[~qofRj",
+        "slug": "cinessance",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 701,
+        "technical_name": "filmbox",
+        "short_name": "flb",
+        "clear_name": "FilmBox+",
+        "display_priority": 10028,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/269959825/{profile}",
+        "icon_blur_hash": "KmSrQ6pwpcoLaykC*Jm,VY",
+        "slug": "filmbox",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 532,
+        "technical_name": "aha",
+        "short_name": "aha",
+        "clear_name": "aha",
+        "display_priority": 10029,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate",
+            "ads"
+        ],
+        "icon_url": "/icon/242563117/{profile}",
+        "icon_blur_hash": "KcRvFD$*iw$%j@f6l:aekq",
+        "slug": "aha",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 688,
+        "technical_name": "amazonshorts",
+        "short_name": "atv",
+        "clear_name": "ShortsTV Amazon Channel",
+        "display_priority": 10030,
+        "priority": 0,
+        "monetization_types": [
+            "flatrate"
+        ],
+        "icon_url": "/icon/260445223/{profile}",
+        "icon_blur_hash": "K8SF-DX8-;_3t7ay_NjFR*",
+        "slug": "shortstv-amazon-channel",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "enabled",
+                "fire_tv": "enabled",
+                "tvos": "enabled",
+                "tizenos": "enabled",
+                "webos": "enabled",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": [
+            "prv",
+            "amp"
+        ]
+    },
+    {
+        "id": 1718,
+        "technical_name": "espn",
+        "short_name": "esp",
+        "clear_name": "Espn",
+        "display_priority": 10039,
+        "priority": 0,
+        "monetization_types": null,
+        "icon_url": "/icon/287952425/{profile}",
+        "icon_blur_hash": "KmSrG*oLy?ofkCfkyrkCQ-",
+        "slug": "espn",
+        "data": {
+            "deeplink_data": [
+
+            ],
+            "packages": {
+                "android_tv": "",
+                "fire_tv": "",
+                "tvos": "",
+                "tizenos": "",
+                "webos": "",
+                "xbox": ""
+            }
+        },
+        "addon_packages": null,
+        "parent_packages": null
+    },
+    {
+        "id": 1720,
+        "technical_name": "f1tv",
+        "short_name": "f1t",
+        "clear_name": "F1TV",
+        "display_priority": 10040,
+        "priority": 0,
+        "monetization_types": null,
+        "icon_url": "/icon/288883613/{profile}",
+        "icon_blur_hash": "KVQEZcoLVEt7aeaeL#f6pI",
+        "slug": "f1tv",
         "data": {
             "deeplink_data": [
 
