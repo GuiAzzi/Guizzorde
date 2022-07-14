@@ -101,18 +101,24 @@ export async function generateMovieEmbed(title, jwLocale) {
     // Searchs torrent and subtitle
     let jwTorrentField = 'No torrent found';
     let jwSubtitle;
+    let jwTorrent;
     try {
-        let jwTorrent = await torrentSearch.search(['Rarbg'], `${jwTitleEN.title} ${jwTitleEN.original_release_year || null} 1080p`, 'Movies', 1);
+        try {
+            jwTorrent = await torrentSearch.search(['Rarbg'], `${jwTitleEN.title} ${jwTitleEN.original_release_year || null} 1080p`, 'Movies', 1).catch();
+        }
+        catch (e) {
+            // not sure why I can't reportError(e) here
+        }
 
-        // If Rarbg breaks, try again
+        // If it fails, try again
         if (jwTorrent?.length === 0 || !jwTorrent) {
             // Little hack to force second execution - without this the code was being skipped - something to do with async stuff
             await new Promise(resolve => setTimeout(resolve, 0));
             // Searches in other trackers
-            jwTorrent = await torrentSearch.search(['Rarbg', '1337x', 'ThePirateBay'], `${jwTitleEN.title} ${jwTitleEN.original_release_year || null} 1080p`, 'Movies', 1);
+            jwTorrent = await torrentSearch.search(['1337x', 'ThePirateBay'], `${jwTitleEN.title} ${jwTitleEN.original_release_year || null} 1080p`, 'Movies', 1);
         }
     }
-    catch(e) {
+    catch (e) {
         reportError(e);
         return new Discord.MessageEmbed().setTitle('Error').setColor('RED').setDescription('An error has occured');
     }
