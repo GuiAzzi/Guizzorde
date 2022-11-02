@@ -1,3 +1,6 @@
+// eslint-disable-next-line no-unused-vars
+import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+
 export const donato = [
 	'https://cdn.hubblecontent.osi.office.net/m365content/publish/8da42b09-6399-410b-909a-679e1d6e10c7/thumbnails/medium.png',
 	'https://cdn.hubblecontent.osi.office.net/m365content/publish/f1236e00-0e9e-43a1-bbdc-120de4f52722/thumbnails/medium.png',
@@ -30,3 +33,15 @@ export const donato = [
 	'https://cdn.hubblecontent.osi.office.net/m365content/publish/863f898a-1008-49ea-94ae-4fac5f465427/thumbnails/medium.png',
 	'https://cdn.hubblecontent.osi.office.net/m365content/publish/0b1e4dcb-dc62-487c-944c-05fd2dfeb5c6/thumbnails/medium.png',
 ];
+
+export const donatoCommand = {
+	data: new SlashCommandBuilder()
+		.setName('donato')
+		.setDescription('Send a Donato in the chat!'),
+	/**
+	 * @param {ChatInputCommandInteraction} interaction
+	 */
+	handler: async function(interaction) {
+		return interaction.reply(donato[Math.floor(Math.random() * donato.length)]);
+	},
+};

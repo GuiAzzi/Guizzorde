@@ -20,9 +20,8 @@ export const interactionCreate = {
 		}
 
 		try {
-			await command.handler(interaction);
 			console.log(
-				`${interaction.user.username} executed "${interaction.commandName}"${
+				`${interaction.user.username} executing "${interaction.commandName}"${
 					interaction.options.data.length
 						? ` with "${JSON.stringify(interaction.options.data)}"`
 						: ''
@@ -32,13 +31,17 @@ export const interactionCreate = {
 						: ' via DM'
 				}`,
 			);
+			await command.handler(interaction);
+			console.log(`"${interaction.commandName}" executed successfully.\n`);
 		}
 		catch (error) {
 			console.error(error);
-			await interaction.reply({
-				content: 'There was an error while executing this command!',
-				ephemeral: true,
-			});
+			if (!interaction.replied) {
+				await interaction.reply({
+					content: 'There was an error while executing this command!',
+					ephemeral: true,
+				});
+			}
 		}
 	},
 };

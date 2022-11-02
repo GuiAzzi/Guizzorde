@@ -4,6 +4,6 @@ export const ready = {
 	name: Events.ClientReady,
 	once: true,
 	handler(client) {
-		console.log(`Read! Logged in as ${client.user.tag}`);
+		console.log(`Ready! Logged in as ${client.user.tag}\n`);
 	},
 };
