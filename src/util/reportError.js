@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import { CommandInteraction } from 'discord.js';
 
 // import { client, configObj } from '../config/index.js';

@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
 
 export const randomCommand = {

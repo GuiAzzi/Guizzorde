@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
 
 // Base Memes Array

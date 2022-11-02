@@ -10,6 +10,8 @@ import { randomCommand } from './random/random.js';
 import { pollCommand } from './poll/poll.js';
 import { movieCommand } from './movie/movie.js';
 import { subtitleCommand } from './subtitle/subtitle.js';
+import { queridometroCommand } from './queridometro/queridometro.js';
+import { remindMeCommand, remindMeListCommand } from './remindMe/remindMe.js';
 
 export const globalCommands = [
 	pingCommand,
@@ -24,4 +26,7 @@ export const globalCommands = [
 	pollCommand,
 	movieCommand,
 	subtitleCommand,
+	queridometroCommand,
+	remindMeCommand,
+	remindMeListCommand,
 ];

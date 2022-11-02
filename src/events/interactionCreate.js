@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import { Events, ChatInputCommandInteraction } from 'discord.js';
 
 export const interactionCreate = {

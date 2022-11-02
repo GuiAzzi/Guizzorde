@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
 import { configObj } from '../../../config/index.js';
 import { reportError } from '../../../util/index.js';

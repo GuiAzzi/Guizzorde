@@ -1,6 +1,5 @@
 import {
 	SlashCommandBuilder,
-	// eslint-disable-next-line no-unused-vars
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import Jimp from 'jimp/dist/index.js';

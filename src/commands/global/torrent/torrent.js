@@ -1,7 +1,6 @@
 import {
 	SlashCommandBuilder,
 	EmbedBuilder,
-	// eslint-disable-next-line no-unused-vars
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { reportError } from '../../../util/reportError.js';
