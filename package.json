@@ -1,6 +1,6 @@
 {
   "name": "guizzorde",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "engines": {
     "node": "16.6"
   },
@@ -9,7 +9,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "deploy-commands": "node src/commands/deploy-commands.js"
   },
   "repository": {
     "type": "git",
@@ -28,7 +29,7 @@
     "axios": "^0.26.1",
     "chrono-node": "^2.2.6",
     "cron": "^1.8.2",
-    "discord.js": "^13.1.0",
+    "discord.js": "^14.6.0",
     "ffmpeg-static": "^5.0.2",
     "jimp": "^0.16.1",
     "jsdom": "^19.0.0",
@@ -37,7 +38,12 @@
     "mongodb": "^4.3.1",
     "openai-api": "^1.2.5",
     "opensubtitles-api": "^5.1.2",
+    "readline-sync": "^1.4.10",
     "torrent-search-api": "^2.1.4",
-    "ytdl-core": "^4.11.0"
+    "ytdl-core": "^4.11.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.26.0",
+    "prettier": "^2.7.1"
   }
 }
