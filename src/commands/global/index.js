@@ -6,6 +6,10 @@ import { ratoCommand } from './rato/rato.js';
 import { emojiCommand } from './emoji/emoji.js';
 import { tomaCommand } from './toma/toma.js';
 import { donatoCommand } from './donato/donato.js';
+import { randomCommand } from './random/random.js';
+import { pollCommand } from './poll/poll.js';
+import { movieCommand } from './movie/movie.js';
+import { subtitleCommand } from './subtitle/subtitle.js';
 
 export const globalCommands = [
 	pingCommand,
@@ -16,4 +20,8 @@ export const globalCommands = [
 	emojiCommand,
 	tomaCommand,
 	donatoCommand,
+	randomCommand,
+	pollCommand,
+	movieCommand,
+	subtitleCommand,
 ];
