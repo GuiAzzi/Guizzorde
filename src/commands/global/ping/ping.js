@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { client } from '../../../config/index.js';
 
-export const ping = {
+export const pingCommand = {
 	data: new SlashCommandBuilder()
 		.setName('ping')
 		.setDescription('Show the bot\'s ping'),

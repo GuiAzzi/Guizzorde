@@ -1,8 +1,12 @@
-import { Events } from 'discord.js';
+// eslint-disable-next-line no-unused-vars
+import { Events, ChatInputCommandInteraction } from 'discord.js';
 
 export const interactionCreate = {
 	name: Events.InteractionCreate,
 	once: false,
+	/**
+	 * @param {ChatInputCommandInteraction} interaction
+	 */
 	async handler(interaction) {
 		if (!interaction.isChatInputCommand()) return;
 
@@ -17,6 +21,17 @@ export const interactionCreate = {
 
 		try {
 			await command.handler(interaction);
+			console.log(
+				`${interaction.user.username} executed "${interaction.commandName}"${
+					interaction.options.data.length
+						? ` with "${JSON.stringify(interaction.options.data)}"`
+						: ''
+				}${
+					interaction.inGuild()
+						? ` in "${interaction.guild.name}":${interaction.guildId}`
+						: ' via DM'
+				}`,
+			);
 		}
 		catch (error) {
 			console.error(error);

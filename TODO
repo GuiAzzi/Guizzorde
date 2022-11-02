@@ -124,6 +124,40 @@ Todo:
       ]
     }
     ☐ Change !snmStart to use #snm movie embeds (posted by !snmAdd) for voting
-v2:
-  ☐ Update to Typescript
-  ☐ Separate commands in folder/actions
+✘ v2: @cancelled(22-11-02 02:50)
+  ✘ Update to Typescript @cancelled(22-11-02 02:44)
+  ✘ Separate commands in folder/actions @cancelled(22-11-02 02:44) doing in v3
+v3: 
+  Refactors:
+    ✔ ping @done(22-11-02 02:46)
+    ✔ say @done(22-11-02 02:46)
+    ☐ snmenable
+    ☐ snm
+    ☐ snmconfig
+    ☐ snmadmin
+    ☐ snmtitle
+    ☐ snmrate
+    ☐ snmvotes
+    ☐ torrent
+    ☐ subtitle
+    ✔ meme @done(22-11-02 03:06)
+    ☐ rato
+    ☐ emoji
+    ☐ random
+    ☐ poll
+    ☐ toma
+    ☐ movie
+    ☐ donato
+    ☐ queridometro
+    ☐ remindme
+    ☐ remindme_list
+    ☐ suggestion
+    ☐ horabbb
+    ☐ activity
+    ☐ help
+    ☐ setavatar
+    ☐ setactivity
+    ☐ changesub
+    ☐ play
+    ☐ stop
+    ☐ editembed

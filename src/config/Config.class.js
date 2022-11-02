@@ -60,6 +60,7 @@ export const client = new Client({
 		GatewayIntentBits.GuildMessageReactions,
 		GatewayIntentBits.GuildVoiceStates,
 		GatewayIntentBits.GuildScheduledEvents,
+		GatewayIntentBits.GuildPresences,
 		GatewayIntentBits.MessageContent,
 	],
 	partials: [
