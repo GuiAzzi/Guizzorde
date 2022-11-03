@@ -1,0 +1,21 @@
+{
+    "appId": "<Application ID>",
+    "token": "<Bot-Token>",
+    "prefix": "!",
+    "ownerId": "<Discord User ID",
+    "mongodbURI": "mongodb://example:example@example.mlab.com:17816/heroku_example",
+    "mongodbName": "heroku_6zd3qncp",
+    "mongodbCollections": [
+        "<snm-servers-collection>",
+        "<snm-weeks-collection>"
+    ],
+    "OSCredentials": [
+        "useragent",
+        "username",
+        "password"
+    ],
+    "RemindMeCollection": "<reminders-collection>",
+    "notionToken": "<notion-token>",
+    "notionDatabaseId": "<notion-database>",
+    "openAIApiKey":"<openai-api-key>"
+}

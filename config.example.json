@@ -1,7 +1,0 @@
-{ 
-    "token": "<Bot-Token>",
-    "prefix": "!",
-    "ownerId": "<Discord User ID",
-    "mongodb": "mongodb://example:example@example.mlab.com:17816/heroku_example",
-    "mongoCollection": "snmTest"
-}
