@@ -131,10 +131,10 @@ v3:
   Refactors:
     ✔ ping @done(22-11-02 02:46)
     ✔ say @done(22-11-02 02:46)
-    ☐ snmenable
+    ✔ snmenable @done(22-11-03 03:33)
     ☐ snm
-    ☐ snmconfig
-    ☐ snmadmin
+    ✔ snmconfig @done(22-11-03 03:33)
+    ✔ snmadmin @done(22-11-03 03:33)
     ☐ snmtitle
     ☐ snmrate
     ☐ snmvotes
@@ -151,8 +151,8 @@ v3:
     ✔ queridometro @done(22-11-02 18:26)
     ✔ remindme @done(22-11-02 19:33)
     ✔ remindme_list @done(22-11-02 20:33)
-    ☐ suggestion
-    ☐ horabbb
+    ✔ suggestion @done(22-11-02 21:52)
+    ✔ horabbb @done(22-11-02 22:01)
     ☐ activity
     ☐ help
     ☐ setavatar

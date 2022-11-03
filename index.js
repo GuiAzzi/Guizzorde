@@ -1,11 +1,11 @@
 import { Collection } from 'discord.js';
 import { client, configObj } from './src/config/index.js';
-import { globalCommands, guildCommands } from './src/commands/index.js';
+import { globalCommands, guildCommands, snmCommands } from './src/commands/index.js';
 import { events } from './src/events/index.js';
 
 client.commands = new Collection();
 
-for (const command of globalCommands.concat(guildCommands)) {
+for (const command of globalCommands.concat(guildCommands, snmCommands)) {
 	if ('data' in command && 'handler' in command) {
 		client.commands.set(command.data.name, command);
 	}

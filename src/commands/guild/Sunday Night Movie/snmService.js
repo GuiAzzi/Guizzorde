@@ -5,8 +5,8 @@ import {
 	SNMServerArray,
 	SNMWeek,
 	SNMWeekArray,
-} from '../commands/index.js';
-import { client, configObj } from '../config/index.js';
+} from './index.js';
+import { client, configObj } from '../../../config/index.js';
 
 async function dbConnect() {
 	return mongodb.MongoClient.connect(configObj.mongodbURI, {
@@ -216,6 +216,7 @@ export async function getWinnersList(guildId) {
 		// FIXME: Move this logic to command
 		// TODO: Better formatting
 		const parsedScoreBoard = [];
+		// eslint-disable-next-line no-unused-vars
 		for (const [key, value] of Object.entries(scoreBoard)) {
 			parsedScoreBoard.push([value.username, value.wins]);
 		}

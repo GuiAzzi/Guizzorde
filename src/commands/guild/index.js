@@ -1,3 +1,9 @@
-import { ping2 } from './ping2/ping2.js';
+import {
+	snmConfigCommand,
+	snmAdminCommand,
+	snmVotesCommand,
+} from './Sunday Night Movie/index.js';
 
-export const guildCommands = [ping2];
+export const snmCommands = [snmConfigCommand, snmAdminCommand, snmVotesCommand];
+
+export const guildCommands = [];

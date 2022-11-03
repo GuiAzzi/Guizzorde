@@ -41,7 +41,7 @@ export async function generateMovieEmbed(title, jwLocale) {
 	if (jwSearch.items.length <= 0) {
 		return new EmbedBuilder()
 			.setDescription('Movie not found 😞')
-			.setColor('RED');
+			.setColor('Red');
 	}
 
 	// Right now, using all data from english database, except if Portuguese was forced in the command and for
@@ -127,7 +127,7 @@ export async function generateMovieEmbed(title, jwLocale) {
 		reportError(e);
 		return new EmbedBuilder()
 			.setTitle('Error')
-			.setColor('RED')
+			.setColor('Red')
 			.setDescription('An error has occured');
 	}
 
@@ -502,7 +502,7 @@ export async function generateCompactMovieEmbed(title, jwLocale) {
 				inline: true,
 			},
 		)
-		.setTimestamp(new Date().toJSON());
+		.setTimestamp(new Date());
 }
 
 export const movieCommand = {
