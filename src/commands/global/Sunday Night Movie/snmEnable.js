@@ -13,7 +13,7 @@ import {
 } from '../../guild/Sunday Night Movie/index.js';
 import { snmCommands } from '../../index.js';
 import { reportError } from '../../../util/index.js';
-import { configObj } from '../../../config/Config.class.js';
+import { configObj } from '../../../config/index.js';
 
 export const snmEnableCommand = {
 	data: new SlashCommandBuilder()

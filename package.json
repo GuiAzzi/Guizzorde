@@ -2,7 +2,7 @@
   "name": "guizzorde",
   "version": "3.0.0",
   "engines": {
-    "node": "16.6"
+    "node": "16.17.1"
   },
   "description": "Just another discord bot",
   "type": "module",

@@ -172,7 +172,7 @@ export async function getWinnersList(guildId) {
 
 		/**
 		 * Maps results and gets the winner's title
-		 * @param {Partial<SNMWeek>} item
+		 * @param {SNMWeek} item
 		 */
 		const mapFunc = (item) => {
 			const winnerUser = item.users.find((user) =>
@@ -272,7 +272,7 @@ export async function generateOpenAIList(guildId) {
 	try {
 		/**
 		 * Maps results and gets the winner's title
-		 * @param {Partial<SNMWeek>} item
+		 * @param {SNMWeek} item
 		 */
 		const mapFunc = (item) => {
 			const winnerUser = item.users.find((user) =>

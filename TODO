@@ -135,9 +135,9 @@ v3:
     ☐ snm
     ✔ snmconfig @done(22-11-03 03:33)
     ✔ snmadmin @done(22-11-03 03:33)
-    ☐ snmtitle
+    ✔ snmtitle @done(22-11-03 15:46)
     ☐ snmrate
-    ☐ snmvotes
+    ✔ snmvotes @done(22-11-03 03:33)
     ✔ torrent @done(22-11-02 03:26)
     ✔ subtitle @done(22-11-02 05:48)
     ✔ meme @done(22-11-02 03:06)
@@ -161,3 +161,5 @@ v3:
     ☐ play
     ☐ stop
     ☐ editembed
+    ✔ Update heroku stack @done(22-11-03 14:09)
+    ✔ Update SNM voting system with dropdown choices @done(22-11-04 04:14)

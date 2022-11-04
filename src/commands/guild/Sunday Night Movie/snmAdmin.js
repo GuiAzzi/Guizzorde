@@ -122,7 +122,7 @@ export const snmAdminCommand = {
 
 				// Creates a movie suggestion with OpenAI
 				// Don't do it if first week => no movies to sample
-				let openAISeeded = false;
+				let openAISeeded;
 				if (lastSNM.week > 1) {
 					try {
 						const prompt = `Suggest a new released movie, without repeating from the list:\n\n${await generateOpenAIList(
@@ -164,6 +164,8 @@ export const snmAdminCommand = {
 								.setDescription('🤖 Guizzorde\'s Suggestion 🤖')
 								.setFooter({ text: 'Powered by OpenAI' })
 								.setColor(0x3498db);
+							newSNM.users[0].movies[0].compactMovieEmbed =
+									openAISeeded.toJSON();
 						}
 					}
 					catch (e) {
@@ -305,35 +307,36 @@ export const snmAdminCommand = {
 					channelId: voteMessage?.channel.id || scheduleMsg?.channel.id,
 					messageId: voteMessage?.id || scheduleMsg?.id,
 				};
+
+				const actionRow = new ActionRowBuilder().addComponents([
+					new ButtonBuilder()
+						.setCustomId('SNMVoteMessage - Start')
+						.setLabel('Start Voting')
+						.setStyle(ButtonStyle.Primary),
+					new ButtonBuilder()
+						.setCustomId('SNMVoteMessage - Show')
+						.setLabel('Show Votes')
+						.setStyle(ButtonStyle.Secondary),
+					new ButtonBuilder()
+						.setCustomId('SNMVoteMessage - Clear')
+						.setLabel('Clear Votes')
+						.setStyle(ButtonStyle.Danger),
+				]);
+
 				// Builds rich embed with a random emoji for each movie
 				const printArray = [];
 				const emojiArray = client.guilds.cache.get(interaction.guildId).emojis
 					.cache;
 				const emojisUsed = [];
-				/** @type {ActionRowBuilder[]} */
-				const rows = [new ActionRowBuilder()];
 
 				lastSNM.users.forEach((user) => {
 					user.movies.forEach((movie) => {
-						// Rows can have a max of 5 components
-						// So if a row is at 5 items we need to create another one
-						if (rows[rows.length - 1].components.length === 5) {
-							rows.push(new ActionRowBuilder());
-						}
-
 						let rndEmoji;
 						if (emojiArray.size !== 0) {
 							rndEmoji = emojiArray.random();
 							printArray[
 								movie.titleKey - 1
 							] = `<:${rndEmoji.name}:${rndEmoji.id}> - ${movie.title}\n`;
-							rows[rows.length - 1].addComponents(
-								new ButtonBuilder()
-									.setCustomId(`SNMVote - ${rndEmoji.name}:${rndEmoji.id}`)
-									.setEmoji(rndEmoji.id)
-								// .setLabel(movie.title)
-									.setStyle(ButtonStyle.Primary),
-							);
 							emojisUsed[movie.titleKey - 1] = {
 								titleKey: movie.titleKey,
 								emoji: rndEmoji.identifier,
@@ -349,13 +352,6 @@ export const snmAdminCommand = {
 							printArray[
 								movie.titleKey - 1
 							] = `${rndEmoji} - ${movie.title}\n`;
-							rows[rows.length - 1].addComponents(
-								new ButtonBuilder()
-									.setCustomId(`SNMVote - ${rndEmoji}`)
-									.setEmoji(rndEmoji)
-								// .setLabel(movie.title)
-									.setStyle(ButtonStyle.Primary),
-							);
 							emojisUsed[movie.titleKey - 1] = {
 								titleKey: movie.titleKey,
 								emoji: rndEmoji,
@@ -368,27 +364,12 @@ export const snmAdminCommand = {
 
 				const SNMRole = await getSNMRole(interaction.guildId);
 
-				if (rows.length <= 4) {
-					rows.push(
-						new ActionRowBuilder().addComponents([
-							new ButtonBuilder()
-								.setCustomId('SNMVote - Show')
-								.setLabel('Show Votes')
-								.setStyle(ButtonStyle.Secondary),
-							new ButtonBuilder()
-								.setCustomId('SNMVote - Clear')
-								.setLabel('Clear Votes')
-								.setStyle(ButtonStyle.Secondary),
-						]),
-					);
-				}
-
 				// Create the embed with titles, emojis and buttons
 				const votingEmbed = new EmbedBuilder()
 					.setTitle(`🌟 Sunday Night Movie ${lastSNM.week} 🌟`)
 					.setColor(0x3498db)
 					.setDescription(printArray.join(' '))
-					.setFooter({ text: 'Click the corresponding button to vote!' });
+					.setFooter({ text: 'Vote by clicking "Start Voting" below!' });
 
 				const mentionMsg = `${
 					SNMRole ? '<@&' + SNMRole.id + '> ' : '@here'
@@ -396,14 +377,14 @@ export const snmAdminCommand = {
 				if (!fromScheduler) {
 					await interaction.editReply({
 						embeds: [votingEmbed],
-						components: rows,
+						components: [actionRow],
 					});
 					await interaction.followUp({ content: mentionMsg });
 				}
 				else {
 					await scheduleMsg.edit({
 						embeds: [votingEmbed],
-						components: rows,
+						components: [actionRow],
 					});
 					await client.channels.cache
 						.get(interaction.channelId)
@@ -493,7 +474,7 @@ export const snmAdminCommand = {
 							? (allVotes[titleKey - 1] = {
 								titleKey: titleKey,
 								voteCount: 0,
-								  })
+							})
 							: (allVotes[titleKey - 1].titleKey = titleKey);
 					}
 					for (const voteIndex in lastSNM.users[userIndex].votes) {
@@ -502,7 +483,7 @@ export const snmAdminCommand = {
 							? (allVotes[voteTitleKey - 1] = {
 								titleKey: null,
 								voteCount: 1,
-								  })
+							})
 							: allVotes[voteTitleKey - 1].voteCount++;
 					}
 				}

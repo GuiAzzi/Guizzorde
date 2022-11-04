@@ -16,13 +16,13 @@ export class SNMWeek {
 		this.movieCount = params.movieCount;
 		/** @type {boolean} True if CRON schedule is paused */
 		this.paused = params.paused;
-		/** @type {[{userId: string, username: string, votes: Array, movies: Array}]} Array of user objects */
+		/** @type {[{userId: string, username: string, votes: Array, movies: [{title: string, titleKey: number, compactMovieEmbed: import("discord.js").APIEmbed}]}]} Array of user objects */
 		this.users = params.users;
 		/** @type {{titleKey: number, voteCount: number, userId: string}} Object containing the key of the winner title, its vote count and entry's userId */
 		this.winner = params.winner;
 		/** @type {{channelId: string, messageId: string}} Object containing the channel and vote message ID */
 		this.voteMessage = params.voteMessage;
-		/** @type {[Array]} Reference array of emojis used for vonting */
+		/** @type {[Array]} Reference array of emojis used for voting */
 		this.emojisUsed = params.emojisUsed;
 	}
 }
