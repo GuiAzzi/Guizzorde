@@ -54,7 +54,7 @@ export const snmTitleCommand = {
 			const titleName = interaction.options.getString('title');
 			const silent = interaction.options.getBoolean('silent');
 
-			await interaction.deferReply();
+			await interaction.deferReply({ ephemeral: silent });
 
 			const snmServer = await getSNMServer(interaction.guildId);
 			const lastSNM = await getSNMWeek(interaction.guildId);
@@ -254,7 +254,7 @@ export const snmTitleCommand = {
 			}
 		}
 		catch (e) {
-			reportError(e);
+			reportError(e, interaction);
 		}
 	},
 };

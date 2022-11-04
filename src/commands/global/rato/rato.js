@@ -30,7 +30,7 @@ export const ratoCommand = {
 						.writeAsync('src/commands/global/rato/rato_plaquistaEditado.jpg')
 						// eslint-disable-next-line no-unused-vars
 						.then(async (result) => {
-							interaction.editReply({
+							await interaction.editReply({
 								files: ['src/commands/global/rato/rato_plaquistaEditado.jpg'],
 							});
 						});

@@ -48,14 +48,8 @@ export const interactionCreate = {
 			await command.handler(interaction);
 			console.log(`"${interaction.commandName}" finished.\n`);
 		}
-		catch (error) {
-			console.error(error);
-			if (!interaction.replied) {
-				await interaction.reply({
-					content: 'There was an error while executing this command!',
-					ephemeral: true,
-				});
-			}
+		catch (e) {
+			reportError(e, interaction);
 		}
 	},
 };
@@ -83,7 +77,7 @@ export const snmVoteInteractionCreate = {
 						console.log(
 							`${interaction.user.username} tried to manage vote while lastSNM is undefined at ${interaction.guild.name}:${interaction.guildId}`,
 						);
-						return interaction.editReply({
+						return await interaction.editReply({
 							content: `Can't execute function because period is \`${lastSNM.status}\``,
 						});
 					}
@@ -91,7 +85,7 @@ export const snmVoteInteractionCreate = {
 						console.log(
 							`${interaction.user.username} tried to manage vote while period is ${lastSNM.status}`,
 						);
-						return interaction.editReply({
+						return await interaction.editReply({
 							content: `Can't execute function because period is \`${lastSNM.status}\``,
 						});
 					}
@@ -119,7 +113,7 @@ export const snmVoteInteractionCreate = {
 						console.log(
 							`${interaction.user.username} tried to manage vote while lastSNM is undefined at ${interaction.guild.name}:${interaction.guildId}`,
 						);
-						return interaction.editReply({
+						return await interaction.editReply({
 							content: `Can't execute function because period is \`${lastSNM.status}\``,
 							components: [],
 							embeds: [],
@@ -129,7 +123,7 @@ export const snmVoteInteractionCreate = {
 						console.log(
 							`${interaction.user.username} tried to manage vote while period is ${lastSNM.status}`,
 						);
-						return interaction.editReply({
+						return await interaction.editReply({
 							content: `Can't execute function because period is \`${lastSNM.status}\``,
 							components: [],
 							embeds: [],
@@ -276,7 +270,7 @@ export const snmVoteInteractionCreate = {
 			}
 		}
 		catch (e) {
-			reportError(e);
+			reportError(e, interaction);
 		}
 	},
 };

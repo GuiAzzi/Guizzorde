@@ -65,7 +65,7 @@ export const suggestionCommand = {
 			}
 		}
 		catch (e) {
-			reportError(e);
+			reportError(e, interaction);
 
 			const embed = new EmbedBuilder()
 				.setTitle('Error')

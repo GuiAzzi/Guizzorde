@@ -168,7 +168,7 @@ export const snmConfigCommand = {
 			}
 
 			// Print current values
-			return interaction.editReply({
+			return await interaction.editReply({
 				embeds: [
 					new EmbedBuilder()
 						.setTitle(`SNM options for ${interaction.guild.name}`)
@@ -212,7 +212,7 @@ export const snmConfigCommand = {
 			});
 		}
 		catch (e) {
-			reportError(e);
+			reportError(e, interaction);
 		}
 	},
 };

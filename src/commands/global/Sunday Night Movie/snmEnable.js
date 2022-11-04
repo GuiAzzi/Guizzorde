@@ -75,7 +75,7 @@ export const snmEnableCommand = {
 			await toggleSNM(interaction.guildId, option);
 		}
 		catch (e) {
-			reportError(e);
+			reportError(e, interaction);
 		}
 	},
 };

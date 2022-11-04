@@ -211,7 +211,7 @@ export const snmVotesCommand = {
 			}
 		}
 		catch (e) {
-			reportError(e);
+			reportError(e, interaction);
 		}
 	},
 };

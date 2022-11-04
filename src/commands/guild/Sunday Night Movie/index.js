@@ -5,3 +5,5 @@ export * from './snmConfig.js';
 export * from './snmAdmin.js';
 export * from './snmVotes.js';
 export * from './snmTitle.js';
+export * from './snm.js';
+export * from './snmRate.js';

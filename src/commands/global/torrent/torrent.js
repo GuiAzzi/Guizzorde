@@ -45,7 +45,7 @@ export const torrentCommand = {
 						result.length === 0 ||
 						result[0].title === 'No results returned'
 					) {
-						return interaction.editReply({
+						return await interaction.editReply({
 							embeds: [
 								new EmbedBuilder()
 									.setTitle('Torrents Found: ')
@@ -113,7 +113,7 @@ export const torrentCommand = {
 						.setColor('Red'),
 				],
 			});
-			reportError(e);
+			reportError(e, interaction);
 		}
 	},
 };

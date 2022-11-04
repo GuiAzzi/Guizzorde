@@ -24,7 +24,7 @@ export const horaBBBCommand = {
 			);
 
 			if (response.status !== 200) {
-				return interaction.editReply({
+				return await interaction.editReply({
 					content: 'A página da Globo não carregou 🤷‍♂️',
 				});
 			}
@@ -44,7 +44,7 @@ export const horaBBBCommand = {
 					const endTime = header
 						.querySelector('.schedule-item-header-time time')
 						.getAttribute('data-end-time');
-					return interaction.editReply({
+					return await interaction.editReply({
 						embeds: [
 							new EmbedBuilder()
 								.setTitle('Big Brother Brasil 22')
@@ -63,7 +63,7 @@ export const horaBBBCommand = {
 				}
 			}
 
-			return interaction.editReply({
+			return await interaction.editReply({
 				embeds: [
 					new EmbedBuilder()
 						.setTitle('Não achei o horario :(')
@@ -76,7 +76,7 @@ export const horaBBBCommand = {
 			});
 		}
 		catch (e) {
-			reportError(e);
+			reportError(e, interaction);
 		}
 	},
 };

@@ -533,14 +533,14 @@ export const movieCommand = {
 			const jwLocale = interaction.options.getString('language');
 
 			// Sends to-be-edited message
-			interaction.deferReply();
+			await interaction.deferReply();
 
-			interaction.editReply({
+			await interaction.editReply({
 				embeds: [await generateMovieEmbed(title, jwLocale)],
 			});
 		}
 		catch (e) {
-			reportError(e);
+			reportError(e, interaction);
 		}
 	},
 };

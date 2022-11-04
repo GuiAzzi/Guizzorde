@@ -200,7 +200,7 @@ export const remindMeCommand = {
 			);
 		}
 		catch (e) {
-			reportError(e);
+			reportError(e, interaction);
 		}
 	},
 };
@@ -260,7 +260,7 @@ export const remindMeListCommand = {
 					userSubListEmbed.setDescription(String(subscribedArray));
 				}
 
-				return interaction.editReply({
+				return await interaction.editReply({
 					embeds: [userSubListEmbed],
 				});
 			}
@@ -305,7 +305,7 @@ export const remindMeListCommand = {
 			}
 		}
 		catch (e) {
-			reportError(e);
+			reportError(e, interaction);
 		}
 	},
 };

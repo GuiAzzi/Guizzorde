@@ -102,7 +102,7 @@ export const snmAdminCommand = {
 						);
 
 					if (!fromScheduler) {
-						interaction.editReply({ embeds: [newSNMEmbed] });
+						await interaction.editReply({ embeds: [newSNMEmbed] });
 					}
 					else {
 						scheduleMsg.edit({ embeds: [newSNMEmbed] });
@@ -182,7 +182,7 @@ export const snmAdminCommand = {
 						'Requests are now open!\n`/snmTitle add` to request a movie.',
 					);
 				if (!fromScheduler) {
-					interaction.editReply({
+					await interaction.editReply({
 						embeds: openAISeeded
 							? [newSNMEmbed, openAISeeded]
 							: [newSNMEmbed],
@@ -197,9 +197,9 @@ export const snmAdminCommand = {
 				}
 			}
 			catch (e) {
-				reportError(e);
+				reportError(e, interaction);
 				if (!fromScheduler) {
-					interaction.editReply({
+					await interaction.editReply({
 						embeds: [
 							new EmbedBuilder()
 								.setTitle('Error')
@@ -392,7 +392,7 @@ export const snmAdminCommand = {
 				}
 			}
 			catch (e) {
-				reportError(e);
+				reportError(e, interaction);
 			}
 			break;
 		}
@@ -642,7 +642,7 @@ export const snmAdminCommand = {
 				movieEmbedMsg.edit({ embeds: [movieEmbed] });
 			}
 			catch (e) {
-				reportError(e);
+				reportError(e, interaction);
 			}
 		}
 		}

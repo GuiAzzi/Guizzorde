@@ -76,7 +76,7 @@ export const subtitleCommand = {
 			});
 
 		if (sub) {
-			return interaction.editReply({
+			return await interaction.editReply({
 				embeds: [
 					subEmbed.setDescription(
 						`[${sub.attributes.release}](${sub.link})\n${sub.attributes.language} | ${sub.attributes.download_count} downloads`,

@@ -14,6 +14,7 @@ import { queridometroCommand, horaBBBCommand } from './bbb/index.js';
 import { remindMeCommand, remindMeListCommand } from './remindMe/remindMe.js';
 import { suggestionCommand } from './suggestion/suggestion.js';
 import { snmEnableCommand } from './Sunday Night Movie/snmEnable.js';
+import { playCommand } from './play/play.js';
 
 export const globalCommands = [
 	pingCommand,
@@ -34,4 +35,5 @@ export const globalCommands = [
 	remindMeListCommand,
 	suggestionCommand,
 	snmEnableCommand,
+	playCommand,
 ];

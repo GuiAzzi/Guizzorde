@@ -10,7 +10,7 @@
         "<snm-weeks-collection>"
     ],
     "OSCredentials": [
-        "useragent",
+        "apikey",
         "username",
         "password"
     ],

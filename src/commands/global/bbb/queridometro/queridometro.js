@@ -51,7 +51,7 @@ export const queridometroCommand = {
 			.setTimestamp(new Date());
 
 		// Send message and react accordingly
-		interaction.editReply({ embeds: [queridometroEmbed] });
+		await interaction.editReply({ embeds: [queridometroEmbed] });
 		for (let i = 0; i < queridometroEmojis.length; i++) {
 			await queridometroMsg.react(queridometroEmojis[i]);
 		}
