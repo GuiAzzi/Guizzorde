@@ -216,9 +216,8 @@ export const snmVoteInteractionCreate = {
 							});
 							console.log(`${interaction.user.username} - Duplicate vote`);
 						}
-
 						// save vote
-						if (userObject.votes.length < snmServer.maxVotes) {
+						else if (userObject.votes.length < snmServer.maxVotes) {
 							const movieTitle = lastSNM.users
 								.find((user) =>
 									user.movies.find((movie) => movie.titleKey === movieTitleKey),
