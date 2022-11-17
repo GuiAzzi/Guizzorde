@@ -32,6 +32,8 @@ export const ready = {
 			}
 			console.log('Got SNM files');
 
+			client.user.setActivity('Beep boop');
+
 			console.log(`Ready! Logged in as ${client.user.tag}\n`);
 		}
 		catch (e) {
