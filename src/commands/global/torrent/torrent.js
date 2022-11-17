@@ -97,7 +97,7 @@ export const torrentCommand = {
 							// If torrents are too long -> Send followups with rest of data (pagination)
 							else {
 								return interaction.followUp({
-									embeds: [torrentEmbed.setTitle('').setDescription(arr[i])],
+									embeds: [torrentEmbed.setTitle(null).setDescription(arr[i])],
 								});
 							}
 						}
