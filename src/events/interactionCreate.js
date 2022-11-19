@@ -205,7 +205,8 @@ export const snmVoteInteractionCreate = {
 						}
 						// user already voted on the movie
 						else if (userObject.votes.includes(movieTitleKey)) {
-							await interaction.editReply({
+							console.log(`${interaction.user.username} - Duplicate vote`);
+							return await interaction.editReply({
 								components: generateVotingComponents(
 									interaction,
 									lastSNM,
@@ -214,10 +215,9 @@ export const snmVoteInteractionCreate = {
 									'You already voted on that movie.',
 								),
 							});
-							console.log(`${interaction.user.username} - Duplicate vote`);
 						}
 						// save vote
-						else if (userObject.votes.length < snmServer.maxVotes) {
+						if (userObject.votes.length < snmServer.maxVotes) {
 							const movieTitle = lastSNM.users
 								.find((user) =>
 									user.movies.find((movie) => movie.titleKey === movieTitleKey),
