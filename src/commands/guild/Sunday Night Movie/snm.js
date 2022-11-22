@@ -58,7 +58,7 @@ export const snmCommand = {
 					}
 					else {
 						await interaction.editReply({
-							embeds: [snmWeekEmbed.setTitle('').setDescription(arr[i])],
+							embeds: [snmWeekEmbed.setTitle(null).setDescription(arr[i])],
 						});
 					}
 				}
