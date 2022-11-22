@@ -109,7 +109,7 @@ export const torrentCommand = {
 				embeds: [
 					new EmbedBuilder()
 						.setTitle('Error')
-						.setDescription('An error has occured. Pelase report this bug.')
+						.setDescription('An error has occured. Please report this bug.')
 						.setColor('Red'),
 				],
 			});

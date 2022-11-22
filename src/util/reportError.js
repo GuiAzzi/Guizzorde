@@ -10,7 +10,7 @@ import { CommandInteraction, EmbedBuilder } from 'discord.js';
 export function reportError(err, interaction) {
 	const errorEmbed = new EmbedBuilder()
 		.setTitle('Error')
-		.setDescription('An error has occured. Pelase report this bug.')
+		.setDescription('An error has occured. Please report this bug.')
 		.setColor('Red')
 		.setFooter({ text: `ID: ${Date.now()}` });
 	console.error('APP Error\n', err);

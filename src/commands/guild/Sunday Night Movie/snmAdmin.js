@@ -204,7 +204,7 @@ export const snmAdminCommand = {
 							new EmbedBuilder()
 								.setTitle('Error')
 								.setDescription(
-									'An error has occured. Pelase report this bug.',
+									'An error has occured. Please report this bug.',
 								)
 								.setColor('Red'),
 						],
