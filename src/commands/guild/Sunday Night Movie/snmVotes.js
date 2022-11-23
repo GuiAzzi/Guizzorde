@@ -149,6 +149,9 @@ export const snmVotesCommand = {
 			}
 
 			if (choice === 'start') {
+				if (lastSNM.status != 'voting') {
+					return await interaction.editReply('Voting has not started yet.');
+				}
 				// Create initial select menu
 				const votingActionRows = generateVotingComponents(
 					interaction,
