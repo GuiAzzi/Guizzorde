@@ -108,6 +108,7 @@ export const snmVotesCommand = {
 		.addStringOption((option) =>
 			option
 				.setName('command')
+				.setRequired(true)
 				.setDescription('Start voting, show or clear your votes')
 				.setChoices(
 					{ name: 'Start', value: 'start' },
