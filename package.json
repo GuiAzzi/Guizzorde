@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/GuiAzzi/Guizzorde#readme",
   "dependencies": {
+    "@discordjs/opus": "^0.8.0",
     "@discordjs/voice": "^0.13.0",
     "@notionhq/client": "^0.2.3",
     "axios": "^0.26.1",

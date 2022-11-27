@@ -17,17 +17,17 @@ export class Config {
 		this.mongodbURI = params.mongodbURI;
 		/** @type {string} mongodbName - MongoDb Name */
 		this.mongodbName = params.mongodbName;
-		/** @type {array} mongodbCollections - MongoDb SNM Collection */
+		/** @type {[]} mongodbCollections - MongoDb SNM Collection */
 		this.mongodbCollections = params.mongodbCollections;
 		/** @type {string} OSCredentials - Open Subtitle Credentials */
 		this.OSCredentials = params.OSCredentials;
 		/** @type {string} RemindMeCollection - Reminders Collection */
 		this.RemindMeCollection = params.RemindMeCollection;
-		/** @type {notionToken} Auth token for Notion integration */
+		/** @type {string} Auth token for Notion integration */
 		this.notionToken = params.notionToken;
-		/** @type {notionDatabaseId} The database for Notion to interact with */
+		/** @type {string} The database for Notion to interact with */
 		this.notionDatabaseId = params.notionDatabaseId;
-		/** @type {openAIApiKey} OpenAI API Key */
+		/** @type {string} OpenAI API Key */
 		this.openAIApiKey = params.openAIApiKey;
 	}
 }
