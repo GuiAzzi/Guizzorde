@@ -20,6 +20,7 @@ import ytdl from 'ytdl-core';
 
 import { configObj } from '../../../config/index.js';
 import { reportError } from '../../../util/index.js';
+import { readdirSync } from 'fs';
 
 /** @type {{player: AudioPlayer, connection: VoiceConnection}} */
 export const player_connection = {
@@ -85,50 +86,28 @@ export const playCommand = {
 			/** @type {AudioResource}  */
 			let resource;
 			const volume = 0.5;
+			const countdownDir = 'src/commands/guild/Sunday Night Movie/sounds/';
+			const numberOfCountdowns = readdirSync(countdownDir, {
+				withFileTypes: true,
+			}).filter((dirent) => dirent.isFile()).length;
 
-			if (url === 'countdown') {
-				resource = createAudioResource(
-					`src/commands/guild/Sunday Night Movie/sounds/countdown${
-						Math.floor(Math.random() * 6) + 1
-					}.mp3`,
-					{ inputType: StreamType.Arbitrary, inlineVolume: true },
-				);
-			}
-			else if (url === 'countdown1') {
-				resource = createAudioResource(
-					'src/commands/guild/Sunday Night Movie/sounds/countdown1.mp3',
-					{ inputType: StreamType.Arbitrary, inlineVolume: true },
-				);
-			}
-			else if (url === 'countdown2') {
-				resource = createAudioResource(
-					'src/commands/guild/Sunday Night Movie/sounds/countdown2.mp3',
-					{ inputType: StreamType.Arbitrary, inlineVolume: true },
-				);
-			}
-			else if (url === 'countdown3') {
-				resource = createAudioResource(
-					'src/commands/guild/Sunday Night Movie/sounds/countdown3.mp3',
-					{ inputType: StreamType.Arbitrary, inlineVolume: true },
-				);
-			}
-			else if (url === 'countdown4') {
-				resource = createAudioResource(
-					'src/commands/guild/Sunday Night Movie/sounds/countdown4.mp3',
-					{ inputType: StreamType.Arbitrary, inlineVolume: true },
-				);
-			}
-			else if (url === 'countdown5') {
-				resource = createAudioResource(
-					'src/commands/guild/Sunday Night Movie/sounds/countdown5.mp3',
-					{ inputType: StreamType.Arbitrary, inlineVolume: true },
-				);
-			}
-			else if (url === 'countdown6') {
-				resource = createAudioResource(
-					'src/commands/guild/Sunday Night Movie/sounds/countdown6.mp3',
-					{ inputType: StreamType.Arbitrary, inlineVolume: true },
-				);
+			if (url.startsWith('countdown')) {
+				if (url === 'countdown') {
+					resource = createAudioResource(
+						`${countdownDir}countdown${
+							Math.floor(Math.random() * numberOfCountdowns) + 1
+						}.mp3`,
+						{ inputType: StreamType.Arbitrary, inlineVolume: true },
+					);
+				}
+				else {
+					const countdownNumber = url.split('countdown')[1];
+
+					resource = createAudioResource(
+						`${countdownDir}countdown${countdownNumber}.mp3`,
+						{ inputType: StreamType.Arbitrary, inlineVolume: true },
+					);
+				}
 			}
 			else {
 				resource = createAudioResource(ytdl(url, { filter: 'audioonly' }), {
