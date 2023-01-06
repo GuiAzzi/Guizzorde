@@ -144,7 +144,17 @@ export const snmVoteInteractionCreate = {
 										u.movies.find((m) => m.titleKey == selectedTitleKey),
 									)
 									.movies.find((m) => m.titleKey == selectedTitleKey)
-									.compactMovieEmbed,
+									.compactMovieEmbed ||
+									new EmbedBuilder()
+										.setTitle(
+											lastSNM.users
+												.find((u) =>
+													u.movies.find((m) => m.titleKey == selectedTitleKey),
+												)
+												.movies.find((m) => m.titleKey == selectedTitleKey)
+												.title,
+										)
+										.setDescription('No information was found for this movie.'),
 							],
 							components: generateVotingComponents(
 								interaction,
@@ -166,7 +176,17 @@ export const snmVoteInteractionCreate = {
 										u.movies.find((m) => m.titleKey == selectedTitleKey),
 									)
 									.movies.find((m) => m.titleKey == selectedTitleKey)
-									.compactMovieEmbed,
+									.compactMovieEmbed ||
+									new EmbedBuilder()
+										.setTitle(
+											lastSNM.users
+												.find((u) =>
+													u.movies.find((m) => m.titleKey == selectedTitleKey),
+												)
+												.movies.find((m) => m.titleKey == selectedTitleKey)
+												.title,
+										)
+										.setDescription('No information was found for this movie.'),
 							],
 							components: generateVotingComponents(
 								interaction,
