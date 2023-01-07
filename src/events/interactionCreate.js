@@ -68,7 +68,7 @@ export const snmVoteInteractionCreate = {
 			if (interaction.customId.startsWith('SNM')) {
 				// Interaction from VOTE MESSAGE (scheduler or /snmAdmin start)
 				if (interaction.customId.startsWith('SNMVoteMessage')) {
-					interaction.deferReply({ ephemeral: true });
+					await interaction.deferReply({ ephemeral: true });
 
 					const actionId = interaction.customId.split('- ')[1];
 					const lastSNM = await getSNMWeek(interaction.guildId);
@@ -103,7 +103,7 @@ export const snmVoteInteractionCreate = {
 				}
 				// Interaction from VOTE SYSTEM (Start Voting or /snmVotes start)
 				else if (interaction.customId.startsWith('SNMVoteSystem')) {
-					interaction.deferUpdate();
+					!interaction.deferred ? await interaction.deferUpdate() : null;
 
 					const actionId = interaction.customId.split(' ')[0];
 					const lastSNM = await getSNMWeek(interaction.guildId);
@@ -226,7 +226,7 @@ export const snmVoteInteractionCreate = {
 						// user already voted on the movie
 						else if (userObject.votes.includes(movieTitleKey)) {
 							console.log(`${interaction.user.username} - Duplicate vote`);
-							return await interaction.editReply({
+							const reply = {
 								components: generateVotingComponents(
 									interaction,
 									lastSNM,
@@ -234,7 +234,10 @@ export const snmVoteInteractionCreate = {
 									movieTitleKey,
 									'You already voted on that movie.',
 								),
-							});
+							};
+							return interaction.deferred
+								? await interaction.editReply(reply)
+								: await interaction.reply(reply);
 						}
 						// save vote
 						if (userObject.votes.length < snmServer.maxVotes) {
