@@ -35,8 +35,9 @@ export const horaBBBCommand = {
 				'.schedule-items.schedule-items--activated section',
 			)) {
 				const header = el.querySelector('.schedule-item-header-info');
+				const programName = header.querySelector('h2')?.innerHTML;
 				if (
-					header.querySelector('h2')?.innerHTML.startsWith('Big Brother Brasil')
+					programName.startsWith('Big Brother Brasil')
 				) {
 					const startTime = header
 						.querySelector('.schedule-item-header-time time')
@@ -47,7 +48,7 @@ export const horaBBBCommand = {
 					return await interaction.editReply({
 						embeds: [
 							new EmbedBuilder()
-								.setTitle('Big Brother Brasil 22')
+								.setTitle(programName)
 								.setDescription(
 									`<t:${startTime}:t> até <t:${endTime}:t>\n<t:${startTime}:R>`,
 								)
