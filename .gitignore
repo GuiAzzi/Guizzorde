@@ -1,5 +1,6 @@
 .DS_Store
 node_modules
 config.json
+index.old.js
 /src/snm.json
 /src/memes

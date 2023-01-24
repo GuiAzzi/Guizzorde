@@ -158,8 +158,8 @@ v3:
     ☐ setavatar
     ☐ setactivity
     ☐ changesub
-    ☐ play
-    ☐ stop
+    ✔ play @done(22-11-04 19:02)
+    ✔ stop @done(23-01-23 23:39)
     ☐ editembed
     ✔ Update heroku stack @done(22-11-03 14:09)
     ✔ Update SNM voting system with dropdown choices @done(22-11-04 04:14)
