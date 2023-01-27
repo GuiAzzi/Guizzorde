@@ -10,6 +10,8 @@ import {
 	getSNMWeek,
 	getSNMServer,
 	generateVotingComponents,
+	SNMWeekArray,
+	SNMServerArray,
 } from '../commands/guild/Sunday Night Movie/index.js';
 import { snmVotesCommand } from '../commands/guild/Sunday Night Movie/index.js';
 import { reportError } from '../util/index.js';
@@ -106,8 +108,8 @@ export const snmVoteInteractionCreate = {
 					!interaction.deferred ? await interaction.deferUpdate() : null;
 
 					const actionId = interaction.customId.split(' ')[0];
-					const lastSNM = await getSNMWeek(interaction.guildId);
-					const snmServer = await getSNMServer(interaction.guildId);
+					const lastSNM = SNMWeekArray.get(interaction.guildId) || await getSNMWeek(interaction.guildId);
+					const snmServer = SNMServerArray.get(interaction.guildId) || await getSNMServer(interaction.guildId);
 
 					if (!lastSNM) {
 						console.log(
