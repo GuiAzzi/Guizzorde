@@ -10,7 +10,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "start:dev": "nodemon index.js",
+    "dev": "nodemon index.js",
     "deploy-commands": "node src/commands/deploy-commands.js"
   },
   "repository": {
@@ -30,7 +30,7 @@
     "axios": "^0.26.1",
     "chrono-node": "^2.2.6",
     "cron": "^1.8.2",
-    "discord.js": "^14.6.0",
+    "discord.js": "^14.8.0",
     "ffmpeg-static": "^5.0.2",
     "jimp": "^0.16.1",
     "jsdom": "^19.0.0",

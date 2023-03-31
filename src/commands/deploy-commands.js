@@ -3,7 +3,7 @@ import { configObj } from '../config/index.js';
 import reader from 'readline-sync';
 import { globalCommands, guildCommands } from '../commands/index.js';
 
-const guildId = reader.question('Guild ID: ');
+const guildId = reader.question('Guild ID (empty for global): ');
 
 const rest = new REST({ version: '10' }).setToken(configObj.token);
 
