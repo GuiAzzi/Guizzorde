@@ -32,23 +32,24 @@ export const snmCommand = {
 			const week = interaction.options.getInteger('week');
 			const silent = interaction.options.getBoolean('silent');
 			const _export = interaction.options.getBoolean('export');
+			const requestingList = week != null && week <= 0;
 
 			const snmWeekEmbed = new EmbedBuilder()
 				.setTitle('Searching...')
 				.setColor(0x3498db);
 
 			// Sends to-be-edited message
-			await interaction.deferReply({ ephemeral: silent });
+			await interaction.deferReply({ ephemeral: silent || requestingList });
 
 			// If week <= 0 gets list of winners
-			if (week != null && week <= 0) {
+			if (requestingList) {
 				const arr = (await getWinnersList(interaction.guildId)).match(
 					/.{1,2048}$/gms,
 				);
 
 				for (let i = 0; i < arr.length; i++) {
 					if (i === 0) {
-						await interaction.editReply({
+						await interaction.member.send({
 							embeds: [
 								snmWeekEmbed
 									.setTitle('🥇 List of SNM Winners 🥇')
@@ -57,11 +58,13 @@ export const snmCommand = {
 						});
 					}
 					else {
-						await interaction.editReply({
+						await interaction.member.send({
 							embeds: [snmWeekEmbed.setTitle(null).setDescription(arr[i])],
 						});
 					}
 				}
+
+				await interaction.editReply('Sent via DM');
 			}
 			else {
 				const snmWeek = await getSNMWeek(interaction.guildId, week);

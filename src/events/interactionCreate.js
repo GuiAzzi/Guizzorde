@@ -63,7 +63,7 @@ export const snmVoteInteractionCreate = {
 	 * @param {ButtonInteraction|SelectMenuInteraction} interaction
 	 */
 	async handler(interaction) {
-		if (!interaction.isButton() && !interaction.isSelectMenu()) return;
+		if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
 		// SNM related
 		try {
