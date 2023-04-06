@@ -250,7 +250,7 @@ export async function getWinnersList(guildId) {
 				}${parsedScoreBoard[i].join(': ')}\n`;
 			}
 			else {
-				parsedScoreBoard[i] = `${parsedScoreBoard[i].join(': ')}\n`;
+				parsedScoreBoard[i] = `🏅 ${parsedScoreBoard[i].join(': ')}\n`;
 			}
 		}
 

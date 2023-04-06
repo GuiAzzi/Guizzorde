@@ -3,8 +3,7 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 } from 'discord.js';
-import axios from 'axios';
-import { JSDOM } from 'jsdom';
+import puppeteer from 'puppeteer';
 
 import { reportError } from '../../../../util/index.js';
 
@@ -16,68 +15,67 @@ export const horaBBBCommand = {
 	 * @param {ChatInputCommandInteraction} interaction
 	 */
 	handler: async function(interaction) {
+		await interaction.deferReply();
+		const browser = await puppeteer.launch();
+
 		try {
-			await interaction.deferReply();
+			const bbbURL = 'https://redeglobo.globo.com/sao-paulo/programacao/';
 
-			const response = await axios.get(
-				'https://redeglobo.globo.com/sao-paulo/programacao',
-			);
+			const page = await browser.newPage();
 
-			if (response.status !== 200) {
+			try {
+				await page.goto(bbbURL);
+			}
+			catch (e) {
 				return await interaction.editReply({
 					content: 'A página da Globo não carregou 🤷‍♂️',
 				});
 			}
 
-			const body = new JSDOM(response.data).window.document;
+			const selector = await page.waitForSelector('text/Big Brother Brasil', {
+				timeout: 1_000,
+			});
 
-			for (const el of body.querySelectorAll(
-				'.schedule-items.schedule-items--activated section',
-			)) {
-				const header = el.querySelector('.schedule-item-header-info');
-				const programName = header.querySelector('h2')?.innerHTML;
-				if (
-					programName.startsWith('Big Brother Brasil')
-				) {
-					const startTime = header
-						.querySelector('.schedule-item-header-time time')
-						.getAttribute('data-start-time');
-					const endTime = header
-						.querySelector('.schedule-item-header-time time')
-						.getAttribute('data-end-time');
-					return await interaction.editReply({
-						embeds: [
-							new EmbedBuilder()
-								.setTitle(programName)
-								.setDescription(
-									`<t:${startTime}:t> até <t:${endTime}:t>\n<t:${startTime}:R>`,
-								)
-								.setThumbnail(
-									el
-										.querySelector('.schedule-item-header-logo')
-										.querySelector('img')
-										.getAttribute('src'),
-								)
-								.setColor('#4286f4'),
-						],
-					});
-				}
+			if (!selector) {
+				return await interaction.editReply({
+					embeds: [
+						new EmbedBuilder()
+							.setTitle('Não achei o horario :(')
+							.setDescription(`Mas deve ter aqui:\n${bbbURL}`)
+							.setFooter({ text: 'dicupa' })
+							.setColor('#4286f4'),
+					],
+				});
 			}
+
+			const programName = await selector.evaluate((el) => el.textContent);
+			const programTime = await selector.evaluate(
+				(el) => el.parentElement.querySelector('.programee-time').textContent,
+			);
+			const programImage = await selector.evaluate((el) =>
+				el.parentElement.querySelector('.programee-logo').getAttribute('src'),
+			);
+			const programHourAndMin = programTime.split(':');
+			const programDate = Math.floor(
+				new Date().setHours(programHourAndMin[0], programHourAndMin[1], 0) /
+					1000,
+			);
 
 			return await interaction.editReply({
 				embeds: [
 					new EmbedBuilder()
-						.setTitle('Não achei o horario :(')
-						.setDescription(
-							'Mas deve ter aqui:\nhttps://redeglobo.globo.com/sao-paulo/programacao',
-						)
-						.setFooter({ text: 'dicupa' })
+						.setTitle(programName)
+						.setDescription(`<t:${programDate}:t>\n<t:${programDate}:R>`)
+						.setThumbnail(programImage)
 						.setColor('#4286f4'),
 				],
 			});
 		}
 		catch (e) {
 			reportError(e, interaction);
+		}
+		finally {
+			browser.close();
 		}
 	},
 };
