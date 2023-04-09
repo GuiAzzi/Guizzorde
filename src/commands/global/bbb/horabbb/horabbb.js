@@ -16,7 +16,7 @@ export const horaBBBCommand = {
 	 */
 	handler: async function(interaction) {
 		await interaction.deferReply();
-		const browser = await puppeteer.launch();
+		const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
 
 		try {
 			const bbbURL = 'https://redeglobo.globo.com/sao-paulo/programacao/';
