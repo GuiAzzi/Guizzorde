@@ -4,7 +4,7 @@ import {
 	EmbedBuilder,
 } from 'discord.js';
 import puppeteer from 'puppeteer';
-
+import { pt } from 'chrono-node';
 import { reportError } from '../../../../util/index.js';
 
 export const horaBBBCommand = {
@@ -24,7 +24,7 @@ export const horaBBBCommand = {
 			const page = await browser.newPage();
 
 			try {
-				await page.goto(bbbURL);
+				await page.goto(bbbURL, { waitUntil: 'domcontentloaded' });
 			}
 			catch (e) {
 				return await interaction.editReply({
@@ -32,6 +32,7 @@ export const horaBBBCommand = {
 				});
 			}
 
+			const programDay = await (await page.$('.date-select p')).evaluate((el) => el.textContent);
 			const selector = await page.waitForSelector('text/Big Brother Brasil', {
 				timeout: 1_000,
 			});
@@ -49,16 +50,25 @@ export const horaBBBCommand = {
 			}
 
 			const programName = await selector.evaluate((el) => el.textContent);
-			const programTime = await selector.evaluate(
-				(el) => el.parentElement.querySelector('.programee-time').textContent,
-			);
 			const programImage = await selector.evaluate((el) =>
 				el.parentElement.querySelector('.programee-logo').getAttribute('src'),
 			);
-			const programHourAndMin = programTime.split(':');
+
+			if (await selector.evaluate((el) => el.parentElement.querySelector('.islive'))) {
+				return await interaction.editReply({
+					embeds: [
+						new EmbedBuilder()
+							.setTitle(programName)
+							.setDescription('AO VIVO\nhttps://globoplay.globo.com/agora-na-tv/')
+							.setThumbnail(programImage)
+							.setColor('#4286f4'),
+					],
+				});
+			}
+
+			const programTime = await selector.evaluate((el) => el.parentElement.querySelector('.programee-time').textContent);
 			const programDate = Math.floor(
-				new Date().setHours(programHourAndMin[0], programHourAndMin[1], 0) /
-					1000,
+				pt.parseDate(`${programDay} às ${programTime}`, { timezone: -180 }).getTime() / 1000,
 			);
 
 			return await interaction.editReply({

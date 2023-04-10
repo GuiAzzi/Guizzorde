@@ -77,7 +77,7 @@ export const remindMeCommand = {
 			});
 
 			// Try to parse date in english first then in pt
-			const parsedDate = custom.parseDate(date) || chrono.pt.parse(date);
+			const parsedDate = custom.parseDate(date, { timezone: timeZone }) || chrono.pt.parse(date, { timezone: timeZone });
 
 			// If failed to parse
 			if (!parsedDate || parsedDate.length === 0) {
