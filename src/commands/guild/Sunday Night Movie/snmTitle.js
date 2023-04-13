@@ -1,11 +1,16 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import Fuse from 'fuse.js';
 
 import {
 	getSNMServer,
 	getSNMWeek,
 	upsertSNMWeek,
+	SNMWeekArray,
 } from '../../guild/Sunday Night Movie/index.js';
-import { generateCompactMovieEmbed } from '../../global/movie/movie.js';
+import {
+	generateCompactMovieEmbed,
+	searchTitles,
+} from '../../global/movie/movie.js';
 import { reportError } from '../../../util/index.js';
 
 export const snmTitleCommand = {
@@ -20,7 +25,8 @@ export const snmTitleCommand = {
 					option
 						.setName('title')
 						.setDescription('The movie title')
-						.setRequired(true),
+						.setRequired(true)
+						.setAutocomplete(true),
 				)
 				.addBooleanOption((option) =>
 					option
@@ -36,7 +42,8 @@ export const snmTitleCommand = {
 					option
 						.setName('title')
 						.setDescription('The movie title or SNM number')
-						.setRequired(true),
+						.setRequired(true)
+						.setAutocomplete(true),
 				)
 				.addBooleanOption((option) =>
 					option
@@ -51,7 +58,7 @@ export const snmTitleCommand = {
 	handler: async function(interaction) {
 		try {
 			const interactionOptions = interaction.options.getSubcommand();
-			const titleName = interaction.options.getString('title');
+			let titleName = interaction.options.getString('title');
 			const silent = interaction.options.getBoolean('silent');
 
 			await interaction.deferReply({ ephemeral: silent });
@@ -71,6 +78,13 @@ export const snmTitleCommand = {
 						`Can't modify \`Sunday Night Movie ${lastSNM.week}\` as it is \`${lastSNM.status}\``,
 					);
 				}
+
+				// Checks if title came from the autocomplete system (if it begins the JustWatch titleId)
+				const fromAutoComplete = titleName.match(/(tm\d+) - /)
+					? titleName.match(/(tm\d+) - /)[1]
+					: null;
+					// If that's the case, reformat titleName to be just the title
+				fromAutoComplete ? (titleName = titleName.split(' - ')[1]) : null;
 
 				const authorId = interaction.member.user.id;
 				// Checks if user is already on the list
@@ -113,6 +127,7 @@ export const snmTitleCommand = {
 				// Adds movie to the list
 				lastSNM.movieCount++;
 				userObject.movies.push({
+					jwId: fromAutoComplete,
 					title: titleName,
 					titleKey: lastSNM.movieCount,
 				});
@@ -123,6 +138,7 @@ export const snmTitleCommand = {
 						const compactMovieEmbed = await generateCompactMovieEmbed(
 							titleName,
 							snmServer.locale || 'en',
+							fromAutoComplete,
 						);
 						compactMovieEmbed
 							.setAuthor({
@@ -255,6 +271,59 @@ export const snmTitleCommand = {
 		}
 		catch (e) {
 			reportError(e, interaction);
+		}
+	},
+	/**
+	 * @param {ChatInputCommandInteraction} interaction
+	 */
+	autocomplete: async function(interaction) {
+		const focusedValue = interaction.options.getFocused();
+
+		switch (interaction.options.getSubcommand()) {
+		case 'add': {
+			if (!focusedValue) return await interaction.respond(null);
+			const titlesFound = await searchTitles(focusedValue);
+			if (!titlesFound) {
+				return null;
+			}
+			return await interaction.respond(
+				titlesFound.map((title) => ({
+					name: `${title.title} (${title.original_release_year})`,
+					value: `${title.jw_entity_id} - ${title.title} (${title.original_release_year})`,
+				})),
+			);
+		}
+		case 'remove': {
+			const lastSNM =
+					SNMWeekArray.get(interaction.guildId) ||
+					(await getSNMWeek(interaction.guildId));
+			const userMovies = lastSNM.users.find(
+				(user) => user.userId === interaction.user.id,
+			).movies;
+
+			// If nothing is inputted, print all user entries
+			if (!focusedValue) {
+				return await interaction.respond(
+					userMovies.map((movie) => ({
+						name: movie.title,
+						value: movie.title,
+					})),
+				);
+			}
+
+			// Fuzzy search based on input
+			const options = {
+				keys: ['title'],
+			};
+			const fuse = new Fuse(userMovies, options);
+			const search = fuse.search(focusedValue);
+			return await interaction.respond(
+				search.map((movie) => ({
+					name: movie.item.title,
+					value: movie.item.title,
+				})),
+			);
+		}
 		}
 	},
 };

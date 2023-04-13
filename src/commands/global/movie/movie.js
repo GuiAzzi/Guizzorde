@@ -20,28 +20,30 @@ import {
  * @param {string} [jwLocale] JustWatch locale
  * @returns {Promise<EmbedBuilder>} The movie embed
  */
-export async function generateMovieEmbed(title, jwLocale) {
+export async function generateMovieEmbed(title, jwLocale, jwId) {
 	const jwEN = new JustWatch();
 	const jwBR = new JustWatch({ locale: 'pt_BR' });
-	// Gets movie Just Watch's ID
-	// Primary locale for search is pt_BR but optionally can be en_US
 	let jwSearch;
-	if (jwLocale === 'pt-br') {
-		jwSearch = await jwBR.search({ query: title });
-	}
-	else {
-		jwSearch = await jwEN.search({ query: title });
-	}
+	// Gets movie Just Watch's ID if we don't already have it
+	if (!jwId) {
+		// Primary locale for search is pt_BR but optionally can be en_US
+		if (jwLocale === 'pt-br') {
+			jwSearch = await jwBR.search({ query: title });
+		}
+		else {
+			jwSearch = await jwEN.search({ query: title });
+		}
 
-	// Filter by movies
-	jwSearch.items = jwSearch.items.filter(
-		(item) => item.object_type === 'movie',
-	);
-	// If no movie was found
-	if (jwSearch.items.length <= 0) {
-		return new EmbedBuilder()
-			.setDescription('Movie not found 😞')
-			.setColor('Red');
+		// Filter by movies
+		jwSearch.items = jwSearch.items.filter(
+			(item) => item.object_type === 'movie',
+		);
+		// If no movie was found
+		if (jwSearch.items.length <= 0) {
+			return new EmbedBuilder()
+				.setDescription('Movie not found 😞')
+				.setColor('Red');
+		}
 	}
 
 	// Right now, using all data from english database, except if Portuguese was forced in the command and for
@@ -50,12 +52,16 @@ export async function generateMovieEmbed(title, jwLocale) {
 	// Gets full movie detail in Portuguese (for "Streaming on")
 	const jwTitleBR = await jwBR.getTitle(
 		'movie',
-		jwSearch.items[0].jw_entity_id.replace('tm', ''),
+		jwId
+			? jwId.replace('tm', '')
+			: jwSearch.items[0].jw_entity_id.replace('tm', ''),
 	);
 	// Gets movie in english for everything else
 	const jwTitleEN = await jwEN.getTitle(
 		'movie',
-		jwSearch.items[0].jw_entity_id.replace('tm', ''),
+		jwId
+			? jwId.replace('tm', '')
+			: jwSearch.items[0].jw_entity_id.replace('tm', ''),
 	);
 
 	// Creates provider list so I can ignore duplicate versions (sd, hd, 4k - doesn't matter for this use case)
@@ -387,21 +393,27 @@ export async function generateMovieEmbed(title, jwLocale) {
  * @returns {Promise<EmbedBuilder>} The movie embed
  */
 // eslint-disable-next-line no-unused-vars
-export async function generateCompactMovieEmbed(title, jwLocale) {
+export async function generateCompactMovieEmbed(title, jwLocale, jwId) {
 	// const jw = new JustWatch({ locale: jwLocale });
 	const jw = new JustWatch();
 
-	const jwSearch = await jw.search({ query: title });
+	let jwSearch;
 
-	// Filter by movies
-	jwSearch.items = jwSearch.items.filter(
-		(item) => item.object_type === 'movie',
-	);
-	if (jwSearch.items.length <= 0) return null;
+	if (!jwId) {
+		jwSearch = await jw.search({ query: title });
+
+		// Filter by movies
+		jwSearch.items = jwSearch.items.filter(
+			(item) => item.object_type === 'movie',
+		);
+		if (jwSearch.items.length <= 0) return null;
+	}
 
 	const jwTitle = await jw.getTitle(
 		'movie',
-		jwSearch.items[0].jw_entity_id.replace('tm', ''),
+		jwId
+			? jwId.replace('tm', '')
+			: jwSearch.items[0].jw_entity_id.replace('tm', ''),
 	);
 	jwTitle.scoring = jwTitle.scoring?.filter(
 		(score) =>
@@ -505,6 +517,33 @@ export async function generateCompactMovieEmbed(title, jwLocale) {
 		.setTimestamp(new Date());
 }
 
+/**
+ * Searches query on JustWatch and returns first n results (5 by default)
+ * @param {string} titleName Movie title to search
+ * @param {number} maxResults Number of results to return
+ * @returns {Promise<string[]>}
+ */
+export async function searchTitles(titleName, maxResults = 5) {
+	try {
+		const jw = new JustWatch();
+
+		const jwSearch = await jw.search({
+			query: titleName,
+			page_size: maxResults,
+		});
+
+		// Filter by movies
+		jwSearch.items = jwSearch.items.filter(
+			(item) => item.object_type === 'movie',
+		);
+
+		return jwSearch?.items;
+	}
+	catch (e) {
+		reportError(e);
+	}
+}
+
 export const movieCommand = {
 	data: new SlashCommandBuilder()
 		.setName('movie')
@@ -513,7 +552,8 @@ export const movieCommand = {
 			option
 				.setName('title')
 				.setDescription('What\'s the name of the movie?')
-				.setRequired(true),
+				.setRequired(true)
+				.setAutocomplete(true),
 		)
 		.addStringOption((option) =>
 			option
@@ -542,5 +582,19 @@ export const movieCommand = {
 		catch (e) {
 			reportError(e, interaction);
 		}
+	},
+	autocomplete: async function(interaction) {
+		const focusedValue = interaction.options.getFocused();
+		if (!focusedValue) return await interaction.respond(null);
+		const titlesFound = await searchTitles(focusedValue);
+		if (!titlesFound) {
+			return null;
+		}
+		return await interaction.respond(
+			titlesFound.map((title) => ({
+				name: `${title.title} (${title.original_release_year})`,
+				value: `${title.jw_entity_id} - ${title.title} (${title.original_release_year})`,
+			})),
+		);
 	},
 };

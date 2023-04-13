@@ -19,6 +19,7 @@ import {
 import {
 	generateCompactMovieEmbed,
 	generateMovieEmbed,
+	searchTitles,
 } from '../../global/movie/movie.js';
 import { randomEmoji, reportError } from '../../../util/index.js';
 import { client, configObj } from '../../../config/index.js';
@@ -122,6 +123,7 @@ export const snmAdminCommand = {
 
 				// Creates a movie suggestion with OpenAI
 				// Don't do it if first week => no movies to sample
+				// Don't do it if on test bot (App ID 558090301160292352)
 				let openAISeeded;
 				if (lastSNM.week > 1) {
 					try {
@@ -149,18 +151,29 @@ export const snmAdminCommand = {
 							openAIEntry = openAIEntry
 								.replace(`${newSNM.week} - `, '')
 								.trim();
+
+							const titleFound = await searchTitles(openAIEntry, 1);
 							newSNM.users.push({
 								userId: interaction.client.user.id,
 								username: interaction.client.user.username,
 								movies: [
 									{
-										title: openAIEntry,
+										jwId: titleFound[0]?.jw_entity_id,
+										title: titleFound
+											? `${titleFound[0].title} (${titleFound[0].original_release_year})`
+											: openAIEntry,
 										titleKey: 1,
 									},
 								],
 							});
 							newSNM.movieCount += 1;
-							openAISeeded = (await generateCompactMovieEmbed(openAIEntry))
+							openAISeeded = (
+								await generateCompactMovieEmbed(
+									openAIEntry,
+									null,
+									titleFound[0]?.jw_entity_id,
+								)
+							)
 								.setDescription('🤖 Guizzorde\'s Suggestion 🤖')
 								.setFooter({ text: 'Powered by OpenAI' })
 								.setColor(0x3498db);
@@ -440,7 +453,6 @@ export const snmAdminCommand = {
 						.send({ embeds: [endSNMEmbed] });
 				}
 
-				let winnerMovie;
 				let embedDescription;
 
 				const lastSNM = await getSNMWeek(interaction.guildId);
@@ -501,21 +513,19 @@ export const snmAdminCommand = {
 					const tiedWinnersTitle = [];
 					for (const winner in winners) {
 						tiedWinnersTitle.push(
-							`\`${
-								lastSNM.users
-									.find((user) =>
-										user.movies.find(
-											(movie) => movie.titleKey === winners[winner].titleKey,
-										),
-									)
-									.movies.find(
+							lastSNM.users
+								.find((user) =>
+									user.movies.find(
 										(movie) => movie.titleKey === winners[winner].titleKey,
-									).title
-							}\``,
+									),
+								)
+								.movies.find(
+									(movie) => movie.titleKey === winners[winner].titleKey,
+								).title,
 						);
 					}
 
-					embedDescription = `\n${tiedWinnersTitle.join(' | ')} got ${
+					embedDescription = `\n\`${tiedWinnersTitle.join('` | `')}\` got ${
 						maxVotes.voteCount
 					} votes each!\nRandomly picking a movie...\n\n`;
 					endSNMEmbed
@@ -534,12 +544,6 @@ export const snmAdminCommand = {
 							(movie) => movie.titleKey === lastSNM.winner.titleKey,
 						),
 					).userId;
-					winnerMovie = {
-						title: tiedWinnersTitle[rndWinnerPos].substr(
-							1,
-							tiedWinnersTitle[rndWinnerPos].length - 2,
-						),
-					};
 				}
 				else {
 					embedDescription = `With ${maxVotes.voteCount} votes:\n\n`;
@@ -558,18 +562,15 @@ export const snmAdminCommand = {
 							(movie) => movie.titleKey === lastSNM.winner.titleKey,
 						),
 					).userId;
-					winnerMovie = {
-						title: lastSNM.users
-							.find((user) =>
-								user.movies.find(
-									(movie) => movie.titleKey === lastSNM.winner.titleKey,
-								),
-							)
-							.movies.find(
-								(movie) => movie.titleKey === lastSNM.winner.titleKey,
-							).title,
-					};
 				}
+
+				const winnerMovie = lastSNM.users
+					.find((user) =>
+						user.movies.find(
+							(movie) => movie.titleKey === lastSNM.winner.titleKey,
+						),
+					)
+					.movies.find((movie) => movie.titleKey === lastSNM.winner.titleKey);
 
 				lastSNM.status = 'finished';
 				await upsertSNMWeek(lastSNM);
@@ -620,7 +621,11 @@ export const snmAdminCommand = {
 							new EmbedBuilder().setTitle('Searching...').setColor(0x3498db),
 						],
 					});
-				const movieEmbed = await generateMovieEmbed(winnerMovie.title);
+				const movieEmbed = await generateMovieEmbed(
+					winnerMovie.title,
+					null,
+					winnerMovie?.jwId,
+				);
 				movieEmbed.setTimestamp(new Date());
 
 				if (

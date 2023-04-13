@@ -23,35 +23,52 @@ export const interactionCreate = {
 	 * @param {ChatInputCommandInteraction} interaction
 	 */
 	async handler(interaction) {
-		if (!interaction.isChatInputCommand()) return;
+		if (interaction.isChatInputCommand()) {
+			const command = interaction.client.commands.get(interaction.commandName);
 
-		const command = interaction.client.commands.get(interaction.commandName);
+			if (!command) {
+				console.error(
+					`No command matching ${interaction.commandName} was found.`,
+				);
+				return;
+			}
 
-		if (!command) {
-			console.error(
-				`No command matching ${interaction.commandName} was found.`,
-			);
-			return;
+			try {
+				console.log(
+					`${interaction.user.username} executing "${interaction.commandName}"${
+						interaction.options.data.length
+							? ` with "${JSON.stringify(interaction.options.data)}"`
+							: ''
+					}${
+						interaction.inGuild()
+							? ` in "${interaction.guild.name}":${interaction.guildId}`
+							: ' via DM'
+					}`,
+				);
+				console.log(`"${interaction.commandName}" starting...`);
+				await command.handler(interaction);
+				console.log(`"${interaction.commandName}" finished.\n`);
+			}
+			catch (e) {
+				reportError(e, interaction);
+			}
 		}
+		else if (interaction.isAutocomplete()) {
+			const command = interaction.client.commands.get(interaction.commandName);
 
-		try {
-			console.log(
-				`${interaction.user.username} executing "${interaction.commandName}"${
-					interaction.options.data.length
-						? ` with "${JSON.stringify(interaction.options.data)}"`
-						: ''
-				}${
-					interaction.inGuild()
-						? ` in "${interaction.guild.name}":${interaction.guildId}`
-						: ' via DM'
-				}`,
-			);
-			console.log(`"${interaction.commandName}" starting...`);
-			await command.handler(interaction);
-			console.log(`"${interaction.commandName}" finished.\n`);
-		}
-		catch (e) {
-			reportError(e, interaction);
+			if (!command) {
+				console.error(
+					`No command matching ${interaction.commandName} was found.`,
+				);
+				return;
+			}
+
+			try {
+				await command.autocomplete(interaction);
+			}
+			catch (e) {
+				reportError(e, interaction);
+			}
 		}
 	},
 };
@@ -108,8 +125,12 @@ export const snmVoteInteractionCreate = {
 					!interaction.deferred ? await interaction.deferUpdate() : null;
 
 					const actionId = interaction.customId.split(' ')[0];
-					const lastSNM = SNMWeekArray.get(interaction.guildId) || await getSNMWeek(interaction.guildId);
-					const snmServer = SNMServerArray.get(interaction.guildId) || await getSNMServer(interaction.guildId);
+					const lastSNM =
+						SNMWeekArray.get(interaction.guildId) ||
+						(await getSNMWeek(interaction.guildId));
+					const snmServer =
+						SNMServerArray.get(interaction.guildId) ||
+						(await getSNMServer(interaction.guildId));
 
 					if (!lastSNM) {
 						console.log(
