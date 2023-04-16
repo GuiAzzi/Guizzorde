@@ -3,10 +3,12 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 } from 'discord.js';
+import Fuse from 'fuse.js';
 
 import {
 	SNMWeek,
 	getWinnersList,
+	getWinners,
 	getSNMWeek,
 } from '../../guild/Sunday Night Movie/index.js';
 import { reportError } from '../../../util/index.js';
@@ -16,7 +18,10 @@ export const snmCommand = {
 		.setName('snm')
 		.setDescription('Show this week movies or specified week summary')
 		.addIntegerOption((option) =>
-			option.setName('week').setDescription('A SNM week number'),
+			option
+				.setName('week')
+				.setDescription('A SNM week number')
+				.setAutocomplete(true),
 		)
 		.addBooleanOption((option) =>
 			option
@@ -95,6 +100,47 @@ export const snmCommand = {
 						embeds: [_export ? snmWeekEmbed : snmEmbed(snmWeek)],
 					});
 				}
+			}
+		}
+		catch (e) {
+			reportError(e, interaction);
+		}
+	},
+	autocomplete: async function(interaction) {
+		try {
+			const focusedValue = interaction.options.getFocused();
+
+			// If focusedValue is 0, return last 25 winners
+			if (!focusedValue) {
+				const last25Winners = await getWinners(interaction.guildId, 25);
+
+				return await interaction.respond(
+					last25Winners
+						? last25Winners.map((title) => ({
+							name: `${title.week} - ${title.title} | ${title.username}`,
+							value: title.week,
+						}))
+						: null,
+				);
+			}
+			// Else, grab the whole list and fuzzy search through it
+			else {
+				const allWinners = await getWinners(interaction.guildId);
+
+				// Fuzzy search based on input
+				const options = {
+					keys: ['week', 'username', 'title'],
+				};
+				const fuse = new Fuse(allWinners, options);
+				const search = fuse.search(focusedValue);
+				return await interaction.respond(
+					search
+						.map((result) => ({
+							name: `${result.item.week} - ${result.item.title} | ${result.item.username}`,
+							value: result.item.week,
+						}))
+						.slice(0, 25),
+				);
 			}
 		}
 		catch (e) {

@@ -277,53 +277,58 @@ export const snmTitleCommand = {
 	 * @param {ChatInputCommandInteraction} interaction
 	 */
 	autocomplete: async function(interaction) {
-		const focusedValue = interaction.options.getFocused();
+		try {
+			const focusedValue = interaction.options.getFocused();
 
-		switch (interaction.options.getSubcommand()) {
-		case 'add': {
-			if (!focusedValue) return await interaction.respond(null);
-			const titlesFound = await searchTitles(focusedValue);
-			if (!titlesFound) {
-				return null;
-			}
-			return await interaction.respond(
-				titlesFound.map((title) => ({
-					name: `${title.title} (${title.original_release_year})`,
-					value: `${title.jw_entity_id} - ${title.title} (${title.original_release_year})`,
-				})),
-			);
-		}
-		case 'remove': {
-			const lastSNM =
-					SNMWeekArray.get(interaction.guildId) ||
-					(await getSNMWeek(interaction.guildId));
-			const userMovies = lastSNM.users.find(
-				(user) => user.userId === interaction.user.id,
-			).movies;
-
-			// If nothing is inputted, print all user entries
-			if (!focusedValue) {
+			switch (interaction.options.getSubcommand()) {
+			case 'add': {
+				if (!focusedValue) return await interaction.respond(null);
+				const titlesFound = await searchTitles(focusedValue);
+				if (!titlesFound) {
+					return null;
+				}
 				return await interaction.respond(
-					userMovies.map((movie) => ({
-						name: movie.title,
-						value: movie.title,
+					titlesFound.map((title) => ({
+						name: `${title.title} (${title.original_release_year})`,
+						value: `${title.jw_entity_id} - ${title.title} (${title.original_release_year})`,
 					})),
 				);
 			}
+			case 'remove': {
+				const lastSNM =
+						SNMWeekArray.get(interaction.guildId) ||
+						(await getSNMWeek(interaction.guildId));
+				const userMovies = lastSNM.users.find(
+					(user) => user.userId === interaction.user.id,
+				).movies;
 
-			// Fuzzy search based on input
-			const options = {
-				keys: ['title'],
-			};
-			const fuse = new Fuse(userMovies, options);
-			const search = fuse.search(focusedValue);
-			return await interaction.respond(
-				search.map((movie) => ({
-					name: movie.item.title,
-					value: movie.item.title,
-				})),
-			);
+				// If nothing is inputted, print all user entries
+				if (!focusedValue) {
+					return await interaction.respond(
+						userMovies.map((movie) => ({
+							name: movie.title,
+							value: movie.title,
+						})),
+					);
+				}
+
+				// Fuzzy search based on input
+				const options = {
+					keys: ['title'],
+				};
+				const fuse = new Fuse(userMovies, options);
+				const search = fuse.search(focusedValue);
+				return await interaction.respond(
+					search.map((movie) => ({
+						name: movie.item.title,
+						value: movie.item.title,
+					})),
+				);
+			}
+			}
 		}
+		catch (e) {
+			reportError(e, interaction);
 		}
 	},
 };

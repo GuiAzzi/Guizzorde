@@ -153,8 +153,9 @@ export async function generateMovieEmbed(title, jwLocale, jwId) {
 					: jwTorrent[0].desc
 			})\n${jwTorrent[0].size} | ${jwTorrent[0].seeds} seeders | ${
 				jwTorrent[0].provider
-			} | ${jwSubtitle ? `[Subtitle](${jwSubtitle.link})` : 'No subtitle found'}` ||
-			'No torrent found';
+			} | ${
+				jwSubtitle ? `[Subtitle](${jwSubtitle.link})` : 'No subtitle found'
+			}` || 'No torrent found';
 	}
 
 	// Title
@@ -584,17 +585,22 @@ export const movieCommand = {
 		}
 	},
 	autocomplete: async function(interaction) {
-		const focusedValue = interaction.options.getFocused();
-		if (!focusedValue) return await interaction.respond(null);
-		const titlesFound = await searchTitles(focusedValue);
-		if (!titlesFound) {
-			return null;
+		try {
+			const focusedValue = interaction.options.getFocused();
+			if (!focusedValue) return await interaction.respond(null);
+			const titlesFound = await searchTitles(focusedValue);
+			if (!titlesFound) {
+				return null;
+			}
+			return await interaction.respond(
+				titlesFound.map((title) => ({
+					name: `${title.title} (${title.original_release_year})`,
+					value: `${title.jw_entity_id} - ${title.title} (${title.original_release_year})`,
+				})),
+			);
 		}
-		return await interaction.respond(
-			titlesFound.map((title) => ({
-				name: `${title.title} (${title.original_release_year})`,
-				value: `${title.jw_entity_id} - ${title.title} (${title.original_release_year})`,
-			})),
-		);
+		catch (e) {
+			reportError(e, interaction);
+		}
 	},
 };

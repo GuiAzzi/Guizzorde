@@ -1,11 +1,6 @@
 import mongodb from 'mongodb';
 
-import {
-	SNMServer,
-	SNMServerArray,
-	SNMWeek,
-	SNMWeekArray,
-} from './index.js';
+import { SNMServer, SNMServerArray, SNMWeek, SNMWeekArray } from './index.js';
 import { client, configObj } from '../../../config/index.js';
 
 async function dbConnect() {
@@ -256,6 +251,57 @@ export async function getWinnersList(guildId) {
 
 		const res = `${winnerList.join('\n')}\n\n${parsedScoreBoard.join('')}`;
 		return Promise.resolve(res);
+	}
+	catch (e) {
+		return Promise.reject(e);
+	}
+}
+
+/**
+ * Retrieves the last n winners
+ * @param {string} guildId The guild Id
+ * @param {number?} limit How many winners to retrieve (0 or null for all)
+ * @returns {Promise<[{week: number, username: string, title: string}]>} Array containing all winner's titles
+ */
+export async function getWinners(guildId, limit = 0) {
+	try {
+		/**
+		 * Maps results and gets the winner's title
+		 * @param {SNMWeek} item
+		 */
+		const mapFunc = (item) => {
+			const winnerUser = item.users.find((user) =>
+				user.movies.find((movie) => movie.titleKey === item.winner.titleKey),
+			);
+			return {
+				week: item.week,
+				username: winnerUser.username,
+				title: winnerUser.movies.find(
+					(movie) => movie.titleKey === item.winner.titleKey,
+				).title,
+			};
+		};
+
+		const mongoClient = await dbConnect();
+		const winnerList = await mongoClient
+			.db(configObj.mongodbName)
+			.collection(configObj.mongodbCollections[1])
+			.find(
+				{
+					guildId: guildId,
+					status: 'finished',
+				},
+				{
+					sort: { week: limit === 0 ? 1 : -1 },
+					projection: { winner: 1, users: 1, week: 1 },
+				},
+			)
+			.limit(limit)
+			.map(mapFunc)
+			.toArray();
+		mongoClient.close();
+
+		return Promise.resolve(winnerList);
 	}
 	catch (e) {
 		return Promise.reject(e);
