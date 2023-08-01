@@ -1,152 +1,152 @@
 import {
-	SlashCommandBuilder,
-	ChatInputCommandInteraction,
-	EmbedBuilder,
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
 } from 'discord.js';
 import Fuse from 'fuse.js';
 
 import {
-	SNMWeek,
-	getWinnersList,
-	getWinners,
-	getSNMWeek,
+  SNMWeek,
+  getWinnersList,
+  getWinners,
+  getSNMWeek,
 } from '../../guild/Sunday Night Movie/index.js';
 import { reportError } from '../../../util/index.js';
 
 export const snmCommand = {
-	data: new SlashCommandBuilder()
-		.setName('snm')
-		.setDescription('Show this week movies or specified week summary')
-		.addIntegerOption((option) =>
-			option
-				.setName('week')
-				.setDescription('A SNM week number')
-				.setAutocomplete(true),
-		)
-		.addBooleanOption((option) =>
-			option
-				.setName('silent')
-				.setDescription('No message will be sent to the channel.'),
-		)
-		.setDMPermission(false),
-	/**
+  data: new SlashCommandBuilder()
+    .setName('snm')
+    .setDescription('Show this week movies or specified week summary')
+    .addIntegerOption((option) =>
+      option
+        .setName('week')
+        .setDescription('A SNM week number')
+        .setAutocomplete(true),
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName('silent')
+        .setDescription('No message will be sent to the channel.'),
+    )
+    .setDMPermission(false),
+  /**
 	 * @param {ChatInputCommandInteraction} interaction
 	 */
-	handler: async function(interaction) {
-		try {
-			const week = interaction.options.getInteger('week');
-			const silent = interaction.options.getBoolean('silent');
-			const _export = interaction.options.getBoolean('export');
-			const requestingList = week != null && week <= 0;
+  handler: async function(interaction) {
+    try {
+      const week = interaction.options.getInteger('week');
+      const silent = interaction.options.getBoolean('silent');
+      const _export = interaction.options.getBoolean('export');
+      const requestingList = week != null && week <= 0;
 
-			const snmWeekEmbed = new EmbedBuilder()
-				.setTitle('Searching...')
-				.setColor(0x3498db);
+      const snmWeekEmbed = new EmbedBuilder()
+        .setTitle('Searching...')
+        .setColor(0x3498db);
 
-			// Sends to-be-edited message
-			await interaction.deferReply({ ephemeral: silent || requestingList });
+      // Sends to-be-edited message
+      await interaction.deferReply({ ephemeral: silent || requestingList });
 
-			// If week <= 0 gets list of winners
-			if (requestingList) {
-				const arr = (await getWinnersList(interaction.guildId)).match(
-					/.{1,2048}$/gms,
-				);
+      // If week <= 0 gets list of winners
+      if (requestingList) {
+        const arr = (await getWinnersList(interaction.guildId)).match(
+          /.{1,2048}$/gms,
+        );
 
-				for (let i = 0; i < arr.length; i++) {
-					if (i === 0) {
-						await interaction.member.send({
-							embeds: [
-								snmWeekEmbed
-									.setTitle('🥇 List of SNM Winners 🥇')
-									.setDescription(arr[i]),
-							],
-						});
-					}
-					else {
-						await interaction.member.send({
-							embeds: [snmWeekEmbed.setTitle(null).setDescription(arr[i])],
-						});
-					}
-				}
+        for (let i = 0; i < arr.length; i++) {
+          if (i === 0) {
+            await interaction.member.send({
+              embeds: [
+                snmWeekEmbed
+                  .setTitle('🥇 List of SNM Winners 🥇')
+                  .setDescription(arr[i]),
+              ],
+            });
+          }
+          else {
+            await interaction.member.send({
+              embeds: [snmWeekEmbed.setTitle(null).setDescription(arr[i])],
+            });
+          }
+        }
 
-				await interaction.editReply('Sent via DM');
-			}
-			else {
-				const snmWeek = await getSNMWeek(interaction.guildId, week);
+        await interaction.editReply('Sent via DM');
+      }
+      else {
+        const snmWeek = await getSNMWeek(interaction.guildId, week);
 
-				// Week doesn't exist
-				if (!snmWeek.week) {
-					await interaction.editReply({
-						embeds: [
-							snmWeekEmbed
-								.setTitle('Error')
-								.setDescription('No week found')
-								.setColor('Red'),
-						],
-					});
-				}
-				else {
-					for (const user of snmWeek.users) {
-						for (const movie of user.movies) {
-							movie.compactMovieEmbed = null;
-						}
-					}
-					snmWeekEmbed
-						.setTitle(`👨‍💻 Sunday Night Movie ${snmWeek.week} 👨‍💻`)
-						.setDescription(
-							`\`\`\`JSON\n${JSON.stringify(snmWeek, null, 2)}\`\`\``,
-						);
-					await interaction.editReply({
-						embeds: [_export ? snmWeekEmbed : snmEmbed(snmWeek)],
-					});
-				}
-			}
-		}
-		catch (e) {
-			reportError(e, interaction);
-		}
-	},
-	autocomplete: async function(interaction) {
-		try {
-			const focusedValue = interaction.options.getFocused();
+        // Week doesn't exist
+        if (!snmWeek.week) {
+          await interaction.editReply({
+            embeds: [
+              snmWeekEmbed
+                .setTitle('Error')
+                .setDescription('No week found')
+                .setColor('Red'),
+            ],
+          });
+        }
+        else {
+          for (const user of snmWeek.users) {
+            for (const movie of user.movies) {
+              movie.compactMovieEmbed = null;
+            }
+          }
+          snmWeekEmbed
+            .setTitle(`👨‍💻 Sunday Night Movie ${snmWeek.week} 👨‍💻`)
+            .setDescription(
+              `\`\`\`JSON\n${JSON.stringify(snmWeek, null, 2)}\`\`\``,
+            );
+          await interaction.editReply({
+            embeds: [_export ? snmWeekEmbed : snmEmbed(snmWeek)],
+          });
+        }
+      }
+    }
+    catch (e) {
+      reportError(e, interaction);
+    }
+  },
+  autocomplete: async function(interaction) {
+    try {
+      const focusedValue = interaction.options.getFocused();
 
-			// If focusedValue is 0, return last 25 winners
-			if (!focusedValue) {
-				const last25Winners = await getWinners(interaction.guildId, 25);
+      // If focusedValue is 0, return last 25 winners
+      if (!focusedValue) {
+        const last25Winners = await getWinners(interaction.guildId, 25);
 
-				return await interaction.respond(
-					last25Winners
-						? last25Winners.map((title) => ({
-							name: `${title.week} - ${title.title} | ${title.username}`,
-							value: title.week,
-						}))
-						: null,
-				);
-			}
-			// Else, grab the whole list and fuzzy search through it
-			else {
-				const allWinners = await getWinners(interaction.guildId);
+        return await interaction.respond(
+          last25Winners
+            ? last25Winners.map((title) => ({
+              name: `${title.week} - ${title.title} | ${title.username}`,
+              value: title.week,
+            }))
+            : null,
+        );
+      }
+      // Else, grab the whole list and fuzzy search through it
+      else {
+        const allWinners = await getWinners(interaction.guildId);
 
-				// Fuzzy search based on input
-				const options = {
-					keys: ['week', 'username', 'title'],
-				};
-				const fuse = new Fuse(allWinners, options);
-				const search = fuse.search(focusedValue);
-				return await interaction.respond(
-					search
-						.map((result) => ({
-							name: `${result.item.week} - ${result.item.title} | ${result.item.username}`,
-							value: result.item.week,
-						}))
-						.slice(0, 25),
-				);
-			}
-		}
-		catch (e) {
-			reportError(e, interaction);
-		}
-	},
+        // Fuzzy search based on input
+        const options = {
+          keys: ['week', 'username', 'title'],
+        };
+        const fuse = new Fuse(allWinners, options);
+        const search = fuse.search(focusedValue);
+        return await interaction.respond(
+          search
+            .map((result) => ({
+              name: `${result.item.week} - ${result.item.title} | ${result.item.username}`,
+              value: result.item.week,
+            }))
+            .slice(0, 25),
+        );
+      }
+    }
+    catch (e) {
+      reportError(e, interaction);
+    }
+  },
 };
 
 /**
@@ -155,112 +155,112 @@ export const snmCommand = {
  * @returns {EmbedBuilder} An SNM week embed
  */
 function snmEmbed(snmWeek) {
-	// If snm is finished
-	if (snmWeek.status === 'finished') {
-		const printArray = [];
-		let tempMovies = [];
+  // If snm is finished
+  if (snmWeek.status === 'finished') {
+    const printArray = [];
+    let tempMovies = [];
 
-		// runs through week and get movies, winner and ratings
-		let description = `Status: **${
-			snmWeek.paused ? 'paused' : snmWeek.status
-		}**\n`;
-		for (const userIndex in snmWeek.users) {
-			// If user only voted - no entries or ratings = skip user on summary
-			if (
-				!snmWeek.users[userIndex].movies.length > 0 &&
+    // runs through week and get movies, winner and ratings
+    let description = `Status: **${
+      snmWeek.paused ? 'paused' : snmWeek.status
+    }**\n`;
+    for (const userIndex in snmWeek.users) {
+      // If user only voted - no entries or ratings = skip user on summary
+      if (
+        !snmWeek.users[userIndex].movies.length > 0 &&
 				!snmWeek.users[userIndex].rating
-			) {
-				continue;
-			}
-			printArray[userIndex] = `**${snmWeek.users[userIndex].username}**\n`;
-			// checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
-			if (snmWeek.users[userIndex].movies) {
-				for (const movieIndex in snmWeek.users[userIndex].movies) {
-					// if movie is the winner, add to description text
-					delete snmWeek.users[userIndex].movies[movieIndex].compactMovieEmbed;
-					if (
-						snmWeek.users[userIndex].movies[movieIndex].titleKey ===
+      ) {
+        continue;
+      }
+      printArray[userIndex] = `**${snmWeek.users[userIndex].username}**\n`;
+      // checks if user has movies and add it to printArray in the position of title key (to print in order in the end)
+      if (snmWeek.users[userIndex].movies) {
+        for (const movieIndex in snmWeek.users[userIndex].movies) {
+          // if movie is the winner, add to description text
+          delete snmWeek.users[userIndex].movies[movieIndex].compactMovieEmbed;
+          if (
+            snmWeek.users[userIndex].movies[movieIndex].titleKey ===
 						snmWeek.winner.titleKey
-					) {
-						description += `Winner: **${
-							snmWeek.users[userIndex].movies[movieIndex].title
-						}**${
-							snmWeek.winner.voteCount
-								? ` | ${snmWeek.winner.voteCount} votes`
-								: ''
-						}\n\n`;
-					}
-					tempMovies.push(
-						`\`${snmWeek.users[userIndex].movies[movieIndex].title}\``,
-					);
-				}
-			}
-			printArray[userIndex] += `${
-				tempMovies.length > 0 ? `- Entries: ${tempMovies.join(' | ')}\n` : ''
-			}${
-				snmWeek.users[userIndex].rating
-					? `- Rating: ${snmWeek.users[userIndex].rating}\n\n`
-					: '\n'
-			}`;
-			tempMovies = [];
-		}
+          ) {
+            description += `Winner: **${
+              snmWeek.users[userIndex].movies[movieIndex].title
+            }**${
+              snmWeek.winner.voteCount
+                ? ` | ${snmWeek.winner.voteCount} votes`
+                : ''
+            }\n\n`;
+          }
+          tempMovies.push(
+            `\`${snmWeek.users[userIndex].movies[movieIndex].title}\``,
+          );
+        }
+      }
+      printArray[userIndex] += `${
+        tempMovies.length > 0 ? `- Entries: ${tempMovies.join(' | ')}\n` : ''
+      }${
+        snmWeek.users[userIndex].rating
+          ? `- Rating: ${snmWeek.users[userIndex].rating}\n\n`
+          : '\n'
+      }`;
+      tempMovies = [];
+    }
 
-		return (
-			new EmbedBuilder()
-				// Set the title of the field
-				.setTitle(`📖 Summary of Sunday Night Movie ${snmWeek.week} 📖`)
-				// Set the color of the embed
-				.setColor(0x3498db)
-				// Set the main content of the embed
-				.setDescription(description + printArray.join(''))
-		);
-	}
-	// If snm not finished
-	else {
-		const description = `Status: **${
-			snmWeek.paused ? 'paused' : snmWeek.status
-		}**\n\n`;
-		/** @type {import('@discordjs/builders').EmbedFooterData} */
-		let footer = '';
-		const printArray = [];
+    return (
+      new EmbedBuilder()
+      // Set the title of the field
+        .setTitle(`📖 Summary of Sunday Night Movie ${snmWeek.week} 📖`)
+      // Set the color of the embed
+        .setColor(0x3498db)
+      // Set the main content of the embed
+        .setDescription(description + printArray.join(''))
+    );
+  }
+  // If snm not finished
+  else {
+    const description = `Status: **${
+      snmWeek.paused ? 'paused' : snmWeek.status
+    }**\n\n`;
+    /** @type {import('@discordjs/builders').EmbedFooterData} */
+    let footer = '';
+    const printArray = [];
 
-		// If status is finished, prints winner;
-		// if (snmWeek.status === "finished" && snmWeek.winner.titleKey)
-		//     description += `Winner: **${snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === snmWeek.winner.titleKey)).movies.find(movie => movie.titleKey === snmWeek.winner.titleKey).title}**\n\n`;
+    // If status is finished, prints winner;
+    // if (snmWeek.status === "finished" && snmWeek.winner.titleKey)
+    //     description += `Winner: **${snmWeek.users.find(user => user.movies.find(movie => movie.titleKey === snmWeek.winner.titleKey)).movies.find(movie => movie.titleKey === snmWeek.winner.titleKey).title}**\n\n`;
 
-		// Builds list ordered by titleKey
-		for (const userIndex in snmWeek.users) {
-			for (const movieIndex in snmWeek.users[userIndex].movies) {
-				printArray[snmWeek.users[userIndex].movies[movieIndex].titleKey - 1] = [
-					`${snmWeek.users[userIndex].movies[movieIndex].titleKey}) ${snmWeek.users[userIndex].movies[movieIndex].title}\n`,
-				];
-			}
-		}
+    // Builds list ordered by titleKey
+    for (const userIndex in snmWeek.users) {
+      for (const movieIndex in snmWeek.users[userIndex].movies) {
+        printArray[snmWeek.users[userIndex].movies[movieIndex].titleKey - 1] = [
+          `${snmWeek.users[userIndex].movies[movieIndex].titleKey}) ${snmWeek.users[userIndex].movies[movieIndex].title}\n`,
+        ];
+      }
+    }
 
-		if (printArray.length === 0) {
-			printArray.push('No movies requested yet 😢\n');
-		}
+    if (printArray.length === 0) {
+      printArray.push('No movies requested yet 😢\n');
+    }
 
-		if (snmWeek.status === 'ongoing') {
-			footer = { text: '/snmTitle add to enter a movie' };
-		}
-		else if (snmWeek.status === 'finished') {
-			footer = { text: '/snmRate to leave a rating' };
-		}
-		else if (snmWeek.status === 'voting') {
-			footer = { text: 'Go vote 🔥\n/snmVotes start' };
-		}
+    if (snmWeek.status === 'ongoing') {
+      footer = { text: '/snmTitle add to enter a movie' };
+    }
+    else if (snmWeek.status === 'finished') {
+      footer = { text: '/snmRate to leave a rating' };
+    }
+    else if (snmWeek.status === 'voting') {
+      footer = { text: 'Go vote 🔥\n/snmVotes start' };
+    }
 
-		return (
-			new EmbedBuilder()
-				// Set the title of the field
-				.setTitle(`🌟 Sunday Night Movie ${snmWeek.week} 🌟`)
-				// Set the color of the embed
-				.setColor(0x3498db)
-				// Set the main content of the embed
-				.setDescription(description + printArray.join(''))
-				// Set the footer text
-				.setFooter(footer)
-		);
-	}
+    return (
+      new EmbedBuilder()
+      // Set the title of the field
+        .setTitle(`🌟 Sunday Night Movie ${snmWeek.week} 🌟`)
+      // Set the color of the embed
+        .setColor(0x3498db)
+      // Set the main content of the embed
+        .setDescription(description + printArray.join(''))
+      // Set the footer text
+        .setFooter(footer)
+    );
+  }
 }

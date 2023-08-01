@@ -6,9 +6,9 @@ import { reportError } from '../../../util/index.js';
 import { fireReminder, GuizzordeReminder } from './index.js';
 
 async function dbConnect() {
-	return await mongodb.MongoClient.connect(configObj.mongodbURI, {
-		useNewUrlParser: true,
-	});
+  return await mongodb.MongoClient.connect(configObj.mongodbURI, {
+    useNewUrlParser: true,
+  });
 }
 
 /**
@@ -17,19 +17,19 @@ async function dbConnect() {
  * @returns {Promise<[{userId: string, username: string}]>} The current subscribed users list
  */
 export async function getSubscribedUsers(reminderId) {
-	try {
-		const dbClient = await dbConnect();
-		const users = await dbClient
-			.db(configObj.mongodbName)
-			.collection(configObj.RemindMeCollection)
-			.findOne({ reminderId: reminderId }, { projection: { users: 1 } });
-		await dbClient.close();
-		return Promise.resolve(users.users);
-	}
-	catch (e) {
-		reportError(e);
-		return Promise.reject(e);
-	}
+  try {
+    const dbClient = await dbConnect();
+    const users = await dbClient
+      .db(configObj.mongodbName)
+      .collection(configObj.RemindMeCollection)
+      .findOne({ reminderId: reminderId }, { projection: { users: 1 } });
+    await dbClient.close();
+    return Promise.resolve(users.users);
+  }
+  catch (e) {
+    reportError(e);
+    return Promise.reject(e);
+  }
 }
 
 /**
@@ -38,21 +38,21 @@ export async function getSubscribedUsers(reminderId) {
  * @returns {Promise<GuizzordeReminder>} The requested Reminder
  */
 export async function getReminder(reminderId) {
-	try {
-		const dbClient = await dbConnect();
-		const reminder = new GuizzordeReminder(
-			await dbClient
-				.db(configObj.mongodbName)
-				.collection(configObj.RemindMeCollection)
-				.findOne({ reminderId }),
-		);
-		await dbClient.close();
-		return Promise.resolve(reminder);
-	}
-	catch (e) {
-		reportError(e);
-		return Promise.reject(e);
-	}
+  try {
+    const dbClient = await dbConnect();
+    const reminder = new GuizzordeReminder(
+      await dbClient
+        .db(configObj.mongodbName)
+        .collection(configObj.RemindMeCollection)
+        .findOne({ reminderId }),
+    );
+    await dbClient.close();
+    return Promise.resolve(reminder);
+  }
+  catch (e) {
+    reportError(e);
+    return Promise.reject(e);
+  }
 }
 
 /**
@@ -61,32 +61,32 @@ export async function getReminder(reminderId) {
  * @returns {Promise<GuizzordeReminder>} - The upserted Reminder
  */
 export async function upsertReminder(reminder) {
-	try {
-		const dbClient = await dbConnect();
-		const res = await dbClient
-			.db(configObj.mongodbName)
-			.collection(configObj.RemindMeCollection)
-			.findOneAndUpdate(
-				{
-					reminderId: reminder.reminderId,
-				},
-				{
-					$set: reminder,
-				},
-				{
-					upsert: true,
-					returnDocument: 'after',
-				},
-			);
-		await dbClient.close();
+  try {
+    const dbClient = await dbConnect();
+    const res = await dbClient
+      .db(configObj.mongodbName)
+      .collection(configObj.RemindMeCollection)
+      .findOneAndUpdate(
+        {
+          reminderId: reminder.reminderId,
+        },
+        {
+          $set: reminder,
+        },
+        {
+          upsert: true,
+          returnDocument: 'after',
+        },
+      );
+    await dbClient.close();
 
-		const upsertedReminder = new GuizzordeReminder(res.value);
-		return Promise.resolve(upsertedReminder);
-	}
-	catch (e) {
-		reportError(e);
-		return Promise.reject(e);
-	}
+    const upsertedReminder = new GuizzordeReminder(res.value);
+    return Promise.resolve(upsertedReminder);
+  }
+  catch (e) {
+    reportError(e);
+    return Promise.reject(e);
+  }
 }
 
 /**
@@ -94,28 +94,28 @@ export async function upsertReminder(reminder) {
  * @returns {Promise<GuizzordeReminder>} The next Reminder
  */
 export async function getNextReminder() {
-	try {
-		const dbClient = await dbConnect();
-		const reminder = new GuizzordeReminder(
-			(await dbClient
-				.db(configObj.mongodbName)
-				.collection(configObj.RemindMeCollection)
-				.findOne({ fired: false }, { sort: { date: 1 } })) || {},
-		);
-		await dbClient.close();
+  try {
+    const dbClient = await dbConnect();
+    const reminder = new GuizzordeReminder(
+      (await dbClient
+        .db(configObj.mongodbName)
+        .collection(configObj.RemindMeCollection)
+        .findOne({ fired: false }, { sort: { date: 1 } })) || {},
+    );
+    await dbClient.close();
 
-		// If nextReminder is PAST due -> fire Reminder and gets next
-		if (new Date().getTime() / 1000 > reminder?.date) {
-			await fireReminder(reminder);
-			return Promise.resolve(await getNextReminder());
-		}
+    // If nextReminder is PAST due -> fire Reminder and gets next
+    if (new Date().getTime() / 1000 > reminder?.date) {
+      await fireReminder(reminder);
+      return Promise.resolve(await getNextReminder());
+    }
 
-		return Promise.resolve(reminder);
-	}
-	catch (e) {
-		reportError(e);
-		return Promise.reject(e);
-	}
+    return Promise.resolve(reminder);
+  }
+  catch (e) {
+    reportError(e);
+    return Promise.reject(e);
+  }
 }
 
 /**
@@ -123,22 +123,22 @@ export async function getNextReminder() {
  * @returns {Promise<GuizzordeReminder>} The last inserted Reminder
  */
 export async function getLastReminder() {
-	try {
-		const dbClient = await dbConnect();
-		const reminder = new GuizzordeReminder(
-			(await dbClient
-				.db(configObj.mongodbName)
-				.collection(configObj.RemindMeCollection)
-				.findOne(null, { sort: { reminderId: -1 } })) || {},
-		);
-		await dbClient.close();
+  try {
+    const dbClient = await dbConnect();
+    const reminder = new GuizzordeReminder(
+      (await dbClient
+        .db(configObj.mongodbName)
+        .collection(configObj.RemindMeCollection)
+        .findOne(null, { sort: { reminderId: -1 } })) || {},
+    );
+    await dbClient.close();
 
-		return Promise.resolve(reminder);
-	}
-	catch (e) {
-		reportError(e);
-		return Promise.reject(e);
-	}
+    return Promise.resolve(reminder);
+  }
+  catch (e) {
+    reportError(e);
+    return Promise.reject(e);
+  }
 }
 
 /**
@@ -146,35 +146,35 @@ export async function getLastReminder() {
  * @returns {Promise<string[{reminderId: number, messageId: string}]>} Set of *not fired* reminderId's
  */
 export async function getReminderList() {
-	try {
-		/**
+  try {
+    /**
 		 * Maps to message.messageId
 		 * @param {Partial<GuizzordeReminder>} item
 		 */
-		const mapFunc = (item) => {
-			return { reminderId: item.reminderId, messageId: item.message.messageId };
-		};
+    const mapFunc = (item) => {
+      return { reminderId: item.reminderId, messageId: item.message.messageId };
+    };
 
-		const dbClient = await dbConnect();
-		const reminderList = await dbClient
-			.db(configObj.mongodbName)
-			.collection(configObj.RemindMeCollection)
-			.find(
-				{ fired: false, 'message.messageId': { $ne: null } },
-				{
-					sort: { reminderId: 1 },
-					projection: { reminderId: 1, 'message.messageId': 1 },
-				},
-			)
-			.map(mapFunc)
-			.toArray();
-		dbClient.close();
-		return Promise.resolve(reminderList);
-	}
-	catch (e) {
-		reportError(e);
-		return Promise.reject(e);
-	}
+    const dbClient = await dbConnect();
+    const reminderList = await dbClient
+      .db(configObj.mongodbName)
+      .collection(configObj.RemindMeCollection)
+      .find(
+        { fired: false, 'message.messageId': { $ne: null } },
+        {
+          sort: { reminderId: 1 },
+          projection: { reminderId: 1, 'message.messageId': 1 },
+        },
+      )
+      .map(mapFunc)
+      .toArray();
+    dbClient.close();
+    return Promise.resolve(reminderList);
+  }
+  catch (e) {
+    reportError(e);
+    return Promise.reject(e);
+  }
 }
 
 /**
@@ -184,35 +184,35 @@ export async function getReminderList() {
  * @param {"add"|"remove"} operation The toggle operation
  */
 export async function toggleUserSubscription(reminderId, user, operation) {
-	try {
-		const dbClient = await dbConnect();
-		if (operation === 'add') {
-			await dbClient
-				.db(configObj.mongodbName)
-				.collection(configObj.RemindMeCollection)
-				.updateOne(
-					{ reminderId: reminderId },
-					{ $addToSet: { users: { userId: user.id, username: user.username } } },
-				);
-			user.send({ content: 'Subscribed. You will be notified via DM.' });
-		}
-		else if (operation === 'remove') {
-			await dbClient
-				.db(configObj.mongodbName)
-				.collection(configObj.RemindMeCollection)
-				.updateOne(
-					{ reminderId: reminderId },
-					{ $pull: { users: { userId: user.id, username: user.username } } },
-				);
-			user.send({ content: 'You have been unsubscribed' });
-		}
-		dbClient.close();
-	}
-	catch (e) {
-		reportError(
-			`Failed to toggle ${user.username}'s Subscription of Reminder: ${reminderId}\n${e}`,
-		);
-	}
+  try {
+    const dbClient = await dbConnect();
+    if (operation === 'add') {
+      await dbClient
+        .db(configObj.mongodbName)
+        .collection(configObj.RemindMeCollection)
+        .updateOne(
+          { reminderId: reminderId },
+          { $addToSet: { users: { userId: user.id, username: user.username } } },
+        );
+      user.send({ content: 'Subscribed. You will be notified via DM.' });
+    }
+    else if (operation === 'remove') {
+      await dbClient
+        .db(configObj.mongodbName)
+        .collection(configObj.RemindMeCollection)
+        .updateOne(
+          { reminderId: reminderId },
+          { $pull: { users: { userId: user.id, username: user.username } } },
+        );
+      user.send({ content: 'You have been unsubscribed' });
+    }
+    dbClient.close();
+  }
+  catch (e) {
+    reportError(
+      `Failed to toggle ${user.username}'s Subscription of Reminder: ${reminderId}\n${e}`,
+    );
+  }
 }
 
 /**
@@ -221,21 +221,21 @@ export async function toggleUserSubscription(reminderId, user, operation) {
  * @returns {Promise<Partial<GuizzordeReminder>[]>} The current subscribed users list
  */
 export async function getUserSubscriptionList(userId) {
-	try {
-		const dbClient = await dbConnect();
-		const userSubList = await dbClient
-			.db(configObj.mongodbName)
-			.collection(configObj.RemindMeCollection)
-			.find(
-				{ fired: false, 'users.userId': userId },
-				{ projection: { message: 0, 'users.userId': 0 } },
-			)
-			.toArray();
-		await dbClient.close();
-		return Promise.resolve(userSubList);
-	}
-	catch (e) {
-		reportError(e);
-		return Promise.reject(e);
-	}
+  try {
+    const dbClient = await dbConnect();
+    const userSubList = await dbClient
+      .db(configObj.mongodbName)
+      .collection(configObj.RemindMeCollection)
+      .find(
+        { fired: false, 'users.userId': userId },
+        { projection: { message: 0, 'users.userId': 0 } },
+      )
+      .toArray();
+    await dbClient.close();
+    return Promise.resolve(userSubList);
+  }
+  catch (e) {
+    reportError(e);
+    return Promise.reject(e);
+  }
 }
