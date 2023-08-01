@@ -1,5 +1,4 @@
 import {
-  Discord,
   SlashCommandBuilder,
   ChatInputCommandInteraction,
   PermissionFlagsBits,
@@ -8,6 +7,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
+  Role,
 } from 'discord.js';
 import OpenAI from 'openai-api';
 
@@ -658,7 +658,7 @@ export const snmAdminCommand = {
 /**
  * Gets the '@SNM' role, if it exists
  * @param {string} guildId - The guild (Server) ID
- * @returns {Discord.Role}
+ * @returns {Role}
  */
 async function getSNMRole(guildId) {
   await (await client.guilds.fetch(guildId)).roles.fetch();

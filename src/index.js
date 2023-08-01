@@ -1,7 +1,7 @@
 import { Collection } from 'discord.js';
-import { client, configObj } from './src/config/index.js';
-import { globalCommands, guildCommands, snmCommands } from './src/commands/index.js';
-import { events } from './src/events/index.js';
+import { client, configObj } from './config/index.js';
+import { globalCommands, guildCommands, snmCommands } from './commands/index.js';
+import { events } from './events/index.js';
 
 client.commands = new Collection();
 
