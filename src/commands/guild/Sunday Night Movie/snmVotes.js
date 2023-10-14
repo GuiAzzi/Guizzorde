@@ -7,6 +7,7 @@ import {
   SelectMenuBuilder,
   ButtonInteraction,
   SelectMenuInteraction,
+  EmbedBuilder,
 } from 'discord.js';
 
 import {
@@ -166,7 +167,14 @@ export const snmVotesCommand = {
               .find(
                 (u) => u.movies.find((m) => m.titleKey === 1).titleKey === 1,
               )
-              .movies.find((m) => m.titleKey === 1).compactMovieEmbed,
+              .movies.find((m) => m.titleKey === 1).compactMovieEmbed ||
+              new EmbedBuilder()
+                .setTitle(
+                  lastSNM.users
+                    .find((u) => u.movies.find((m) => m.titleKey === 1))
+                    .movies.find((m) => m.titleKey === 1).title,
+                )
+                .setDescription('No information was found for this movie.'),
           ],
         });
       }

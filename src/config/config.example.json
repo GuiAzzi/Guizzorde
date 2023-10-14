@@ -17,5 +17,6 @@
     "RemindMeCollection": "<reminders-collection>",
     "notionToken": "<notion-token>",
     "notionDatabaseId": "<notion-database>",
-    "openAIApiKey":"<openai-api-key>"
+    "openAIApiKey": "<openai-api-key>",
+    "tmdbApiKey": "<tmdb-api-key>"
 }

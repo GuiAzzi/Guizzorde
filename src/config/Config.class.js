@@ -29,6 +29,8 @@ export class Config {
     this.notionDatabaseId = params.notionDatabaseId;
     /** @type {string} OpenAI API Key */
     this.openAIApiKey = params.openAIApiKey;
+    /** @type {string} TMDB API Key */
+    this.tmdbApiKey = params.tmdbApiKey;
   }
 }
 
@@ -48,6 +50,7 @@ const configJSON = existsSync('./src/config/config.json')
     notionToken: process.env.NOTION_KEY,
     notionDatabaseId: process.env.NOTION_DATABASE_ID,
     openAIApiKey: process.env.OPENAI_API_KEY,
+    tmdbApiKey: process.env.TMDB_API_KEY,
   };
 export const configObj = new Config(configJSON);
 export const client = new Client({

@@ -17,11 +17,7 @@ import {
   generateOpenAIList,
   upsertSNMWeek,
 } from '../../guild/Sunday Night Movie/index.js';
-import {
-  generateCompactMovieEmbed,
-  generateMovieEmbed,
-  searchTitles,
-} from '../../global/movie/movie.js';
+import { generateMovieEmbed, searchTitles } from '../../global/movie/movie.js';
 import { randomEmoji, reportError } from '../../../util/index.js';
 import { client, configObj } from '../../../config/index.js';
 
@@ -128,7 +124,11 @@ export const snmAdminCommand = {
         let openAISeeded;
         if (lastSNM.week > 1) {
           try {
-            const prompt = `Suggest a new released movie, without repeating from the list:\n\n${await generateOpenAIList(
+            const prompt = `This is my list of watched movies. Suggest a new released movie that you think I would enjoy based on the previous movies. Create the ${
+              newSNM.week
+            } entry without repeating from the list. Follow this pattern: "${
+              newSNM.week
+            } - Movie Name (Release Year)":\n\n${await generateOpenAIList(
               interaction.guildId,
             )}`;
 
@@ -159,9 +159,11 @@ export const snmAdminCommand = {
                 username: interaction.client.user.username,
                 movies: [
                   {
-                    jwId: titleFound[0]?.jw_entity_id,
+                    tmdbId: `tmdb${titleFound[0]?.id}`,
                     title: titleFound
-                      ? `${titleFound[0].title} (${titleFound[0].original_release_year})`
+                      ? `${titleFound[0].title} (${
+                        titleFound[0].release_date.split('-')[0]
+                      })`
                       : openAIEntry,
                     titleKey: 1,
                   },
@@ -169,10 +171,11 @@ export const snmAdminCommand = {
               });
               newSNM.movieCount += 1;
               openAISeeded = (
-                await generateCompactMovieEmbed(
+                await generateMovieEmbed(
                   openAIEntry,
                   null,
-                  titleFound[0]?.jw_entity_id,
+                  `tmdb${titleFound[0]?.id}`,
+                  true,
                 )
               )
                 .setDescription('🤖 Guizzorde\'s Suggestion 🤖')
@@ -625,7 +628,7 @@ export const snmAdminCommand = {
         const movieEmbed = await generateMovieEmbed(
           winnerMovie.title,
           null,
-          winnerMovie?.jwId,
+          winnerMovie?.tmdbId,
         );
         movieEmbed.setTimestamp(new Date());
 

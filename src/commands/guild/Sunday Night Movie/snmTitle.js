@@ -7,10 +7,7 @@ import {
   upsertSNMWeek,
   SNMWeekArray,
 } from '../../guild/Sunday Night Movie/index.js';
-import {
-  generateCompactMovieEmbed,
-  searchTitles,
-} from '../../global/movie/movie.js';
+import { generateMovieEmbed, searchTitles } from '../../global/movie/movie.js';
 import { reportError } from '../../../util/index.js';
 
 export const snmTitleCommand = {
@@ -79,11 +76,11 @@ export const snmTitleCommand = {
           );
         }
 
-        // Checks if title came from the autocomplete system (if it begins the JustWatch titleId)
-        const fromAutoComplete = titleName.match(/(tm\d+) - /)
-          ? titleName.match(/(tm\d+) - /)[1]
+        // Checks if title came from the autocomplete system (if it begins the TMDB ID)
+        const fromAutoComplete = titleName.match(/(^tmdb\d+) - /)
+          ? titleName.match(/(^tmdb\d+) - /)[1]
           : null;
-          // If that's the case, reformat titleName to be just the title
+          // If that's the case, reformat titleName to be just the title with year
         fromAutoComplete ? (titleName = titleName.split(' - ')[1]) : null;
 
         const authorId = interaction.member.user.id;
@@ -127,36 +124,35 @@ export const snmTitleCommand = {
         // Adds movie to the list
         lastSNM.movieCount++;
         userObject.movies.push({
-          jwId: fromAutoComplete,
+          tmdbId: fromAutoComplete,
           title: titleName,
           titleKey: lastSNM.movieCount,
         });
 
         try {
           // Followup with /movie
-          if (!silent) {
-            const compactMovieEmbed = await generateCompactMovieEmbed(
-              titleName,
-              snmServer.locale || 'en',
-              fromAutoComplete,
-            );
-            compactMovieEmbed
-              .setAuthor({
-                name: interaction.member.user.username,
-                iconURL:
-                    `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}` ||
-                    'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png',
-              })
-              .setFooter({ text: `SNM ${lastSNM.week}` });
-            if (compactMovieEmbed) {
-              await interaction.editReply({
-                embeds: [compactMovieEmbed],
-              });
+          const compactMovieEmbed = await generateMovieEmbed(
+            titleName,
+            snmServer.locale || 'en_US',
+            fromAutoComplete,
+            true,
+          );
+          compactMovieEmbed
+            .setAuthor({
+              name: interaction.member.user.username,
+              iconURL:
+                  `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}` ||
+                  'https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png',
+            })
+            .setFooter({ text: `SNM ${lastSNM.week}` });
+          if (compactMovieEmbed) {
+            await interaction.editReply({
+              embeds: [compactMovieEmbed],
+            });
 
-              userObject.movies[
-                userObject.movies.length - 1
-              ].compactMovieEmbed = compactMovieEmbed.toJSON();
-            }
+            userObject.movies[
+              userObject.movies.length - 1
+            ].compactMovieEmbed = compactMovieEmbed.toJSON();
           }
         }
         catch (e) {
@@ -289,8 +285,10 @@ export const snmTitleCommand = {
         }
         return await interaction.respond(
           titlesFound.map((title) => ({
-            name: `${title.title} (${title.original_release_year})`,
-            value: `${title.jw_entity_id} - ${title.title} (${title.original_release_year})`,
+            name: `${title.title} (${title.release_date.split('-')[0]})`,
+            value: `tmdb${title.id} - ${title.title} (${
+              title.release_date.split('-')[0]
+            })`,
           })),
         );
       }
