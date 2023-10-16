@@ -1,3 +1,3 @@
 # Guizzorde
 
-Guizzo's Discord Bot
+Discord bot for automated managed movie sessions + other useful tools.
