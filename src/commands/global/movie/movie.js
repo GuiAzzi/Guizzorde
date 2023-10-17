@@ -23,7 +23,6 @@ import {
 export async function generateMovieEmbed(title, locale, tmdbId, compact) {
   // Check if movie ID is at the beggining of the title (from autocomplete)
   const idMatch = title.match(/(^tmdb\d+ - )(.+)/);
-  console.log(idMatch, title, locale, tmdbId, compact);
   if (idMatch) {
     tmdbId = idMatch[1].split(' - ')[0].replace('tmdb', '');
     title = idMatch[2];
@@ -182,16 +181,18 @@ export async function generateMovieEmbed(title, locale, tmdbId, compact) {
     const tmdbWatchProvidersResult = await tmdbWatchProviders(tmdbId, 'pt_BR');
 
     // Streaming on
-    const embedStreamingOn = `[${tmdbWatchProvidersResult.flatrate.reduce(
-      (acc, currProvider, currIndex) =>
-        acc +
-        `${currProvider.provider_name}${
-          currIndex + 1 !== tmdbWatchProvidersResult.flatrate.length
-            ? ' | '
-            : ''
-        }`,
-      '',
-    )}](${tmdbWatchProvidersResult.link})`;
+    const embedStreamingOn = tmdbWatchProvidersResult?.flatrate
+      ? `[${tmdbWatchProvidersResult?.flatrate.reduce(
+        (acc, currProvider, currIndex) =>
+          acc +
+            `${currProvider.provider_name}${
+              currIndex + 1 !== tmdbWatchProvidersResult.flatrate.length
+                ? ' | '
+                : ''
+            }`,
+        '',
+      )}](${tmdbWatchProvidersResult?.link})`
+      : 'Not Found';
 
     // Searchs torrent and subtitle
     let movieTorrentField = 'No torrent found';
