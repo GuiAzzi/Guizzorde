@@ -151,6 +151,7 @@ export const snmAdminCommand = {
             if (openAIEntry.startsWith(`${newSNM.week}`)) {
               openAIEntry = openAIEntry
                 .replace(`${newSNM.week} - `, '')
+                .replace(/\(\d+?\)/, '')
                 .trim();
 
               const titleFound = await searchTitles(openAIEntry, 1);
