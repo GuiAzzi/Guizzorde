@@ -278,10 +278,10 @@ export const snmTitleCommand = {
 
       switch (interaction.options.getSubcommand()) {
       case 'add': {
-        if (!focusedValue) return await interaction.respond(null);
+        if (!focusedValue) return await interaction.respond([]);
         const titlesFound = await searchTitles(focusedValue);
         if (!titlesFound) {
-          return null;
+          return [];
         }
         return await interaction.respond(
           titlesFound.map((title) => ({

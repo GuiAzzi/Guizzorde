@@ -13,8 +13,8 @@ import { reportError } from '../../../../util/index.js';
  * @param {string} year
  * @returns {Promise<[import('./tmdbTypes.js').TMDBSearchMovie>]} The array of TMDB title objects
  */
-export const tmdbSearchMovie = async (title, adult = false, locale = 'en-US', primary_release_year, page = 1, region, year) => {
-  const url = `https://api.themoviedb.org/3/search/movie?api_key=${configObj.tmdbApiKey}&query=${encodeURIComponent(title)}&include_adult=${adult}&language=${locale}}&primary_release_year=${primary_release_year}&page=${page}&region=${region}&year=${year}`;
+export const tmdbSearchMovie = async (title, adult = false, locale = 'en-US', primary_release_year = '', page = 1, region, year = '') => {
+  const url = `https://api.themoviedb.org/3/search/movie?api_key=${configObj.tmdbApiKey}&query=${encodeURIComponent(title)}&include_adult=${adult}&language=${locale}&primary_release_year=${primary_release_year}&page=${page}&region=${region}&year=${year}`;
   const options = {
     method: 'GET',
     headers: {
