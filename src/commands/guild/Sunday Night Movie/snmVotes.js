@@ -123,7 +123,7 @@ export const snmVotesCommand = {
    * @param {string} actionFromVoteMessage the actionId from button interaction
    * @param {boolean} fromMenu if interaction comes from SNM Voting System™
    */
-  handler: async function(interaction, actionFromVoteMessage, fromMenu) {
+  handler: async function (interaction, actionFromVoteMessage, fromMenu) {
     try {
       const choice =
         actionFromVoteMessage || interaction.options.getString('command');
@@ -164,17 +164,15 @@ export const snmVotesCommand = {
           components: votingActionRows,
           embeds: [
             lastSNM.users
-              .find(
-                (u) => u.movies.find((m) => m.titleKey === 1).titleKey === 1,
+              .find((u) => u.movies.some((m) => m.titleKey === 1))
+              ?.movies.find((m) => m.titleKey === 1)?.compactMovieEmbed ||
+            new EmbedBuilder()
+              .setTitle(
+                lastSNM.users
+                  .find((u) => u.movies.some((m) => m.titleKey === 1))
+                  ?.movies.find((m) => m.titleKey === 1)?.title || 'Unknown Movie',
               )
-              .movies.find((m) => m.titleKey === 1).compactMovieEmbed ||
-              new EmbedBuilder()
-                .setTitle(
-                  lastSNM.users
-                    .find((u) => u.movies.find((m) => m.titleKey === 1))
-                    .movies.find((m) => m.titleKey === 1).title,
-                )
-                .setDescription('No information was found for this movie.'),
+              .setDescription('No information was found for this movie.'),
           ],
         });
       }
@@ -182,12 +180,11 @@ export const snmVotesCommand = {
         const moviesVoted = [];
         userFound.votes.forEach((movieTitleKey) => {
           moviesVoted.push(
-            `\`${
-              lastSNM.users
-                .find((user) =>
-                  user.movies.find((movie) => movie.titleKey === movieTitleKey),
-                )
-                .movies.find((movie) => movie.titleKey === movieTitleKey).title
+            `\`${lastSNM.users
+              .find((user) =>
+                user.movies.find((movie) => movie.titleKey === movieTitleKey),
+              )
+              .movies.find((movie) => movie.titleKey === movieTitleKey).title
             }\``,
           );
         });
