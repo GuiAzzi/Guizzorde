@@ -2,7 +2,7 @@
   "name": "guizzorde",
   "version": "3.0.0",
   "engines": {
-    "node": "18.10.0"
+    "node": "22.11.0"
   },
   "description": "Just another discord bot",
   "type": "module",
@@ -38,7 +38,9 @@
     "node-fetch": "^2.7.0",
     "openai-api": "^1.2.5",
     "opensubtitles.com": "^1.0.0",
-    "puppeteer": "^19.8.5",
+    "puppeteer-core": "^24.2.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "readline-sync": "^1.4.10",
     "torrent-search-api": "^2.1.4",
     "ytdl-core": "^4.11.2"

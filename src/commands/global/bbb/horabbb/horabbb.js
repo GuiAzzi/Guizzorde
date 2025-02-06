@@ -16,7 +16,9 @@ export const horaBBBCommand = {
 	 */
   handler: async function(interaction) {
     await interaction.deferReply();
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
 
     try {
       const bbbURL = 'https://redeglobo.globo.com/sao-paulo/programacao/';
@@ -32,9 +34,11 @@ export const horaBBBCommand = {
         });
       }
 
-      const programDay = await (await page.$('.date-select p')).evaluate((el) => el.textContent);
+      const dateSpans = await page.$$('.date-selector_today__mainText span');
+      const programDay = dateSpans.length >= 3 ? await dateSpans[2].evaluate(el => el.textContent) : 'Date not found';
+
       const selector = await page.waitForSelector('text/Big Brother Brasil', {
-        timeout: 1_000,
+        timeout: 5_000,
       });
 
       if (!selector) {
@@ -50,8 +54,8 @@ export const horaBBBCommand = {
       }
 
       const programName = await selector.evaluate((el) => el.textContent);
-      const programImage = await selector.evaluate((el) =>
-        el.parentElement.querySelector('.programee-logo').getAttribute('src'),
+      const programImage = await selector.evaluate(el =>
+        el.closest('.accordion').querySelector('.accordionTitle__logo img').getAttribute('src'),
       );
 
       if (await selector.evaluate((el) => el.parentElement.querySelector('.islive'))) {
@@ -66,7 +70,9 @@ export const horaBBBCommand = {
         });
       }
 
-      const programTime = await selector.evaluate((el) => el.parentElement.querySelector('.programee-time').textContent);
+      const programTime = await selector.evaluate(el =>
+        el.closest('.accordion').querySelector('.accordionTitle__time p').textContent,
+      );
       const programDate = Math.floor(
         pt.parseDate(`${programDay} às ${programTime}`, { timezone: -180 }).getTime() / 1000,
       );
