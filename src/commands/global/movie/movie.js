@@ -67,7 +67,7 @@ export async function generateMovieEmbed(title, locale, tmdbId, compact) {
 
   // Plot/Summary
   const embedPlotValue =
-    tmdbMovieDetailsAndCreditsResult.overview || 'Not Found';
+    tmdbMovieDetailsAndCreditsResult.overview || 'Not found';
 
   // Genre
   const embedGenreValue =
@@ -80,7 +80,7 @@ export async function generateMovieEmbed(title, locale, tmdbId, compact) {
             : ''
         }`,
       '',
-    ) || 'Not Found';
+    ) || 'Not found';
 
   // Director
   const embedDirectorValue = tmdbMovieDetailsAndCreditsResult.credits.crew
@@ -102,10 +102,10 @@ export async function generateMovieEmbed(title, locale, tmdbId, compact) {
         acc +
         `${currActor.name}${currIndex + 1 !== slicedArr.length ? ', ' : ''}`,
       '',
-    );
+    ) || 'No data';
 
   // Runtime
-  let embedRuntimeValue = 'Not Found';
+  let embedRuntimeValue = 'Not found';
   if (tmdbMovieDetailsAndCreditsResult.runtime) {
     const hours = tmdbMovieDetailsAndCreditsResult.runtime / 60;
     const rhours = Math.floor(hours);
@@ -164,12 +164,12 @@ export async function generateMovieEmbed(title, locale, tmdbId, compact) {
           },
           // {
           //   name: 'IMDB',
-          //   value: String(embedRatingValue.imdb || 'Not Found'),
+          //   value: String(embedRatingValue.imdb || 'Not found'),
           //   inline: true,
           // },
           {
             name: 'TMDB',
-            value: String(embedRatingValue.tmdb || 'Not Found'),
+            value: String(embedRatingValue.tmdb || 'Not found'),
             inline: true,
           },
         )
@@ -192,43 +192,46 @@ export async function generateMovieEmbed(title, locale, tmdbId, compact) {
             }`,
         '',
       )}](${tmdbWatchProvidersResult?.link})`
-      : 'Not Found';
+      : 'Not found';
 
     // Searchs torrent and subtitle
+    const grayArea = false;
     let movieTorrentField = 'No torrent found';
     let movieSubtitle;
     let movieTorrent;
 
-    try {
-      movieTorrent = await torrentSearch
-        .search(
-          ['1337x'],
-          `${tmdbMovieDetailsAndCreditsResult.title} ${movieReleaseYear} 1080p`,
-          'Movies',
-          1,
-        )
-        .catch();
-
-      // If it fails, try again
-      if (movieTorrent?.length === 0 || !movieTorrent) {
-        // Little hack to force second execution - without this the code was being skipped - something to do with async stuff
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        // Searches in other trackers
+    if (grayArea) {
+      try {
         movieTorrent = await torrentSearch
           .search(
-            ['1337x', 'yts'],
+            ['yts'],
             `${tmdbMovieDetailsAndCreditsResult.title} ${movieReleaseYear} 1080p`,
             'Movies',
             1,
           )
-          .catch(() => {
-            return [];
-          });
+          .catch();
+
+        // If it fails, try again
+        if (movieTorrent?.length === 0 || !movieTorrent) {
+          // Little hack to force second execution - without this the code was being skipped - something to do with async stuff
+          await new Promise((resolve) => setTimeout(resolve, 0));
+          // Searches in other trackers
+          movieTorrent = await torrentSearch
+            .search(
+              ['ThePirateBay', 'yts'],
+              `${tmdbMovieDetailsAndCreditsResult.title} ${movieReleaseYear} 1080p`,
+              'Movies',
+              1,
+            )
+            .catch(() => {
+              return [];
+            });
+        }
       }
-    }
-    catch (e) {
-      reportError(e);
-      movieTorrent = [];
+      catch (e) {
+        reportError(e);
+        movieTorrent = [];
+      }
     }
 
     if (
@@ -256,63 +259,62 @@ export async function generateMovieEmbed(title, locale, tmdbId, compact) {
     }
 
     // Send Full Embed
-    return (
-      new EmbedBuilder()
-        // Original title + (release year) //Ex: The Lodge (2020)
-        .setTitle(embedTitleValue)
-        // Tagline
-        .setDescription(tmdbMovieDetailsAndCreditsResult?.tagline || null)
-        // TMDB URL
-        .setURL(embedURLValue)
-        .setColor(0x3498db)
-        // Movie poster
-        .setImage(embedImageValue)
-        .addFields(
-          {
-            // Synopse
-            name: 'Plot',
-            value: String(embedPlotValue),
-          },
-          {
-            // Genres
-            name: 'Genre',
-            value: String(embedGenreValue),
-          },
-          {
-            name: 'Directed by',
-            value: String(embedDirectorValue),
-            inline: true,
-          },
-          {
-            name: 'Runtime',
-            value: String(embedRuntimeValue),
-            inline: true,
-          },
-          {
-            name: 'Cast',
-            value: String(embedCastValue),
-          },
-          {
-            name: 'Streaming on',
-            value: String(embedStreamingOn),
-            inline: true,
-          },
-          // {
-          //   name: 'IMDB',
-          //   value: String(embedRatingValue.imdb || 'Not Found'),
-          //   inline: true,
-          // },
-          {
-            name: 'TMDB',
-            value: String(embedRatingValue.tmdb || 'Not Found'),
-            inline: true,
-          },
-          {
-            name: 'Torrent',
-            value: String(movieTorrentField),
-          },
-        )
-    );
+    const fullEmbed = new EmbedBuilder()
+    // Original title + (release year) //Ex: The Lodge (2020)
+      .setTitle(embedTitleValue)
+    // Tagline
+      .setDescription(tmdbMovieDetailsAndCreditsResult?.tagline || null)
+    // TMDB URL
+      .setURL(embedURLValue)
+      .setColor(0x3498db)
+    // Movie poster
+      .setImage(embedImageValue)
+      .addFields(
+        {
+        // Synopse
+          name: 'Plot',
+          value: String(embedPlotValue),
+        },
+        {
+        // Genres
+          name: 'Genre',
+          value: String(embedGenreValue),
+        },
+        {
+          name: 'Directed by',
+          value: String(embedDirectorValue),
+          inline: true,
+        },
+        {
+          name: 'Runtime',
+          value: String(embedRuntimeValue),
+          inline: true,
+        },
+        {
+          name: 'Cast',
+          value: String(embedCastValue),
+        },
+        {
+          name: 'Streaming on',
+          value: String(embedStreamingOn),
+          inline: true,
+        },
+        // {
+        //   name: 'IMDB',
+        //   value: String(embedRatingValue.imdb || 'Not found'),
+        //   inline: true,
+        // },
+        {
+          name: 'TMDB',
+          value: String(embedRatingValue.tmdb || 'Not found'),
+          inline: true,
+        },
+        {
+          name: 'Torrent',
+          value: String(movieTorrentField),
+        },
+      );
+    return fullEmbed;
   }
 }
 
