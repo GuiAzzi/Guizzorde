@@ -14,9 +14,10 @@ async function dbConnect() {
  * @param {string} guildId - The Server Id
  * @param {number} [week] - The specified week
  * @param {boolean} [status] - The status of the week
+ * @param {boolean} [cache] - If week should be cached at the bottom of `SNMWeekArray`
  * @returns {Promise<SNMWeek>} - The latest SNM week for the specified server
  */
-export async function getSNMWeek(guildId, week, status) {
+export async function getSNMWeek(guildId, week, status, cache = true) {
   try {
     const query = {
       guildId,
@@ -51,7 +52,9 @@ export async function getSNMWeek(guildId, week, status) {
     }
 
     // Caches SNMWeek
-    SNMWeekArray.set(snmWeek.guildId, snmWeek);
+    if (cache) {
+      SNMWeekArray.set(snmWeek.guildId, snmWeek);
+    }
     return Promise.resolve(snmWeek);
   }
   catch (e) {

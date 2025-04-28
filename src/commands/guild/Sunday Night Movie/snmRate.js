@@ -31,7 +31,7 @@ export const snmRateCommand = {
       const lastFinishedSNM =
         SNMWeekArray.get(interaction.guildId)?.status === 'finished'
           ? SNMWeekArray.get(interaction.guildId)
-          : await getSNMWeek(interaction.guildId, null, 'finished');
+          : await getSNMWeek(interaction.guildId, null, 'finished', null);
       const userObject = lastFinishedSNM.users.find(
         (u) => u.userId === interaction.user.id,
       );
@@ -87,6 +87,7 @@ export const snmRateModalInteractionCreate = {
         interaction.guildId,
         Number(week),
         'finished',
+        false,
       );
 
       let userObject = snmWeekToRate.users.find(

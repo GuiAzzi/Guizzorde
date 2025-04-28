@@ -72,7 +72,7 @@ export const snmCommand = {
         await interaction.editReply('Sent via DM');
       }
       else {
-        const snmWeek = await getSNMWeek(interaction.guildId, week);
+        const snmWeek = await getSNMWeek(interaction.guildId, week, null, false);
 
         // Week doesn't exist
         if (!snmWeek.week) {
