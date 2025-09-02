@@ -505,15 +505,15 @@ export const snmAdminCommand = {
           }
         }
 
-        // get what voteCount is the highest
+        // get highest voteCount
         const maxVotes = allVotes.reduce((prev, current) => {
           return prev.voteCount > current.voteCount ? prev : current;
         });
-          // get movies that had more votes (=== maxVotes)
+        // get movies that had the most votes (=== maxVotes)
         const winners = allVotes.filter((obj) => {
           return obj.voteCount === maxVotes.voteCount;
         });
-          // if more than 1 winner => tied
+        // if more than 1 winner => tied
         if (winners.length > 1) {
           const tiedWinnersTitle = [];
           for (const winner in winners) {

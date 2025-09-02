@@ -123,7 +123,7 @@ export const snmVotesCommand = {
    * @param {string} actionFromVoteMessage the actionId from button interaction
    * @param {boolean} fromMenu if interaction comes from SNM Voting System™
    */
-  handler: async function (interaction, actionFromVoteMessage, fromMenu) {
+  handler: async function(interaction, actionFromVoteMessage, fromMenu) {
     try {
       const choice =
         actionFromVoteMessage || interaction.options.getString('command');
