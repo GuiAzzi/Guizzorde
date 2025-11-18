@@ -3,7 +3,7 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
 } from 'discord.js';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 import { pt } from 'chrono-node';
 import { reportError } from '../../../../util/index.js';
 
@@ -16,8 +16,11 @@ export const horaBBBCommand = {
 	 */
   handler: async function(interaction) {
     await interaction.deferReply();
+    const executablePath = process.env.GOOGLE_CHROME_BIN || process.env.CHROME_BIN || '/app/.apt/usr/bin/google-chrome-stable';
     const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--single-process'],
+      executablePath,
     });
 
     try {

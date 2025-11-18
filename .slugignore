@@ -1,0 +1,15 @@
+# Exclude common local/dev files
+node_modules/
+npm-debug.log
+yarn-error.log
+.DS_Store
+.env
+.vscode/
+.git/
+*.log
+.cache/
+dist/
+build/
+
+# Exclude known large media used for tests or dev
+src/commands/global/meme/files/*
