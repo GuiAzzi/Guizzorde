@@ -121,8 +121,9 @@ export const snmAdminCommand = {
         // Creates a movie suggestion with OpenAI
         // Don't do it if first week => no movies to sample
         // Don't do it if on test bot (App ID 558090301160292352)
+        const useOpenAI = false;
         let openAISeeded;
-        if (lastSNM.week > 1) {
+        if (lastSNM.week > 1 && useOpenAI) {
           try {
             const prompt = `This is my list of watched movies. Suggest a new released movie that you think I would enjoy based on the previous movies. Create the ${
               newSNM.week
