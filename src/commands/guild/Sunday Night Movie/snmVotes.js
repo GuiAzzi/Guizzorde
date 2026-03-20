@@ -69,7 +69,7 @@ export const generateVotingComponents = (
         .setCustomId('SNMVoteSystem - votesAvailable')
         .setLabel(
           remainingVotes
-            ? `You have ${remainingVotes} votes available`
+            ? `You have ${remainingVotes} ${remainingVotes === 1 ? 'vote' : 'votes'} available`
             : 'You used all your votes!',
         )
         .setStyle(ButtonStyle.Secondary)
